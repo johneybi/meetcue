@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Product docs to publish
+.local-docs/*
+!.local-docs/prd-v1.5.md
+!.local-docs/host-time-model-decision-v2.0.md
+!.local-docs/meeting-time-reservation-decision-v2.1.md
+!.local-docs/time-quantum-decision-v2.2.md
+
+# Local product-making notes, reviews, audits, and agent artifacts
+.product-design-audit/
+.reviews/
+.oh-my-design/
+oh-my-design/
+.omd/
+.agents/
+.codex/
+.claude/
+.opencode/
+design-qa.md
+start-*.txt
+dev-server*.pid
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
