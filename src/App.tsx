@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   useEffect,
@@ -23,7 +24,20 @@ import {
   type DateValue,
 } from 'react-aria-components'
 import { CalendarDate, getLocalTimeZone, startOfWeek, today } from '@internationalized/date'
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react'
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  X,
+} from 'lucide-react'
+import {
+  deriveCandidatesFromAvailabilityWindows,
+  mergeAvailabilityWindows,
+} from './domain/availability'
 import {
   evaluateCandidates,
   generateConfirmationMessage,
@@ -41,6 +55,7 @@ import {
   responsePreferenceTagLabels,
   responseValueDescriptions,
   responseValueLabels,
+  type AvailabilityWindow,
   type Candidate,
   type CandidateStatus,
   type ChangeLog,
@@ -185,7 +200,7 @@ const createSteps: Array<{
     label: '시간',
     eyebrow: '3단계',
     title: '회의 시간을 정해볼까요?',
-    description: '가능한 기간과 회의 길이를 정한 뒤 구체적인 시간을 골라요.',
+    description: '가능한 기간과 확보 시간을 정한 뒤 조율할 시간대를 알려주세요.',
   },
   {
     id: 'review',
@@ -413,22 +428,34 @@ function App() {
   }
 
   function updateSchedulingWindow(schedulingWindow: SchedulingWindow) {
-    setMeeting((currentMeeting) => ({ ...currentMeeting, schedulingWindow }))
+    setMeeting((currentMeeting) => {
+      const availabilityWindows = currentMeeting.availabilityWindows.filter((window) => {
+        const date = formatDateInput(new Date(window.startAt))
+        return date >= schedulingWindow.startDate && date <= schedulingWindow.endDate
+      })
+
+      return {
+        ...currentMeeting,
+        schedulingWindow,
+        availabilityWindows,
+        candidates: deriveCandidatesFromAvailabilityWindows(
+          currentMeeting.id,
+          availabilityWindows,
+          currentMeeting.durationMinutes,
+        ),
+      }
+    })
   }
 
   function updateDuration(durationMinutes: MeetingDuration | null) {
     setMeeting((currentMeeting) => ({
       ...currentMeeting,
       durationMinutes,
-      candidates:
-        durationMinutes == null
-          ? currentMeeting.candidates
-          : currentMeeting.candidates.map((candidate) => ({
-              ...candidate,
-              endAt: new Date(
-                new Date(candidate.startAt).getTime() + durationMinutes * 60 * 1000,
-              ).toISOString(),
-            })),
+      candidates: deriveCandidatesFromAvailabilityWindows(
+        currentMeeting.id,
+        currentMeeting.availabilityWindows,
+        durationMinutes,
+      ),
     }))
   }
 
@@ -442,6 +469,32 @@ function App() {
 
       return {
         ...currentMeeting,
+        candidates,
+        responses: currentMeeting.responses.filter((response) =>
+          candidateIds.has(response.candidateId),
+        ),
+        confirmedCandidateId:
+          currentMeeting.confirmedCandidateId != null &&
+          candidateIds.has(currentMeeting.confirmedCandidateId)
+            ? currentMeeting.confirmedCandidateId
+            : undefined,
+      }
+    })
+  }
+
+  function updateAvailabilityWindows(availabilityWindows: AvailabilityWindow[]) {
+    setMeeting((currentMeeting) => {
+      const mergedWindows = mergeAvailabilityWindows(availabilityWindows)
+      const candidates = deriveCandidatesFromAvailabilityWindows(
+        currentMeeting.id,
+        mergedWindows,
+        currentMeeting.durationMinutes,
+      )
+      const candidateIds = new Set(candidates.map((candidate) => candidate.id))
+
+      return {
+        ...currentMeeting,
+        availabilityWindows: mergedWindows,
         candidates,
         responses: currentMeeting.responses.filter((response) =>
           candidateIds.has(response.candidateId),
@@ -800,6 +853,7 @@ function App() {
                 onParticipantAdd={addParticipant}
                 onParticipantRemove={removeParticipant}
                 onCandidatesChange={updateCandidates}
+                onAvailabilityWindowsChange={updateAvailabilityWindows}
                 onCreateLink={() => navigateTo('share')}
               />
             ) : null}
@@ -886,14 +940,19 @@ function EntryScreen({ onStart }: { onStart: () => void }) {
           <span className="brand-dot" />
           <strong>Meeting Cue</strong>
         </div>
+
         <div className="entry-copy">
-          <h1>회의 시간을 물어보고, 답변을 모아, 정할 수 있는 시간을 바로 확인해요.</h1>
-          <p>참석자의 응답을 한눈에 모아, 지금 정할 수 있는 시간을 보여줍니다.</p>
+          <h1>지금 회의를 정해도 되는지 알려드려요.</h1>
+          <p>참석자의 답변을 모아, 확정할 시간과 다음 행동을 보여드립니다.</p>
         </div>
-        <button className="primary-button" type="button" onClick={onStart}>
-          회의 시간 정하기
-        </button>
-        <p className="entry-note">초대받은 사람은 링크에서 바로 응답할 수 있어요.</p>
+
+        <div className="entry-action">
+          <button className="primary-button" type="button" onClick={onStart}>
+            회의 시간 정하기
+            <ArrowRight aria-hidden="true" size={18} strokeWidth={2.5} />
+          </button>
+          <p className="entry-note">초대받은 사람은 링크에서 바로 응답할 수 있어요.</p>
+        </div>
       </section>
     </main>
   )
@@ -1353,7 +1412,13 @@ function HostRecoverScreen({
 }
 
 const RECOMMENDED_CANDIDATE_COUNT = 5
-const TIME_SLOT_MINUTES = Array.from({ length: 18 }, (_, index) => 9 * 60 + index * 30)
+const TIME_QUANTUM_MINUTES = 30
+const TIME_GRID_START_MINUTES = 9 * 60
+const TIME_GRID_END_MINUTES = 18 * 60
+const TIME_SLOT_MINUTES = Array.from(
+  { length: (TIME_GRID_END_MINUTES - TIME_GRID_START_MINUTES) / TIME_QUANTUM_MINUTES },
+  (_, index) => TIME_GRID_START_MINUTES + index * TIME_QUANTUM_MINUTES,
+)
 const meetingDurationOptions: MeetingDuration[] = [30, 60, 90, 120]
 const MIN_CUSTOM_DURATION = 30
 const MAX_CUSTOM_DURATION = 240
@@ -1441,16 +1506,16 @@ function candidateIsWithinWindow(candidate: Candidate, window: SchedulingWindow)
   return candidateDate >= window.startDate && candidateDate <= window.endDate
 }
 
-function getEarliestCandidateStart(candidates: Candidate[]) {
-  if (candidates.length === 0) {
+function getEarliestAvailabilityStart(windows: AvailabilityWindow[]) {
+  if (windows.length === 0) {
     return null
   }
 
-  return new Date(Math.min(...candidates.map((candidate) => new Date(candidate.startAt).getTime())))
+  return new Date(Math.min(...windows.map((window) => new Date(window.startAt).getTime())))
 }
 
-function suggestResponseDeadline(candidates: Candidate[]) {
-  const earliestCandidate = getEarliestCandidateStart(candidates)
+function suggestResponseDeadline(windows: AvailabilityWindow[]) {
+  const earliestCandidate = getEarliestAvailabilityStart(windows)
 
   if (earliestCandidate == null) {
     return ''
@@ -1467,7 +1532,536 @@ function suggestResponseDeadline(candidates: Candidate[]) {
   return fallback.getTime() > now.getTime() ? fallback.toISOString() : ''
 }
 
-function TimeCandidatePicker({
+function formatAvailabilityWindow(window: AvailabilityWindow) {
+  return formatCandidateTime({
+    id: window.id,
+    meetingId: window.meetingId,
+    startAt: window.startAt,
+    endAt: window.endAt,
+  })
+}
+
+function formatAvailabilityStart(date: Date) {
+  return `${new Intl.DateTimeFormat('ko-KR', {
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+  }).format(date)} ${formatTimeOfDay(date.getHours() * 60 + date.getMinutes())}부터`
+}
+
+function AvailabilityWindowPicker({
+  meeting,
+  onAvailabilityWindowsChange,
+}: {
+  meeting: MeetingWithDuration
+  onAvailabilityWindowsChange: (windows: AvailabilityWindow[]) => void
+}) {
+  const isMobile = useMediaQuery('(max-width: 900px)')
+  const [todayDate] = useState(() => today(getLocalTimeZone()))
+  const windowStartDate = useMemo(
+    () => parseCalendarDate(meeting.schedulingWindow.startDate),
+    [meeting.schedulingWindow.startDate],
+  )
+  const windowEndDate = useMemo(
+    () => parseCalendarDate(meeting.schedulingWindow.endDate),
+    [meeting.schedulingWindow.endDate],
+  )
+  const [selectedDate, setSelectedDate] = useState(windowStartDate)
+  const [focusedSlot, setFocusedSlot] = useState({ dayIndex: 0, timeIndex: 0 })
+  const [anchor, setAnchor] = useState<{ date: CalendarDate; startMinutes: number } | null>(null)
+  const [preview, setPreview] = useState<{
+    date: CalendarDate
+    startMinutes: number
+    endMinutes: number
+  } | null>(null)
+  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
+  const [editingWindow, setEditingWindow] = useState<AvailabilityWindow | null>(null)
+  const [removedWindow, setRemovedWindow] = useState<AvailabilityWindow | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  const activeDate =
+    selectedDate.compare(windowStartDate) < 0 || selectedDate.compare(windowEndDate) > 0
+      ? windowStartDate
+      : selectedDate
+  const weekStart = useMemo(() => startOfWeek(activeDate, 'ko-KR', 'mon'), [activeDate])
+  const firstWindowWeek = useMemo(
+    () => startOfWeek(windowStartDate, 'ko-KR', 'mon'),
+    [windowStartDate],
+  )
+  const lastWindowWeek = useMemo(
+    () => startOfWeek(windowEndDate, 'ko-KR', 'mon'),
+    [windowEndDate],
+  )
+  const displayDays = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => weekStart.add({ days: index })),
+    [weekStart],
+  )
+
+  function isOutsideWindow(date: CalendarDate) {
+    return (
+      date.compare(todayDate) < 0 ||
+      date.compare(windowStartDate) < 0 ||
+      date.compare(windowEndDate) > 0
+    )
+  }
+
+  function windowOccupyingSlot(date: CalendarDate, startMinutes: number) {
+    const slotStart = toLocalDate(date, startMinutes).getTime()
+
+    return meeting.availabilityWindows.find((window) => {
+      const rangeStart = new Date(window.startAt).getTime()
+      const rangeEnd = new Date(window.endAt).getTime()
+      return rangeStart <= slotStart && slotStart < rangeEnd
+    })
+  }
+
+  function countWindowsForDate(date: CalendarDate) {
+    return meeting.availabilityWindows.filter(
+      (window) => toCalendarDate(new Date(window.startAt)).compare(date) === 0,
+    ).length
+  }
+
+  function buildRange(
+    date: CalendarDate,
+    anchorMinutes: number,
+    edgeMinutes: number,
+  ) {
+    let startMinutes = Math.min(anchorMinutes, edgeMinutes)
+    let endMinutes = Math.max(anchorMinutes, edgeMinutes) + TIME_QUANTUM_MINUTES
+
+    if (endMinutes - startMinutes < meeting.durationMinutes) {
+      if (edgeMinutes >= anchorMinutes) {
+        endMinutes = startMinutes + meeting.durationMinutes
+      } else {
+        startMinutes = endMinutes - meeting.durationMinutes
+      }
+    }
+
+    if (startMinutes < TIME_GRID_START_MINUTES) {
+      endMinutes += TIME_GRID_START_MINUTES - startMinutes
+      startMinutes = TIME_GRID_START_MINUTES
+    }
+
+    if (endMinutes > TIME_GRID_END_MINUTES) {
+      startMinutes -= endMinutes - TIME_GRID_END_MINUTES
+      endMinutes = TIME_GRID_END_MINUTES
+    }
+
+    startMinutes = Math.max(TIME_GRID_START_MINUTES, startMinutes)
+
+    if (endMinutes - startMinutes < meeting.durationMinutes) {
+      return null
+    }
+
+    return { date, startMinutes, endMinutes }
+  }
+
+  function previewFrom(date: CalendarDate, startMinutes: number) {
+    if (isOutsideWindow(date)) {
+      setPreview(null)
+      return
+    }
+
+    if (anchor != null && anchor.date.compare(date) !== 0) {
+      setPreview(buildRange(date, startMinutes, startMinutes))
+      return
+    }
+
+    setPreview(
+      buildRange(date, anchor?.startMinutes ?? startMinutes, startMinutes),
+    )
+  }
+
+  function chooseBoundary(date: CalendarDate, startMinutes: number) {
+    const existingWindow = windowOccupyingSlot(date, startMinutes)
+
+    if (existingWindow != null && anchor == null) {
+      setActiveWindowId((current) =>
+        current === existingWindow.id ? null : existingWindow.id,
+      )
+      setPreview(null)
+      return
+    }
+
+    if (isOutsideWindow(date)) {
+      return
+    }
+
+    if (anchor == null || anchor.date.compare(date) !== 0) {
+      setAnchor({ date, startMinutes })
+      setPreview(buildRange(date, startMinutes, startMinutes))
+      setActiveWindowId(null)
+      return
+    }
+
+    const range = buildRange(date, anchor.startMinutes, startMinutes)
+
+    if (range == null) {
+      return
+    }
+
+    const nextWindow: AvailabilityWindow = {
+      id: editingWindow?.id ?? `aw-${toLocalDate(date, range.startMinutes).getTime()}`,
+      meetingId: meeting.id,
+      ownerId: meeting.hostId,
+      startAt: toLocalDate(date, range.startMinutes).toISOString(),
+      endAt: toLocalDate(date, range.endMinutes).toISOString(),
+      state: 'available',
+    }
+
+    onAvailabilityWindowsChange([...meeting.availabilityWindows, nextWindow])
+    setAnchor(null)
+    setPreview(null)
+    setEditingWindow(null)
+    setActiveWindowId(null)
+  }
+
+  function removeAvailabilityWindow(window: AvailabilityWindow) {
+    setRemovedWindow(window)
+    onAvailabilityWindowsChange(
+      meeting.availabilityWindows.filter((item) => item.id !== window.id),
+    )
+    setActiveWindowId(null)
+    if (editingWindow?.id === window.id) {
+      setEditingWindow(null)
+      setAnchor(null)
+      setPreview(null)
+    }
+  }
+
+  function startEditingWindow(window: AvailabilityWindow) {
+    const start = new Date(window.startAt)
+    const date = toCalendarDate(start)
+    const startMinutes = start.getHours() * 60 + start.getMinutes()
+    const end = new Date(window.endAt)
+
+    onAvailabilityWindowsChange(
+      meeting.availabilityWindows.filter((item) => item.id !== window.id),
+    )
+    setEditingWindow(window)
+    setAnchor({ date, startMinutes })
+    setPreview({
+      date,
+      startMinutes,
+      endMinutes: end.getHours() * 60 + end.getMinutes(),
+    })
+    setActiveWindowId(null)
+  }
+
+  function cancelRangeSelection() {
+    if (editingWindow != null) {
+      onAvailabilityWindowsChange([...meeting.availabilityWindows, editingWindow])
+    }
+    setAnchor(null)
+    setPreview(null)
+    setEditingWindow(null)
+  }
+
+  function undoRemoveWindow() {
+    if (removedWindow == null) {
+      return
+    }
+
+    onAvailabilityWindowsChange([...meeting.availabilityWindows, removedWindow])
+    setRemovedWindow(null)
+  }
+
+  function focusGridSlot(dayIndex: number, timeIndex: number) {
+    const nextDayIndex = Math.min(Math.max(dayIndex, 0), displayDays.length - 1)
+    const nextTimeIndex = Math.min(Math.max(timeIndex, 0), TIME_SLOT_MINUTES.length - 1)
+
+    setFocusedSlot({ dayIndex: nextDayIndex, timeIndex: nextTimeIndex })
+    gridRef.current
+      ?.querySelector<HTMLButtonElement>(`[data-availability-index="${nextTimeIndex}-${nextDayIndex}"]`)
+      ?.focus()
+  }
+
+  function handleGridKeyDown(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    dayIndex: number,
+    timeIndex: number,
+  ) {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      focusGridSlot(dayIndex + 1, timeIndex)
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      focusGridSlot(dayIndex - 1, timeIndex)
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      focusGridSlot(dayIndex, timeIndex + 1)
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      focusGridSlot(dayIndex, timeIndex - 1)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelRangeSelection()
+    }
+  }
+
+  function changeWeek(offset: number) {
+    const nextDate = activeDate.add({ weeks: offset })
+
+    if (nextDate.compare(windowStartDate) < 0) {
+      setSelectedDate(windowStartDate)
+    } else if (nextDate.compare(windowEndDate) > 0) {
+      setSelectedDate(windowEndDate)
+    } else {
+      setSelectedDate(nextDate)
+    }
+  }
+
+  function renderSelectedWindows(className = '') {
+    return (
+      <section
+        className={`selected-candidates ${className}`.trim()}
+        aria-labelledby={`selected-window-title-${isMobile ? 'mobile' : 'desktop'}`}
+      >
+        <div className="selected-candidates__head">
+          <h2 id={`selected-window-title-${isMobile ? 'mobile' : 'desktop'}`}>
+            가능한 시간대
+          </h2>
+          <strong>{meeting.availabilityWindows.length}개</strong>
+        </div>
+        {meeting.availabilityWindows.length > 0 ? (
+          <div className="selected-candidates__list">
+            {meeting.availabilityWindows.map((window) => {
+              const isActive = activeWindowId === window.id
+
+              return (
+                <div
+                  className={`selected-candidate-item${isActive ? ' is-active' : ''}`}
+                  key={window.id}
+                >
+                  <div className="selected-candidate-row">
+                    <span aria-hidden="true"><Check size={15} strokeWidth={3} /></span>
+                    <strong>{formatAvailabilityWindow(window)}</strong>
+                    <button
+                      className="selected-candidate-manage"
+                      type="button"
+                      aria-expanded={isActive}
+                      onClick={() => setActiveWindowId(isActive ? null : window.id)}
+                    >
+                      관리
+                    </button>
+                  </div>
+                  {isActive ? (
+                    <div className="selected-candidate-actions" aria-label="가능한 시간대 관리">
+                      <button type="button" onClick={() => startEditingWindow(window)}>
+                        다시 선택
+                      </button>
+                      <button
+                        className="is-danger"
+                        type="button"
+                        onClick={() => removeAvailabilityWindow(window)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="selected-candidates__empty">아직 가능한 시간대가 없어요.</p>
+        )}
+      </section>
+    )
+  }
+
+  const weekEnd = displayDays[displayDays.length - 1]
+  const weekLabel = `${koreanShortDateFormatter.format(toLocalDate(weekStart))} - ${koreanShortDateFormatter.format(toLocalDate(weekEnd))}`
+  const cannotGoPrevious = weekStart.compare(firstWindowWeek) <= 0
+  const cannotGoNext = weekStart.compare(lastWindowWeek) >= 0
+
+  return (
+    <div className="time-picker availability-picker">
+      <div className="time-picker__status">
+        <div>
+          <span>가능한 시간대</span>
+          <strong>{meeting.availabilityWindows.length}개</strong>
+        </div>
+        <span>{formatMeetingDuration(meeting.durationMinutes)} 회의 후보를 계산해요</span>
+      </div>
+
+      <div className="time-picker__toolbar">
+        <div className="time-picker__week-navigation" aria-label="주간 이동">
+          <button type="button" aria-label="이전 주" disabled={cannotGoPrevious} onClick={() => changeWeek(-1)}>
+            <ChevronLeft size={20} />
+          </button>
+          <strong>{weekLabel}</strong>
+          <button type="button" aria-label="다음 주" disabled={cannotGoNext} onClick={() => changeWeek(1)}>
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+
+      {anchor != null ? (
+        <div className="candidate-move-banner" role="status">
+          <div>
+            <strong>시간대의 반대쪽 끝을 선택하세요</strong>
+            <span>최소 {formatMeetingDuration(meeting.durationMinutes)} 이상 선택할 수 있어요.</span>
+          </div>
+          <button type="button" onClick={cancelRangeSelection}>취소</button>
+        </div>
+      ) : null}
+
+      {isMobile ? (
+        <div className="mobile-time-picker">
+          <div className="mobile-date-strip" aria-label="날짜 선택">
+            {displayDays.map((date) => {
+              const isSelectedDate = date.compare(activeDate) === 0
+              const count = countWindowsForDate(date)
+
+              return (
+                <button
+                  key={date.toString()}
+                  className={isSelectedDate ? 'is-selected' : ''}
+                  type="button"
+                  disabled={isOutsideWindow(date)}
+                  onClick={() => setSelectedDate(date)}
+                >
+                  <span>{koreanWeekdayFormatter.format(toLocalDate(date))}</span>
+                  <strong>{date.day}</strong>
+                  {count > 0 ? <small>{count}</small> : null}
+                </button>
+              )
+            })}
+          </div>
+          <section className="mobile-time-slots" aria-labelledby="mobile-availability-title">
+            <h2 id="mobile-availability-title">시간대의 시작과 끝을 차례로 선택하세요</h2>
+            <div className="mobile-time-slot-list mobile-availability-list">
+              {TIME_SLOT_MINUTES.map((startMinutes) => {
+                const selectedWindow = windowOccupyingSlot(activeDate, startMinutes)
+                return (
+                  <button
+                    key={startMinutes}
+                    className={selectedWindow != null ? 'is-selected' : ''}
+                    type="button"
+                    aria-pressed={selectedWindow != null}
+                    onClick={() => chooseBoundary(activeDate, startMinutes)}
+                  >
+                    <span>{formatTimeOfDay(startMinutes)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+          {renderSelectedWindows('selected-candidates--mobile')}
+        </div>
+      ) : (
+        <div className="time-picker__workspace">
+          <div
+            ref={gridRef}
+            className="week-time-grid"
+            role="grid"
+            aria-label={`${weekLabel} 가능한 시간대 선택`}
+            onMouseLeave={() => {
+              if (anchor == null) setPreview(null)
+            }}
+          >
+            <div className="week-time-grid__header" role="row">
+              <span aria-hidden="true" />
+              {displayDays.map((date) => {
+                const count = countWindowsForDate(date)
+                return (
+                  <div key={date.toString()} role="columnheader">
+                    <span>{koreanWeekdayFormatter.format(toLocalDate(date))}</span>
+                    <strong>{date.day}</strong>
+                    {count > 0 ? <small>{count}</small> : null}
+                  </div>
+                )
+              })}
+            </div>
+
+            {TIME_SLOT_MINUTES.map((startMinutes, timeIndex) => (
+              <div className="week-time-grid__row" role="row" key={startMinutes}>
+                <span role="rowheader">{formatTimeOfDay(startMinutes)}</span>
+                {displayDays.map((date, dayIndex) => {
+                  const selectedWindow = windowOccupyingSlot(date, startMinutes)
+                  const selectedStart = selectedWindow == null ? null : new Date(selectedWindow.startAt)
+                  const selectedEnd = selectedWindow == null ? null : new Date(selectedWindow.endAt)
+                  const slotStart = toLocalDate(date, startMinutes)
+                  const slotEnd = toLocalDate(date, startMinutes + TIME_QUANTUM_MINUTES)
+                  const isBlockStart = selectedStart?.getTime() === slotStart.getTime()
+                  const isBlockEnd = selectedEnd != null && slotEnd.getTime() >= selectedEnd.getTime()
+                  const previewStartsHere =
+                    preview != null &&
+                    preview.date.compare(date) === 0 &&
+                    preview.startMinutes === startMinutes
+                  const className = [
+                    selectedWindow != null ? 'is-selected' : '',
+                    selectedWindow != null && isBlockStart ? 'is-block-start' : '',
+                    selectedWindow != null && !isBlockStart && !isBlockEnd ? 'is-block-middle' : '',
+                    selectedWindow != null && isBlockEnd ? 'is-block-end' : '',
+                    previewStartsHere ? 'is-preview-start' : '',
+                  ].filter(Boolean).join(' ')
+                  const slotCount = isBlockStart && selectedWindow != null
+                    ? (new Date(selectedWindow.endAt).getTime() - new Date(selectedWindow.startAt).getTime()) / (TIME_QUANTUM_MINUTES * 60 * 1000)
+                    : previewStartsHere && preview != null
+                      ? (preview.endMinutes - preview.startMinutes) / TIME_QUANTUM_MINUTES
+                      : null
+
+                  return (
+                    <div role="gridcell" key={`${date.toString()}-${startMinutes}`}>
+                      <button
+                        className={className}
+                        style={slotCount == null ? undefined : ({ '--candidate-slot-count': slotCount } as CSSProperties)}
+                        type="button"
+                        data-availability-index={`${timeIndex}-${dayIndex}`}
+                        tabIndex={focusedSlot.dayIndex === dayIndex && focusedSlot.timeIndex === timeIndex ? 0 : -1}
+                        aria-pressed={selectedWindow != null}
+                        aria-label={`${koreanDateFormatter.format(toLocalDate(date))} ${formatTimeOfDay(startMinutes)}${selectedWindow != null ? `, ${formatAvailabilityWindow(selectedWindow)} 가능한 시간대에 포함됨` : ', 시간대 경계로 선택'}`}
+                        disabled={isOutsideWindow(date)}
+                        onFocus={() => {
+                          setFocusedSlot({ dayIndex, timeIndex })
+                          if (selectedWindow == null) previewFrom(date, startMinutes)
+                        }}
+                        onMouseEnter={() => {
+                          if (selectedWindow == null || anchor != null) previewFrom(date, startMinutes)
+                        }}
+                        onKeyDown={(event) => handleGridKeyDown(event, dayIndex, timeIndex)}
+                        onClick={() => chooseBoundary(date, startMinutes)}
+                      >
+                        {isBlockStart ? (
+                          <span className="candidate-block-content"><Check size={18} strokeWidth={3} /></span>
+                        ) : null}
+                      </button>
+                      {isBlockStart && selectedWindow != null ? (
+                        <div className="candidate-block-remove">
+                          <button
+                            type="button"
+                            aria-label={`${formatAvailabilityWindow(selectedWindow)} 시간대 삭제`}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              removeAvailabilityWindow(selectedWindow)
+                            }}
+                          >
+                            <X aria-hidden="true" size={13} strokeWidth={2.5} />
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+          {renderSelectedWindows('selected-candidates--desktop')}
+        </div>
+      )}
+
+      {removedWindow != null ? (
+        <div className="candidate-undo" role="status" aria-live="polite">
+          <span>{formatAvailabilityWindow(removedWindow)} 시간대를 삭제했어요.</span>
+          <button type="button" onClick={undoRemoveWindow}>실행 취소</button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+export function TimeCandidatePicker({
   meeting,
   onCandidatesChange,
 }: {
@@ -1498,6 +2092,13 @@ function TimeCandidatePicker({
       : selectedDate
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [focusedSlot, setFocusedSlot] = useState({ dayIndex: 0, timeIndex: 0 })
+  const [previewSlot, setPreviewSlot] = useState<{
+    date: CalendarDate
+    startMinutes: number
+  } | null>(null)
+  const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null)
+  const [movingCandidateId, setMovingCandidateId] = useState<string | null>(null)
+  const [removedCandidate, setRemovedCandidate] = useState<Candidate | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const weekStart = useMemo(() => startOfWeek(activeDate, 'ko-KR', 'mon'), [activeDate])
   const firstWindowWeek = useMemo(
@@ -1509,30 +2110,110 @@ function TimeCandidatePicker({
     () => Array.from({ length: 7 }, (_, index) => weekStart.add({ days: index })),
     [weekStart],
   )
+  const trailingTimeSlots = useMemo(
+    () =>
+      Array.from(
+        { length: Math.max(0, meeting.durationMinutes / TIME_QUANTUM_MINUTES - 1) },
+        (_, index) => TIME_GRID_END_MINUTES + index * TIME_QUANTUM_MINUTES,
+      ),
+    [meeting.durationMinutes],
+  )
   const candidatesByStart = useMemo(
     () =>
       new Map(
-        meeting.candidates.map((candidate) => [new Date(candidate.startAt).getTime(), candidate]),
+        meeting.candidates
+          .filter((candidate) => candidate.id !== movingCandidateId)
+          .map((candidate) => [new Date(candidate.startAt).getTime(), candidate]),
       ),
-    [meeting.candidates],
+    [meeting.candidates, movingCandidateId],
   )
 
   function candidateFor(date: CalendarDate, startMinutes: number) {
     return candidatesByStart.get(toLocalDate(date, startMinutes).getTime())
   }
 
-  function toggleCandidate(date: CalendarDate, startMinutes: number) {
-    const existingCandidate = candidateFor(date, startMinutes)
+  function candidateOccupyingSlot(date: CalendarDate, slotStartMinutes: number) {
+    const slotStart = toLocalDate(date, slotStartMinutes).getTime()
+
+    return meeting.candidates.find((candidate) => {
+      if (candidate.id === movingCandidateId) {
+        return false
+      }
+
+      const candidateStart = new Date(candidate.startAt).getTime()
+      const candidateEnd = new Date(candidate.endAt).getTime()
+
+      return candidateStart <= slotStart && slotStart < candidateEnd
+    })
+  }
+
+  function overlappingCandidateFor(date: CalendarDate, startMinutes: number) {
+    const candidateStart = toLocalDate(date, startMinutes).getTime()
+    const candidateEnd = candidateStart + meeting.durationMinutes * 60 * 1000
+
+    return meeting.candidates.find((candidate) => {
+      if (candidate.id === movingCandidateId) {
+        return false
+      }
+
+      const existingStart = new Date(candidate.startAt).getTime()
+      const existingEnd = new Date(candidate.endAt).getTime()
+
+      return candidateStart < existingEnd && candidateEnd > existingStart
+    })
+  }
+
+  function candidateWouldOverlap(date: CalendarDate, startMinutes: number) {
+    return overlappingCandidateFor(date, startMinutes) != null
+  }
+
+  function candidateFitsGrid(startMinutes: number) {
+    return startMinutes >= TIME_GRID_START_MINUTES && startMinutes < TIME_GRID_END_MINUTES
+  }
+
+  function chooseCandidateSlot(date: CalendarDate, startMinutes: number) {
+    const existingCandidate = candidateOccupyingSlot(date, startMinutes)
 
     if (existingCandidate) {
-      onCandidatesChange(
-        meeting.candidates.filter((candidate) => candidate.id !== existingCandidate.id),
+      setActiveCandidateId((currentId) =>
+        currentId === existingCandidate.id ? null : existingCandidate.id,
       )
+      setPreviewSlot(null)
+      return
+    }
+
+    if (!candidateFitsGrid(startMinutes) || candidateWouldOverlap(date, startMinutes)) {
       return
     }
 
     const start = toLocalDate(date, startMinutes)
     const end = new Date(start.getTime() + meeting.durationMinutes * 60 * 1000)
+    const movingCandidate = meeting.candidates.find(
+      (candidate) => candidate.id === movingCandidateId,
+    )
+
+    if (movingCandidate != null) {
+      const movedCandidate = {
+        ...movingCandidate,
+        startAt: start.toISOString(),
+        endAt: end.toISOString(),
+      }
+      onCandidatesChange(
+        meeting.candidates
+          .map((candidate) =>
+            candidate.id === movingCandidate.id ? movedCandidate : candidate,
+          )
+          .sort(
+            (left, right) =>
+              new Date(left.startAt).getTime() - new Date(right.startAt).getTime(),
+          ),
+      )
+      setMovingCandidateId(null)
+      setActiveCandidateId(null)
+      setPreviewSlot(null)
+      return
+    }
+
     const nextCandidate: Candidate = {
       id: `c-${start.getTime()}`,
       meetingId: meeting.id,
@@ -1545,10 +2226,72 @@ function TimeCandidatePicker({
         (left, right) => new Date(left.startAt).getTime() - new Date(right.startAt).getTime(),
       ),
     )
+    setPreviewSlot(null)
   }
 
   function removeCandidate(candidateId: string) {
+    const candidate = meeting.candidates.find((item) => item.id === candidateId)
+
+    if (candidate == null) {
+      return
+    }
+
+    setRemovedCandidate(candidate)
     onCandidatesChange(meeting.candidates.filter((candidate) => candidate.id !== candidateId))
+    setActiveCandidateId(null)
+    if (movingCandidateId === candidateId) {
+      setMovingCandidateId(null)
+      setPreviewSlot(null)
+    }
+  }
+
+  function undoRemoveCandidate() {
+    if (removedCandidate == null) {
+      return
+    }
+
+    onCandidatesChange(
+      [...meeting.candidates, removedCandidate].sort(
+        (left, right) => new Date(left.startAt).getTime() - new Date(right.startAt).getTime(),
+      ),
+    )
+    setRemovedCandidate(null)
+  }
+
+  function startMovingCandidate(candidate: Candidate) {
+    const start = new Date(candidate.startAt)
+
+    setMovingCandidateId(candidate.id)
+    setActiveCandidateId(null)
+    setPreviewSlot({
+      date: toCalendarDate(start),
+      startMinutes: start.getHours() * 60 + start.getMinutes(),
+    })
+  }
+
+  function cancelMovingCandidate() {
+    setMovingCandidateId(null)
+    setPreviewSlot(null)
+  }
+
+  function previewCandidate(date: CalendarDate, startMinutes: number) {
+    if (
+      isOutsideWindow(date) ||
+      !candidateFitsGrid(startMinutes) ||
+      candidateWouldOverlap(date, startMinutes)
+    ) {
+      return
+    }
+
+    setPreviewSlot({ date, startMinutes })
+  }
+
+  function isPreviewStart(date: CalendarDate, startMinutes: number) {
+    return (
+      previewSlot != null &&
+      previewSlot.date.compare(date) === 0 &&
+      previewSlot.startMinutes === startMinutes
+    )
   }
 
   function selectCalendarDate(value: DateValue) {
@@ -1605,6 +2348,10 @@ function TimeCandidatePicker({
     } else if (event.key === 'End') {
       event.preventDefault()
       focusGridSlot(displayDays.length - 1, timeIndex)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      setActiveCandidateId(null)
+      cancelMovingCandidate()
     }
   }
 
@@ -1635,22 +2382,51 @@ function TimeCandidatePicker({
         </div>
         {meeting.candidates.length > 0 ? (
           <div className="selected-candidates__list">
-            {meeting.candidates.map((candidate) => (
-              <div className="selected-candidate-row" key={candidate.id}>
-                <span aria-hidden="true">
-                  <Check size={15} strokeWidth={3} />
-                </span>
-                <strong>{formatCandidateTime(candidate)}</strong>
-                <button
-                  type="button"
-                  aria-label={`${formatCandidateTime(candidate)} 삭제`}
-                  title="선택 해제"
-                  onClick={() => removeCandidate(candidate.id)}
+            {meeting.candidates.map((candidate) => {
+              const isActive = activeCandidateId === candidate.id
+              const isMoving = movingCandidateId === candidate.id
+
+              return (
+                <div
+                  className={`selected-candidate-item${isActive ? ' is-active' : ''}`}
+                  key={candidate.id}
                 >
-                  <X size={17} />
-                </button>
-              </div>
-            ))}
+                  <div className="selected-candidate-row">
+                    <span aria-hidden="true">
+                      <Check size={15} strokeWidth={3} />
+                    </span>
+                    <strong>
+                      {formatCandidateTime(candidate)}
+                      {isMoving ? <small>변경할 시간을 선택하는 중</small> : null}
+                    </strong>
+                    <button
+                      className="selected-candidate-manage"
+                      type="button"
+                      aria-label={`${formatCandidateTime(candidate)} 관리`}
+                      aria-expanded={isActive}
+                      title="시간 관리"
+                      onClick={() => setActiveCandidateId(isActive ? null : candidate.id)}
+                    >
+                      관리
+                    </button>
+                  </div>
+                  {isActive ? (
+                    <div className="selected-candidate-actions" aria-label="후보 시간 관리">
+                      <button type="button" onClick={() => startMovingCandidate(candidate)}>
+                        시간 변경
+                      </button>
+                      <button
+                        className="is-danger"
+                        type="button"
+                        onClick={() => removeCandidate(candidate.id)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
           </div>
         ) : (
           <p className="selected-candidates__empty">아직 선택한 시간이 없어요.</p>
@@ -1749,6 +2525,18 @@ function TimeCandidatePicker({
         </p>
       ) : null}
 
+      {movingCandidateId != null ? (
+        <div className="candidate-move-banner" role="status">
+          <div>
+            <strong>시간을 옮길 곳을 선택하세요</strong>
+            <span>선택한 위치가 새 시작 시각이 되고, Esc를 누르면 취소됩니다.</span>
+          </div>
+          <button type="button" onClick={cancelMovingCandidate}>
+            취소
+          </button>
+        </div>
+      ) : null}
+
       {isMobile ? (
         <div className="mobile-time-picker">
           <div className="mobile-date-strip" aria-label="날짜 선택">
@@ -1783,18 +2571,42 @@ function TimeCandidatePicker({
               {TIME_SLOT_MINUTES.map((startMinutes) => {
                 const candidate = candidateFor(activeDate, startMinutes)
                 const isSelected = candidate != null
+                const overlappingCandidate = isSelected
+                  ? undefined
+                  : overlappingCandidateFor(activeDate, startMinutes)
+                const isOverlapBlocked = overlappingCandidate != null
+                const isDisabled = !candidateFitsGrid(startMinutes)
 
                 return (
                   <button
                     key={startMinutes}
-                    className={isSelected ? 'is-selected' : ''}
+                    className={[
+                      isSelected ? 'is-selected' : '',
+                      isOverlapBlocked ? 'is-overlap-blocked' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                     type="button"
                     aria-pressed={isSelected}
-                    onClick={() => toggleCandidate(activeDate, startMinutes)}
+                    aria-disabled={isOverlapBlocked || undefined}
+                    disabled={isDisabled}
+                    title={
+                      overlappingCandidate == null
+                        ? undefined
+                        : `${formatCandidateTime(overlappingCandidate)} 후보와 겹쳐요`
+                    }
+                    onClick={() => {
+                      if (!isOverlapBlocked) {
+                        chooseCandidateSlot(activeDate, startMinutes)
+                      }
+                    }}
                   >
                     <span>
                       {formatTimeOfDay(startMinutes)} -{' '}
                       {formatTimeOfDay(startMinutes + meeting.durationMinutes)}
+                      {overlappingCandidate != null ? (
+                        <small>{formatCandidateTime(overlappingCandidate)} 후보와 겹쳐요</small>
+                      ) : null}
                     </span>
                     {isSelected ? <Check size={18} strokeWidth={3} /> : null}
                   </button>
@@ -1813,7 +2625,20 @@ function TimeCandidatePicker({
             role="grid"
             aria-label={`${weekLabel} 후보 시간 선택`}
             aria-colcount={8}
-            aria-rowcount={TIME_SLOT_MINUTES.length + 1}
+            aria-rowcount={TIME_SLOT_MINUTES.length + trailingTimeSlots.length + 1}
+            onMouseLeave={() => {
+              if (movingCandidateId == null) {
+                setPreviewSlot(null)
+              }
+            }}
+            onBlur={(event) => {
+              if (
+                movingCandidateId == null &&
+                !event.currentTarget.contains(event.relatedTarget as Node)
+              ) {
+                setPreviewSlot(null)
+              }
+            }}
           >
             <div className="week-time-grid__header" role="row">
               <span aria-hidden="true" />
@@ -1839,15 +2664,48 @@ function TimeCandidatePicker({
               <div className="week-time-grid__row" role="row" key={startMinutes}>
                 <span role="rowheader">{formatTimeOfDay(startMinutes)}</span>
                 {displayDays.map((date, dayIndex) => {
-                  const candidate = candidateFor(date, startMinutes)
+                  const candidate = candidateOccupyingSlot(date, startMinutes)
                   const isSelected = candidate != null
-                  const isDisabled = isOutsideWindow(date)
+                  const previewStartsHere = isPreviewStart(date, startMinutes)
+                  const candidateStart = candidate == null ? null : new Date(candidate.startAt)
+                  const candidateEnd = candidate == null ? null : new Date(candidate.endAt)
+                  const slotStart = toLocalDate(date, startMinutes)
+                  const slotEnd = toLocalDate(date, startMinutes + TIME_QUANTUM_MINUTES)
+                  const isBlockStart = candidateStart?.getTime() === slotStart.getTime()
+                  const isBlockEnd = candidateEnd != null && slotEnd.getTime() >= candidateEnd.getTime()
+                  const overlappingCandidate = isSelected
+                    ? undefined
+                    : overlappingCandidateFor(date, startMinutes)
+                  const isOverlapBlocked = overlappingCandidate != null
+                  const isDisabled =
+                    isOutsideWindow(date) || !candidateFitsGrid(startMinutes)
                   const fullDate = koreanDateFormatter.format(toLocalDate(date))
+                  const className = [
+                    isSelected ? 'is-selected' : '',
+                    isSelected && isBlockStart ? 'is-block-start' : '',
+                    isSelected && !isBlockStart && !isBlockEnd ? 'is-block-middle' : '',
+                    isSelected && isBlockEnd ? 'is-block-end' : '',
+                    previewStartsHere ? 'is-preview-start' : '',
+                    isOverlapBlocked ? 'is-overlap-blocked' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+                  const selectedRange =
+                    candidate == null
+                      ? ''
+                      : `, ${formatTimeOfDay(candidateStart!.getHours() * 60 + candidateStart!.getMinutes())}부터 ${formatTimeOfDay(candidateEnd!.getHours() * 60 + candidateEnd!.getMinutes())}까지 선택된 후보에 포함됨`
+                  const blockStyle = isBlockStart || previewStartsHere
+                    ? ({
+                        '--candidate-slot-count':
+                          meeting.durationMinutes / TIME_QUANTUM_MINUTES,
+                      } as CSSProperties)
+                    : undefined
 
                   return (
                     <div role="gridcell" key={`${date.toString()}-${startMinutes}`}>
                       <button
-                        className={isSelected ? 'is-selected' : ''}
+                        className={className}
+                        style={blockStyle}
                         type="button"
                         data-grid-index={`${timeIndex}-${dayIndex}`}
                         tabIndex={
@@ -1855,18 +2713,77 @@ function TimeCandidatePicker({
                             ? 0
                             : -1
                         }
-                        aria-label={`${fullDate} ${formatTimeOfDay(startMinutes)}부터 ${formatTimeOfDay(startMinutes + meeting.durationMinutes)}까지${isSelected ? ', 선택됨' : ''}`}
+                        aria-label={`${fullDate} ${formatTimeOfDay(startMinutes)}${selectedRange || `부터 ${formatTimeOfDay(startMinutes + meeting.durationMinutes)}까지`}${isSelected ? ', 눌러서 시간 변경 또는 삭제' : ''}${overlappingCandidate != null ? `, ${formatCandidateTime(overlappingCandidate)} 후보와 겹쳐 선택할 수 없음` : ''}`}
                         aria-pressed={isSelected}
+                        aria-disabled={isOverlapBlocked || undefined}
                         disabled={isDisabled}
-                        onFocus={() => setFocusedSlot({ dayIndex, timeIndex })}
+                        title={
+                          overlappingCandidate == null
+                            ? undefined
+                            : `${formatCandidateTime(overlappingCandidate)} 후보와 겹쳐요`
+                        }
+                        onFocus={() => {
+                          setFocusedSlot({ dayIndex, timeIndex })
+                          if (!isSelected && !isDisabled && !isOverlapBlocked) {
+                            previewCandidate(date, startMinutes)
+                          } else {
+                            setPreviewSlot(null)
+                          }
+                        }}
+                        onMouseEnter={() => {
+                          if (!isSelected && !isDisabled && !isOverlapBlocked) {
+                            previewCandidate(date, startMinutes)
+                          } else {
+                            setPreviewSlot(null)
+                          }
+                        }}
                         onKeyDown={(event) => handleGridKeyDown(event, dayIndex, timeIndex)}
-                        onClick={() => toggleCandidate(date, startMinutes)}
+                        onClick={() => chooseCandidateSlot(date, startMinutes)}
                       >
-                        {isSelected ? <Check size={18} strokeWidth={3} /> : null}
+                        {isBlockStart ? (
+                          <span className="candidate-block-content">
+                            <Check size={18} strokeWidth={3} />
+                          </span>
+                        ) : null}
+                        {isOverlapBlocked ? (
+                          <span className="candidate-overlap-label">겹침</span>
+                        ) : null}
                       </button>
+                      {isBlockStart && candidate != null ? (
+                        <div className="candidate-block-remove">
+                          <button
+                            type="button"
+                            aria-label={`${formatCandidateTime(candidate)} 후보 삭제`}
+                            title="후보 시간 삭제"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              removeCandidate(candidate.id)
+                            }}
+                          >
+                            <X aria-hidden="true" size={13} strokeWidth={2.5} />
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   )
                 })}
+              </div>
+            ))}
+
+            {trailingTimeSlots.map((startMinutes) => (
+              <div
+                className="week-time-grid__row week-time-grid__row--tail"
+                role="row"
+                key={`tail-${startMinutes}`}
+              >
+                <span role="rowheader">{formatTimeOfDay(startMinutes)}</span>
+                {displayDays.map((date) => (
+                  <div
+                    aria-hidden="true"
+                    role="gridcell"
+                    key={`tail-${date.toString()}-${startMinutes}`}
+                  />
+                ))}
               </div>
             ))}
           </div>
@@ -1874,6 +2791,15 @@ function TimeCandidatePicker({
           {renderSelectedCandidates('selected-candidates--desktop')}
         </div>
       )}
+
+      {removedCandidate != null ? (
+        <div className="candidate-undo" role="status" aria-live="polite">
+          <span>{formatCandidateTime(removedCandidate)} 후보를 삭제했어요.</span>
+          <button type="button" onClick={undoRemoveCandidate}>
+            실행 취소
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -1893,6 +2819,7 @@ function CreateScreen({
   onParticipantAdd,
   onParticipantRemove,
   onCandidatesChange,
+  onAvailabilityWindowsChange,
   onCreateLink,
 }: {
   meeting: Meeting
@@ -1909,6 +2836,7 @@ function CreateScreen({
   onParticipantAdd: (name?: string) => void
   onParticipantRemove: (participantId: string) => void
   onCandidatesChange: (candidates: Candidate[]) => void
+  onAvailabilityWindowsChange: (windows: AvailabilityWindow[]) => void
   onCreateLink: () => void
 }) {
   const [createNow] = useState(() => new Date())
@@ -1959,7 +2887,7 @@ function CreateScreen({
     0,
     createSteps.findIndex((item) => item.id === step),
   )
-  const selectedTimeLabels = meeting.candidates.map(formatCandidateTime)
+  const selectedTimeLabels = meeting.availabilityWindows.map(formatAvailabilityWindow)
   const meetingPurpose = meeting.purpose.trim()
   const referenceMaterial = meeting.referenceMaterial?.trim() ?? ''
   const referenceItems = referenceMaterial
@@ -2007,13 +2935,15 @@ function CreateScreen({
     parsedCustomDuration >= MIN_CUSTOM_DURATION &&
     parsedCustomDuration <= MAX_CUSTOM_DURATION &&
     parsedCustomDuration % CUSTOM_DURATION_STEP === 0
-  const earliestCandidateStart = getEarliestCandidateStart(meeting.candidates)
+  const earliestAvailabilityStart = getEarliestAvailabilityStart(
+    meeting.availabilityWindows,
+  )
   const responseDeadlineTime = new Date(meeting.responseDeadline).getTime()
   const isResponseDeadlineValid =
-    earliestCandidateStart != null &&
+    earliestAvailabilityStart != null &&
     !Number.isNaN(responseDeadlineTime) &&
     responseDeadlineTime > createNow.getTime() &&
-    responseDeadlineTime < earliestCandidateStart.getTime()
+    responseDeadlineTime < earliestAvailabilityStart.getTime()
   const isRequiredSelectionMissing =
     attendeeDecisionMode === 'required' && requiredParticipants.length === 0
   const minimumAllowedAttendees = Math.max(1, requiredParticipants.length + 1)
@@ -2035,7 +2965,7 @@ function CreateScreen({
           ? timeStep === 'constraints'
             ? isTimeConstraintComplete
             : timeStep === 'candidates'
-              ? meeting.candidates.length > 0
+              ? meeting.availabilityWindows.length > 0
               : isResponseDeadlineValid
           : true
   const primaryActionLabel =
@@ -2045,11 +2975,11 @@ function CreateScreen({
         ? '회의 시간 정하기'
         : step === 'times'
           ? timeStep === 'constraints'
-            ? '후보 시간 고르기'
+            ? '가능한 시간대 고르기'
             : timeStep === 'candidates'
-              ? meeting.candidates.length > 0
-                ? `${meeting.candidates.length}개 후보로 계속`
-                : '후보 시간을 선택해 주세요'
+              ? meeting.availabilityWindows.length > 0
+                ? '시간대 선택 완료'
+                : '가능한 시간대를 선택해 주세요'
               : '요청 내용 확인하기'
           : '응답 링크 만들기'
   const isChoosingAttendees = step === 'attendees' && !areAttendeesFinalized
@@ -2319,15 +3249,8 @@ function CreateScreen({
         return
       }
 
-      const durationMinutes = meeting.durationMinutes
       const candidatesInWindow = meeting.candidates
         .filter((candidate) => candidateIsWithinWindow(candidate, meeting.schedulingWindow))
-        .map((candidate) => ({
-          ...candidate,
-          endAt: new Date(
-            new Date(candidate.startAt).getTime() + durationMinutes * 60 * 1000,
-          ).toISOString(),
-        }))
 
       onCandidatesChange(candidatesInWindow)
       setTimeStep('candidates')
@@ -2336,7 +3259,7 @@ function CreateScreen({
 
     if (step === 'times' && timeStep === 'candidates') {
       if (!isResponseDeadlineValid) {
-        const suggestedDeadline = suggestResponseDeadline(meeting.candidates)
+        const suggestedDeadline = suggestResponseDeadline(meeting.availabilityWindows)
 
         if (suggestedDeadline) {
           onResponseDeadlineChange(suggestedDeadline)
@@ -2963,14 +3886,14 @@ function CreateScreen({
             </div>
             <header className="time-create-stage__header">
               <h2 id="time-candidates-title" tabIndex={-1}>
-                후보 시간을 골라주세요
+                회의를 잡아도 되는 시간대를 알려주세요
               </h2>
-              <p>3~5개 정도 고르면 참석자가 비교해서 답하기 편해요.</p>
+              <p>정확한 시작 시각은 나중에 계산해요. 가능한 범위를 넓게 선택해 주세요.</p>
             </header>
             {meetingWithDuration != null ? (
-              <TimeCandidatePicker
+              <AvailabilityWindowPicker
                 meeting={meetingWithDuration}
-                onCandidatesChange={onCandidatesChange}
+                onAvailabilityWindowsChange={onAvailabilityWindowsChange}
               />
             ) : null}
           </section>
@@ -2985,9 +3908,10 @@ function CreateScreen({
         >
           <div className="time-step-summary">
             <div>
-              <span>보낼 후보</span>
+              <span>조율할 시간대</span>
               <strong>
-                {meeting.candidates.length}개 · {formatMeetingDuration(meeting.durationMinutes)}
+                {meeting.availabilityWindows.length}개 ·{' '}
+                {formatMeetingDuration(meeting.durationMinutes)} 확보
               </strong>
             </div>
             <button type="button" onClick={() => setTimeStep('candidates')}>
@@ -2998,7 +3922,7 @@ function CreateScreen({
             <h2 id="response-deadline-title" tabIndex={-1}>
               응답을 언제까지 받을까요?
             </h2>
-            <p>가장 이른 후보 시간이 오기 전에 참석자 응답을 모아요.</p>
+            <p>선택한 시간대가 시작되기 전에 참석자 응답을 모아요.</p>
           </header>
           <label className="field response-deadline-field">
             <span>응답 마감</span>
@@ -3007,29 +3931,23 @@ function CreateScreen({
               value={formatDateTimeLocalInput(meeting.responseDeadline)}
               min={formatDateTimeLocalInput(createNow)}
               max={
-                earliestCandidateStart == null
+                earliestAvailabilityStart == null
                   ? undefined
-                  : formatDateTimeLocalInput(earliestCandidateStart)
+                  : formatDateTimeLocalInput(earliestAvailabilityStart)
               }
               onChange={(event) =>
                 onResponseDeadlineChange(parseDateTimeLocalInput(event.target.value))
               }
             />
-            {earliestCandidateStart != null ? (
+            {earliestAvailabilityStart != null ? (
               <em>
-                가장 이른 후보:{' '}
-                {formatCandidateTime(
-                  meeting.candidates.find(
-                    (candidate) =>
-                      new Date(candidate.startAt).getTime() === earliestCandidateStart.getTime(),
-                  ) ?? meeting.candidates[0],
-                )}
+                첫 조율 시간대: {formatAvailabilityStart(earliestAvailabilityStart)}
               </em>
             ) : null}
           </label>
           {!isResponseDeadlineValid ? (
             <p className="time-create-stage__error" role="alert">
-              지금 이후이면서 가장 이른 후보 시간보다 앞선 시각을 선택해 주세요.
+              지금 이후이면서 첫 조율 시간대보다 앞선 시각을 선택해 주세요.
             </p>
           ) : null}
         </section>
@@ -3065,7 +3983,7 @@ function CreateScreen({
           value={formatSchedulingWindow(meeting.schedulingWindow)}
         />
         <SummaryLine label="회의 길이" value={formatMeetingDuration(meeting.durationMinutes)} />
-        <SummaryLine label="후보 시간" value={`${selectedTimeLabels.length}개`} />
+        <SummaryLine label="조율 가능 시간대" value={`${selectedTimeLabels.length}개`} />
         <SummaryLine label="응답 마감" value={formatDeadline(meeting.responseDeadline)} />
         <div className="create-review-participants">
           {invitedParticipants.map((participant) => (
@@ -3073,12 +3991,11 @@ function CreateScreen({
           ))}
         </div>
         <div className="create-review-list">
-          {selectedTimeLabels.map((label, index) => (
-            <CandidateMiniRow
-              key={label}
-              label={label}
+          {meeting.availabilityWindows.map((window, index) => (
+            <AvailabilityWindowMiniRow
+              key={window.id}
+              window={window}
               index={index + 1}
-              durationMinutes={meeting.durationMinutes}
             />
           ))}
         </div>
@@ -3472,6 +4389,26 @@ function CandidateMiniRow({
       <span>{index}</span>
       <strong>{label}</strong>
       <small>{formatMeetingDuration(durationMinutes)}</small>
+    </div>
+  )
+}
+
+function AvailabilityWindowMiniRow({
+  window,
+  index,
+}: {
+  window: AvailabilityWindow
+  index: number
+}) {
+  const minutes = Math.round(
+    (new Date(window.endAt).getTime() - new Date(window.startAt).getTime()) / 60_000,
+  )
+
+  return (
+    <div className="mini-row">
+      <span>{index}</span>
+      <strong>{formatAvailabilityWindow(window)}</strong>
+      <small>{formatMeetingDuration(minutes)} 범위</small>
     </div>
   )
 }

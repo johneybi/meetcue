@@ -18,6 +18,7 @@ dist-ssr
 !.local-docs/host-time-model-decision-v2.0.md
 !.local-docs/meeting-time-reservation-decision-v2.1.md
 !.local-docs/time-quantum-decision-v2.2.md
+!.local-docs/availability-window-model-decision-v2.3.md
 
 # Local product-making notes, reviews, audits, and agent artifacts
 .product-design-audit/

@@ -6,6 +6,8 @@
 - 실행 명세: `UX-ARCHITECTURE.md`
 - 제품 명세: `.local-docs/prd-v1.5.md`
 
+> 후속 결정: `.local-docs/availability-window-model-decision-v2.3.md`가 주최자의 정확한 후보 직접 선택과 참석자의 후보별 응답 계약을 대체한다. 주최자가 항상 참석하고 최종 결정을 내린다는 역할 계약은 유지된다.
+
 ## 1. 결정 배경
 
 회의 생성 흐름을 설계하면서 다음 개념이 섞여 있었다.

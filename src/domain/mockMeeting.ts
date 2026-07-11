@@ -92,6 +92,14 @@ export function createPrototypeMeeting(): Meeting {
     purpose: '출시 전 제품 리뷰 안건을 확인하고 최종 수정 범위를 정합니다.',
     referenceMaterial: '',
     participants,
+    availabilityWindows: candidates.map((candidate) => ({
+      id: `aw-${candidate.id}`,
+      meetingId,
+      ownerId: 'p-host',
+      startAt: candidate.startAt,
+      endAt: candidate.endAt,
+      state: 'available' as const,
+    })),
     candidates,
     responses,
     changeLogs: [
@@ -130,6 +138,7 @@ export function createDraftMeeting(): Meeting {
     minAttendeeCount: 1,
     status: 'draft',
     participants: [participant('p-host', '민지', 'required', 'completed')],
+    availabilityWindows: [],
     candidates: [],
     responses: [],
     changeLogs: [],

@@ -53,9 +53,19 @@ export interface Meeting {
   purpose: string
   referenceMaterial?: string
   participants: Participant[]
+  availabilityWindows: AvailabilityWindow[]
   candidates: Candidate[]
   responses: Response[]
   changeLogs: ChangeLog[]
+}
+
+export interface AvailabilityWindow {
+  id: string
+  meetingId: string
+  ownerId: string
+  startAt: string
+  endAt: string
+  state: 'available' | 'adjustable'
 }
 
 export interface SchedulingWindow {
