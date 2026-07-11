@@ -3,10 +3,7 @@ export type ParticipantRole = 'required' | 'optional'
 export type ResponseValue = 'available' | 'adjustable' | 'unavailable'
 
 export type ResponsePreferenceTag =
-  | 'avoid_if_possible'
-  | 'after_lunch'
-  | 'tight_schedule'
-  | 'travel'
+  'avoid_if_possible' | 'after_lunch' | 'tight_schedule' | 'travel'
 
 export type CandidateStatus = 'confirmable' | 'needs_adjustment' | 'waiting_required' | 'excluded'
 
@@ -31,7 +28,8 @@ export type MeetingIntent = 'decide' | 'review' | 'align' | 'unblock' | 'next_ac
 
 export type ResponseUpdateSource = 'initial' | 'participant_edit' | 'candidate_added'
 
-export type ChangeLogType = 'response_updated' | 'candidate_added' | 'request_copied'
+export type ChangeLogType =
+  'response_updated' | 'availability_extended' | 'candidate_added' | 'request_copied'
 
 export type MeetingStatus =
   'draft' | 'collecting' | 'confirmable' | 'confirmed' | 'needs_exploration'
@@ -53,9 +51,19 @@ export interface Meeting {
   purpose: string
   referenceMaterial?: string
   participants: Participant[]
+  availabilityWindows: AvailabilityWindow[]
   candidates: Candidate[]
   responses: Response[]
   changeLogs: ChangeLog[]
+}
+
+export interface AvailabilityWindow {
+  id: string
+  meetingId: string
+  ownerId: string
+  startAt: string
+  endAt: string
+  state: ResponseValue
 }
 
 export interface SchedulingWindow {
