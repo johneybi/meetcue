@@ -5,9 +5,11 @@
 - 적용 범위: 확정보드 P0
 - 선행 결정: `.local-docs/host-time-model-decision-v2.0.md`
 - 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v1.5.md`
+- 제품 명세: `.local-docs/prd-v2.0.md`
 
 > 후속 결정: 이 문서의 5분 단위 직접 입력과 45분 프리셋은 `.local-docs/time-quantum-decision-v2.2.md`의 30분 시간 최소 단위 결정으로 대체되었다. 일정 확보 시간의 의미는 유지된다.
+
+> 시간 입력 후속 결정: `.local-docs/availability-window-model-decision-v2.3.md`는 일정 확보 시간을 유지하되, 주최자가 정확한 시작 후보를 직접 고르는 대신 주최자와 참석자의 가용시간에서 후보를 계산한다.
 
 ## 1. 문제 제기
 

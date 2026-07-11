@@ -4,7 +4,9 @@
 - 결정일: 2026-07-10
 - 적용 범위: 확정보드 P0
 - 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v1.5.md`
+- 제품 명세: `.local-docs/prd-v2.0.md`
+
+> 후속 결정: `.local-docs/availability-window-model-decision-v2.3.md`가 주최자의 정확한 후보 직접 선택과 참석자의 후보별 응답 계약을 대체한다. 주최자가 항상 참석하고 최종 결정을 내린다는 역할 계약은 유지된다.
 
 ## 1. 결정 배경
 
@@ -147,7 +149,7 @@ P0에서는 A를 선택한다.
 - `prd-v1.4.md`: 후보 시간 최대 5개 입력을 P0 하드 제한으로 둔 방향
 - 기존 `UX-ARCHITECTURE.md`: 후보 최대 5개 계약
 
-과거 문서는 사고 이력을 위해 보존한다. 실행 시에는 `prd-v1.5.md`와 갱신된 `UX-ARCHITECTURE.md`를 따른다.
+과거 문서는 사고 이력을 위해 보존한다. 실행 시에는 `prd-v2.0.md`와 갱신된 `UX-ARCHITECTURE.md`를 따른다.
 
 ## 12. 아직 확정하지 않은 문제
 

@@ -35,14 +35,15 @@ npm run build
 
 Use these sources in order:
 
-1. `.local-docs/prd-v1.5.md` for product scope and requirements
+1. `.local-docs/prd-v2.0.md` for product scope and requirements
 2. `UX-ARCHITECTURE.md` for IA, state, layout, navigation, and responsive behavior
 3. `DESIGN.md` for TDS-inspired visual language and component treatment
 
 Older IA, create-flow, layout-strategy, research, and QA documents are decision records rather
 than current implementation instructions.
 
-The accepted host and time-model rationale is recorded in
+The availability-window model and its relationship to the earlier decisions are recorded in
+`.local-docs/availability-window-model-decision-v2.3.md`. The accepted host rationale is recorded in
 `.local-docs/host-time-model-decision-v2.0.md`. The distinction between actual meeting end time
 and the time participants reserve is recorded in
 `.local-docs/meeting-time-reservation-decision-v2.1.md`. The P0 30-minute time quantum is
@@ -51,9 +52,9 @@ recorded in `.local-docs/time-quantum-decision-v2.2.md`.
 The core model is:
 
 - participant roles: `required` / `optional`
-- host: always attends, proposes host-available candidates, and makes the final decision
-- time model: meeting window + 30-minute-quantized reserved duration → exact candidates → response deadline
-- response values: `available` / `adjustable` / `unavailable`
+- host: always attends, opens host-available windows, and makes the final decision
+- time model: meeting window + reserved duration + availability windows → derived candidates → response deadline
+- response values: 30-minute availability cells with `available` / `adjustable` / `unavailable`
 - candidate states: `confirmable` / `needs_adjustment` / `waiting_required` / `excluded`
 
 ## ASTRYX
