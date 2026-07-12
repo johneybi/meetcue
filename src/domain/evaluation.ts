@@ -107,6 +107,51 @@ export function groupCandidateEvaluations(
   )
 }
 
+export function selectCandidateShortlist(
+  evaluations: CandidateEvaluation[],
+  limit = 6,
+): CandidateEvaluation[] {
+  if (limit <= 0 || evaluations.length === 0) return []
+
+  const rankById = new Map(evaluations.map((evaluation, index) => [evaluation.candidate.id, index]))
+  const representatives = groupCandidateEvaluations(evaluations)
+    .map((group) =>
+      group.evaluations.reduce((best, evaluation) =>
+        (rankById.get(evaluation.candidate.id) ?? Number.MAX_SAFE_INTEGER) <
+        (rankById.get(best.candidate.id) ?? Number.MAX_SAFE_INTEGER)
+          ? evaluation
+          : best,
+      ),
+    )
+    .sort(
+      (left, right) =>
+        (rankById.get(left.candidate.id) ?? Number.MAX_SAFE_INTEGER) -
+        (rankById.get(right.candidate.id) ?? Number.MAX_SAFE_INTEGER),
+    )
+
+  const shortlist: CandidateEvaluation[] = []
+  const selectedIds = new Set<string>()
+  const selectedDates = new Set<string>()
+
+  for (const evaluation of representatives) {
+    const dateKey = candidateDateKey(evaluation.candidate.startAt)
+    if (selectedDates.has(dateKey)) continue
+    shortlist.push(evaluation)
+    selectedIds.add(evaluation.candidate.id)
+    selectedDates.add(dateKey)
+    if (shortlist.length === limit) return shortlist
+  }
+
+  for (const evaluation of representatives) {
+    if (selectedIds.has(evaluation.candidate.id)) continue
+    shortlist.push(evaluation)
+    selectedIds.add(evaluation.candidate.id)
+    if (shortlist.length === limit) break
+  }
+
+  return shortlist
+}
+
 export function generateConfirmationMessage(meeting: Meeting, evaluation: CandidateEvaluation) {
   const time = formatShortTime(evaluation.candidate)
   const adjustmentNotice =
@@ -114,7 +159,7 @@ export function generateConfirmationMessage(meeting: Meeting, evaluation: Candid
       ? `\n${names(evaluation.adjustmentCommitParticipants)}님은 조정해서 참석 가능하다고 표시한 시간이에요.`
       : ''
 
-  return `${meeting.title}은 ${time}에 진행할게요.${adjustmentNotice}`
+  return `회의 ‘${meeting.title}’는 ${time}에 진행할게요.${adjustmentNotice}`
 }
 
 export function generateResponseRequestMessage(
@@ -133,7 +178,7 @@ export function generateResponseRequestMessage(
         : selectableParticipants.filter((participant) => recipientIds.includes(participant.id))
     const recipientCopy = recipients.length > 0 ? `${names(recipients)}님, ` : ''
 
-    return `${recipientCopy}${meeting.title} 시간을 정하려고 해요.\n${formatShortTime(evaluation.candidate)}\n이 시간에 참석할 수 있는지 기존 링크에서 알려주세요.`
+    return `${recipientCopy}${meeting.title} 시간을 정하려고 해요.\n${formatShortTime(evaluation.candidate)}\n받은 요청에서 이 시간에 참석할 수 있는지 알려주세요.`
   }
 
   if (evaluation.status === 'impossible') {
@@ -237,7 +282,7 @@ function buildReasons(
       reasons.push(`${decision.adjustmentCommitIds.length}명은 다른 일정을 조정해 참석해요.`)
     }
     if (decision.unknownIds.length > 0) {
-      reasons.push('미응답자가 있지만 현재 응답만으로 기준을 충족해요.')
+      reasons.push('아직 응답하지 않은 사람이 있지만 현재 응답만으로 참석 기준을 충족해요.')
     }
     return reasons
   }
@@ -263,7 +308,9 @@ function buildReasons(
     )
   }
   if (decision.deadlinePassed) {
-    reasons.push('응답 마감이 지났지만 미응답은 어려움으로 처리하지 않아요.')
+    reasons.push(
+      '응답 마감이 지났지만 아직 응답하지 않은 사람을 참석하기 어려운 상태로 처리하지 않아요.',
+    )
   }
   return reasons
 }
@@ -331,19 +378,28 @@ function formatShortTime(candidate: Candidate) {
     weekday: 'long',
     month: 'numeric',
     day: 'numeric',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false,
+    hour12: true,
     timeZone: 'Asia/Seoul',
   }).format(start)
   const endTime = new Intl.DateTimeFormat('ko-KR', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false,
+    hour12: true,
     timeZone: 'Asia/Seoul',
   }).format(end)
 
   return `${date}-${endTime}`
+}
+
+function candidateDateKey(startAt: string) {
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Asia/Seoul',
+  }).format(new Date(startAt))
 }
 
 function isParticipant(participant: Participant | undefined): participant is Participant {

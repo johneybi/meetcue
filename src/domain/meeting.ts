@@ -103,14 +103,14 @@ export interface ChangeLog {
 }
 
 export const participantRoleLabels: Record<ParticipantRole, string> = {
-  required: '꼭 필요',
+  required: '필수 참석자',
   optional: '참석 권장',
 }
 
 export const responseValueLabels: Record<ResponseValue, string> = {
   available: '가능해요',
-  adjustable: '정해지면 일정을 조정해 참석할게요',
-  unavailable: '어려워요',
+  adjustable: '조정하면 가능해요',
+  unavailable: '참석하기 어려워요',
 }
 
 export const responseValueDescriptions: Record<ResponseValue, string> = {
@@ -167,15 +167,15 @@ export function formatCandidateTime(candidate: Candidate) {
   }).format(start)
   const startTime = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false,
+    hour12: true,
   }).format(start)
   const endTime = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false,
+    hour12: true,
   }).format(end)
 
   return `${day} ${startTime}-${endTime}`
@@ -187,9 +187,9 @@ export function formatDeadline(deadline: string) {
     weekday: 'short',
     month: 'numeric',
     day: 'numeric',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false,
+    hour12: true,
   }).format(new Date(deadline))
 }
 

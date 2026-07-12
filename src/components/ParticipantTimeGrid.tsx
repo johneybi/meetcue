@@ -52,9 +52,9 @@ const dayFormatter = new Intl.DateTimeFormat('ko-KR', {
 })
 const clockFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
-  hour: '2-digit',
+  hour: 'numeric',
   minute: '2-digit',
-  hour12: false,
+  hour12: true,
 })
 
 function minutesOfDay(date: Date) {
@@ -72,7 +72,9 @@ function minutesOfDay(date: Date) {
 function formatMinutes(minutes: number) {
   const hour = Math.floor(minutes / 60)
   const minute = minutes % 60
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+  const period = hour < 12 ? '오전' : '오후'
+  const displayHour = hour % 12 || 12
+  return `${period} ${displayHour}:${String(minute).padStart(2, '0')}`
 }
 
 function slotClockRange(slot: AvailabilitySlot) {

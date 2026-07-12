@@ -4,6 +4,7 @@ import {
   evaluateCandidates,
   generateResponseRequestMessage,
   groupCandidateEvaluations,
+  selectCandidateShortlist,
 } from '../src/domain/evaluation.ts'
 import { createPrototypeMeeting } from '../src/domain/mockMeeting.ts'
 
@@ -67,6 +68,36 @@ test('prototype data exposes required, optional-pool, combined, ready, and impos
         group.evaluations.some((evaluation) => evaluation.candidate.id === 'c-thu-1000') &&
         group.evaluations.some((evaluation) => evaluation.candidate.id === 'c-thu-1030'),
     ),
+  )
+})
+
+test('shortlists diverse dates and collapses adjacent equivalent candidates', () => {
+  const source = evaluateCandidates(createPrototypeMeeting(), new Date())[0]
+  assert.ok(source)
+
+  const starts = [
+    '2026-07-13T00:00:00.000Z',
+    '2026-07-13T00:30:00.000Z',
+    '2026-07-14T00:00:00.000Z',
+    '2026-07-14T00:30:00.000Z',
+    '2026-07-15T00:00:00.000Z',
+    '2026-07-15T00:30:00.000Z',
+  ]
+  const evaluations = starts.map((startAt, index) => ({
+    ...source,
+    candidate: {
+      ...source.candidate,
+      id: `candidate-${index}`,
+      startAt,
+      endAt: new Date(new Date(startAt).getTime() + 60 * 60 * 1000).toISOString(),
+    },
+  }))
+
+  const shortlist = selectCandidateShortlist(evaluations, 6)
+
+  assert.deepEqual(
+    shortlist.map((evaluation) => evaluation.candidate.id),
+    ['candidate-0', 'candidate-2', 'candidate-4'],
   )
 })
 
