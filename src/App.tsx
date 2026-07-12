@@ -5173,7 +5173,6 @@ function ParticipantShell({
   const [hasChosenResponseBaseline, setHasChosenResponseBaseline] = useState(
     () => participant.responseStatus !== 'not_started' || draftWindows.length > 0,
   )
-  const [isManualSetupOpen, setIsManualSetupOpen] = useState(false)
   const [participantInputSource, setParticipantInputSource] =
     useState<ParticipantInputSource | null>(() =>
       participant.responseStatus !== 'not_started' || draftWindows.length > 0 ? 'existing' : null,
@@ -5214,12 +5213,11 @@ function ParticipantShell({
   const referenceMaterial = meeting.referenceMaterial?.trim()
   const deadlinePassed = new Date(meeting.responseDeadline).getTime() <= now.getTime()
 
-  function applyResponseBaseline(state: ResponseValue) {
-    setDraftWindows((currentWindows) =>
-      fillAvailabilitySlots(currentWindows, participant.id, slots, state, meeting.id),
-    )
+  function startManualEntry() {
+    setDraftWindows([])
     setHasChosenResponseBaseline(true)
     setParticipantInputSource('manual')
+    setManuallyEditedSlotStarts(new Set())
     setEditorStatus('draft')
     setIsSaveConfirmationOpen(false)
   }
@@ -5246,7 +5244,6 @@ function ParticipantShell({
       return nextWindows
     })
     setHasChosenResponseBaseline(true)
-    setIsManualSetupOpen(false)
     setParticipantInputSource('calendar')
     setManuallyEditedSlotStarts(new Set())
     setEditorStatus('draft')
@@ -5290,11 +5287,11 @@ function ParticipantShell({
       >
         <section className="respond-hero" aria-label="응답 안내">
           <div>
-            <span className="respond-eyebrow">{meeting.title}</span>
-            <h1>{getParticipantTitle(state, participant)}</h1>
+            <span className="respond-eyebrow">회의 요청</span>
+            <h1>{meeting.title}</h1>
             <div className="respond-meeting-overview">
-              <span>요청자: {meeting.hostLabel}</span>
               <strong>{meeting.purpose}</strong>
+              <span>요청자: {meeting.hostLabel}</span>
               {referenceMaterial ? <small>참고 출처: {referenceMaterial}</small> : null}
             </div>
           </div>
@@ -5339,32 +5336,26 @@ function ParticipantShell({
           data-submission-status={editorStatus}
         >
           <header className="response-guide">
-            <strong>내 일정을 알려주세요</strong>
-            <span>캘린더에서 불러온 뒤 다른 시간만 바꾸면 돼요.</span>
+            <strong>{getParticipantTitle(state, participant)}</strong>
+            {hasChosenResponseBaseline && participant.responseStatus === 'not_started' ? (
+              <button
+                className="response-baseline-reset"
+                type="button"
+                onClick={() => {
+                  setDraftWindows([])
+                  setHasChosenResponseBaseline(false)
+                  setParticipantInputSource(null)
+                  setManuallyEditedSlotStarts(new Set())
+                  setEditorStatus('not_started')
+                  setIsSaveConfirmationOpen(false)
+                }}
+              >
+                선택 초기화하기
+              </button>
+            ) : null}
           </header>
           {!hasChosenResponseBaseline ? (
-            isManualSetupOpen ? (
-              <div className="response-baseline" aria-labelledby="response-baseline-title">
-                <div className="response-baseline__head">
-                  <div>
-                    <strong id="response-baseline-title">직접 입력을 시작할까요?</strong>
-                    <span>가까운 상태를 고르면 전체 시간에 먼저 적용해요.</span>
-                  </div>
-                  <button type="button" onClick={() => setIsManualSetupOpen(false)}>
-                    이전
-                  </button>
-                </div>
-                <div className="response-baseline__options">
-                  <button type="button" onClick={() => applyResponseBaseline('available')}>
-                    대체로 가능해요
-                  </button>
-                  <button type="button" onClick={() => applyResponseBaseline('unavailable')}>
-                    가능한 시간이 적어요
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="calendar-import-card" aria-labelledby="calendar-import-title">
+            <div className="calendar-import-card" aria-labelledby="calendar-import-title">
                 <div className="calendar-import-card__icon" aria-hidden="true">
                   <CalendarDays size={24} strokeWidth={2.3} />
                 </div>
@@ -5372,6 +5363,7 @@ function ParticipantShell({
                   <span>연결된 Google Calendar</span>
                   <strong id="calendar-import-title">일정을 다시 입력하지 않아도 돼요</strong>
                   <p>비어 있는 시간과 일정이 있는 시간을 먼저 채워드릴게요.</p>
+                  <small>일정 제목은 공유하지 않고 비어 있음 여부만 사용해요.</small>
                 </div>
                 <div className="calendar-import-card__actions">
                   <button className="primary-button" type="button" onClick={applySimulatedCalendar}>
@@ -5380,14 +5372,12 @@ function ParticipantShell({
                   <button
                     className="text-button"
                     type="button"
-                    onClick={() => setIsManualSetupOpen(true)}
+                    onClick={startManualEntry}
                   >
                     직접 입력하기
                   </button>
                 </div>
-                <small>일정 제목은 공유하지 않고 비어 있음 여부만 사용해요.</small>
               </div>
-            )
           ) : (
             <>
               {participantInputSource === 'calendar' ? (
@@ -5414,29 +5404,6 @@ function ParticipantShell({
                   </button>
                 </div>
               ) : null}
-              <div className="response-brush-toolbar response-selection-toolbar">
-                <div>
-                  <strong>칸을 눌러 응답을 바꾸세요</strong>
-                  <span>누를 때마다 ○ 가능 → △ 조정 가능 → × 참석 어려움 순서로 바뀌어요.</span>
-                </div>
-                {participant.responseStatus === 'not_started' ? (
-                  <button
-                    className="response-baseline-reset"
-                    type="button"
-                    onClick={() => {
-                      setDraftWindows([])
-                      setHasChosenResponseBaseline(false)
-                      setIsManualSetupOpen(false)
-                      setParticipantInputSource(null)
-                      setManuallyEditedSlotStarts(new Set())
-                      setEditorStatus('not_started')
-                      setIsSaveConfirmationOpen(false)
-                    }}
-                  >
-                    선택 초기화하기
-                  </button>
-                ) : null}
-              </div>
             </>
           )}
           {hasChosenResponseBaseline ? (
