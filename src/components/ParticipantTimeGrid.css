@@ -146,11 +146,83 @@
     0 8px 18px rgb(49 130 246 / 12%);
 }
 
-.participant-time-cell__paint > span {
+.participant-time-cell__state-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: currentColor;
+}
+
+.participant-time-cell.has-calendar-event .participant-time-cell__paint {
+  overflow: visible;
+  border-color: #c8d9ef;
+  background: #edf4ff;
+  color: #35618f;
+}
+
+.participant-time-cell.is-event-start .participant-time-cell__paint {
+  z-index: 3;
+}
+
+.participant-time-cell.is-event-end .participant-time-cell__paint {
+  border-top-color: transparent;
+  border-radius: 0 0 9px 9px;
+}
+
+.participant-calendar-event {
+  position: absolute;
+  z-index: 2;
+  top: -1px;
+  right: -1px;
+  left: -1px;
+  height: calc(var(--participant-row-height) * 2 - 7px);
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  padding: 6px 20px 6px 9px;
+  overflow: hidden;
+  border: 1px solid #c8d9ef;
+  border-left: 3px solid #5b8def;
+  border-radius: 9px;
+  background: #edf4ff;
+  color: #294f78;
+  text-align: left;
+  pointer-events: none;
+}
+
+.participant-calendar-event strong,
+.participant-calendar-event small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.participant-calendar-event strong {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+}
+
+.participant-calendar-event small {
+  color: #5e7691;
+  font-size: 9px;
+  line-height: 13px;
+}
+
+.participant-time-cell.has-calendar-event .participant-time-cell__state-dot {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 82%);
+}
+
+.participant-time-cell.has-calendar-event.is-adjustable .participant-time-cell__state-dot {
+  color: #b47700;
+}
+
+.participant-time-cell.has-calendar-event.is-unavailable .participant-time-cell__state-dot {
+  color: #6b7684;
 }
 
 .participant-time-cell__avoid {
@@ -314,6 +386,21 @@
   .participant-time-cell.is-mobile .participant-time-cell__paint strong {
     font-size: 13px;
     font-weight: 900;
+  }
+
+  .participant-time-cell.is-mobile .participant-calendar-event {
+    height: 88px;
+    padding: 8px 40px 8px 10px;
+  }
+
+  .participant-time-cell.is-mobile .participant-calendar-event strong {
+    font-size: 12px;
+    line-height: 17px;
+  }
+
+  .participant-time-cell.is-mobile .participant-calendar-event small {
+    font-size: 10px;
+    line-height: 14px;
   }
 
   .participant-time-cell.is-mobile .participant-time-cell__avoid {

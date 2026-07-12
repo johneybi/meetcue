@@ -12,12 +12,20 @@ import './ParticipantTimeGrid.css'
 
 type SlotState = ResponseValue | null
 
+type CalendarEvent = {
+  id: string
+  title: string
+  timeLabel: string
+  segment: 'start' | 'end'
+}
+
 export type ParticipantTimeGridProps = {
   slots: AvailabilitySlot[]
   brush: ResponseValue
   stateLabels: Record<ResponseValue, string>
   getState: (slot: AvailabilitySlot) => SlotState
   getAvoidPreferred: (slot: AvailabilitySlot) => boolean
+  getCalendarEvent?: (slot: AvailabilitySlot) => CalendarEvent | null
   onPaintSlot: (slot: AvailabilitySlot) => void
   onPaintDay: (slots: AvailabilitySlot[]) => void
   onToggleAvoidPreferred: (slot: AvailabilitySlot) => void
@@ -111,6 +119,7 @@ export function ParticipantTimeGrid({
   stateLabels,
   getState,
   getAvoidPreferred,
+  getCalendarEvent,
   onPaintSlot,
   onPaintDay,
   onToggleAvoidPreferred,
@@ -151,17 +160,22 @@ export function ParticipantTimeGrid({
   function renderStateCell(slot: AvailabilitySlot, context: 'desktop' | 'mobile') {
     const state = getState(slot)
     const avoidPreferred = getAvoidPreferred(slot)
+    const calendarEvent = getCalendarEvent?.(slot) ?? null
     const stateClass = state == null ? 'unset' : state
 
     return (
       <div
-        className={`participant-time-cell is-${stateClass}${context === 'mobile' ? ' is-mobile' : ''}`}
+        className={`participant-time-cell is-${stateClass}${context === 'mobile' ? ' is-mobile' : ''}${
+          calendarEvent ? ` has-calendar-event is-event-${calendarEvent.segment}` : ''
+        }`}
         key={`${context}-${slot.startAt}`}
       >
         <button
           className="participant-time-cell__paint"
           type="button"
-          aria-label={`${slotClockRange(slot)}, 현재 ${state ? stateLabels[state] : '미선택'}, ${stateLabels[brush]}로 변경`}
+          aria-label={`${slotClockRange(slot)}${
+            calendarEvent ? `, Google Calendar 일정 ${calendarEvent.title}` : ''
+          }, 현재 ${state ? stateLabels[state] : '미선택'}, ${stateLabels[brush]}로 변경`}
           title={state ? stateLabels[state] : '미선택'}
           onPointerDown={(event) => beginPaint(event, slot)}
           onPointerEnter={(event) => continuePaint(event, slot)}
@@ -171,8 +185,19 @@ export function ParticipantTimeGrid({
             if (event.detail === 0) onPaintSlot(slot)
           }}
         >
-          {context === 'mobile' ? <strong>{state ? stateLabels[state] : '미선택'}</strong> : null}
-          <span aria-hidden="true" />
+          {calendarEvent ? (
+            <span className="participant-calendar-event">
+              {calendarEvent.segment === 'start' ? (
+                <>
+                  <strong>{calendarEvent.title}</strong>
+                  <small>{calendarEvent.timeLabel}</small>
+                </>
+              ) : null}
+            </span>
+          ) : context === 'mobile' ? (
+            <strong>{state ? stateLabels[state] : '미선택'}</strong>
+          ) : null}
+          <span className="participant-time-cell__state-dot" aria-hidden="true" />
         </button>
         {state === 'available' || state === 'adjustable' ? (
           <button
