@@ -5076,6 +5076,47 @@ button:disabled {
   line-height: 17px;
 }
 
+.calendar-import-summary > .calendar-import-legend {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-top: 8px;
+  border-top: 1px solid rgb(49 130 246 / 12%);
+}
+
+.calendar-import-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--tds-text-3);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.calendar-import-legend i {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 3px;
+}
+
+.calendar-import-legend .is-calendar {
+  border: 1px solid #9bb8da;
+  border-left: 3px solid #5b8def;
+  background: #edf4ff;
+}
+
+.calendar-import-legend .is-automatic {
+  border: 1px solid rgb(38 179 151 / 32%);
+  background: #dcf8ef;
+}
+
+.calendar-import-legend .is-edited {
+  border: 2px solid var(--tds-blue);
+  background: #fff;
+}
+
 .response-baseline__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

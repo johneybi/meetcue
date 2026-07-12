@@ -5064,6 +5064,9 @@ function ParticipantShell({
     const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
     if (currentValue !== 'available' && currentValue !== 'adjustable') return
     setEditorStatus('draft')
+    if (participantInputSource === 'calendar') {
+      setManuallyEditedSlotStarts((current) => new Set(current).add(slot.startAt))
+    }
     setDraftWindows((currentWindows) =>
       replaceAvailabilitySlot(
         currentWindows,
