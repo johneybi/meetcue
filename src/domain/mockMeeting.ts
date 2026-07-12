@@ -61,6 +61,26 @@ function createCandidates(referenceDate: Date) {
   ]
 }
 
+function createHostAvailabilityWindows(referenceDate: Date): AvailabilityWindow[] {
+  const workBlocks = [
+    { dayOffset: 2, startHour: 10, endHour: 12 },
+    { dayOffset: 2, startHour: 13, endHour: 16 },
+    { dayOffset: 3, startHour: 10, endHour: 12 },
+    { dayOffset: 3, startHour: 13, endHour: 17 },
+    { dayOffset: 4, startHour: 10, endHour: 12 },
+    { dayOffset: 4, startHour: 13, endHour: 15 },
+  ]
+
+  return workBlocks.map((block, index) => ({
+    id: `aw-host-scope-${index + 1}`,
+    meetingId,
+    ownerId: 'p-host',
+    startAt: atDayOffset(referenceDate, block.dayOffset, block.startHour),
+    endAt: atDayOffset(referenceDate, block.dayOffset, block.endHour),
+    state: 'available',
+  }))
+}
+
 const responseFixtures: Response[] = [
   response('p-minsu', 'c-thu-1500', 'available'),
   response('p-seoyeon', 'c-thu-1500', 'available'),
@@ -111,14 +131,7 @@ export function createPrototypeMeeting(): Meeting {
   responseDeadline.setDate(responseDeadline.getDate() + 1)
   responseDeadline.setHours(18, 0, 0, 0)
   const availabilityWindows = [
-    ...candidates.map((candidate) => ({
-      id: `aw-${candidate.id}`,
-      meetingId,
-      ownerId: 'p-host',
-      startAt: candidate.startAt,
-      endAt: candidate.endAt,
-      state: 'available' as const,
-    })),
+    ...createHostAvailabilityWindows(prototypeNow),
     ...participantAvailabilityWindows,
   ]
   const derivedResponses = participants.flatMap((participant) =>

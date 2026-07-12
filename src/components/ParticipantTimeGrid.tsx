@@ -5,7 +5,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { CircleMinus } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import type { AvailabilitySlot } from '../domain/availability'
 import type { ResponseValue } from '../domain/meeting'
 import './ParticipantTimeGrid.css'
@@ -21,15 +21,11 @@ type CalendarEvent = {
 
 export type ParticipantTimeGridProps = {
   slots: AvailabilitySlot[]
-  brush: ResponseValue
   stateLabels: Record<ResponseValue, string>
   getState: (slot: AvailabilitySlot) => SlotState
-  getAvoidPreferred: (slot: AvailabilitySlot) => boolean
   getCalendarEvent?: (slot: AvailabilitySlot) => CalendarEvent | null
   getIsManuallyEdited?: (slot: AvailabilitySlot) => boolean
-  onPaintSlot: (slot: AvailabilitySlot) => void
-  onPaintDay: (slots: AvailabilitySlot[]) => void
-  onToggleAvoidPreferred: (slot: AvailabilitySlot) => void
+  onPaintSlot: (slot: AvailabilitySlot, state: ResponseValue) => void
 }
 
 type DateGroup = {
@@ -116,19 +112,16 @@ function buildGroups(slots: AvailabilitySlot[]) {
 
 export function ParticipantTimeGrid({
   slots,
-  brush,
   stateLabels,
   getState,
-  getAvoidPreferred,
   getCalendarEvent,
   getIsManuallyEdited,
   onPaintSlot,
-  onPaintDay,
-  onToggleAvoidPreferred,
 }: ParticipantTimeGridProps) {
   const groups = useMemo(() => buildGroups(slots), [slots])
   const [activeDateKey, setActiveDateKey] = useState(() => groups[0]?.key ?? '')
   const paintedSlotsRef = useRef<Set<string> | null>(null)
+  const paintTargetRef = useRef<ResponseValue | null>(null)
 
   const timeRows = useMemo(() => {
     if (slots.length === 0) return []
@@ -142,81 +135,99 @@ export function ParticipantTimeGrid({
 
   const activeGroup = groups.find((group) => group.key === activeDateKey) ?? groups[0]
 
+  const calendarLabelAnchors = new Map<string, string>()
+  slots
+    .slice()
+    .sort((left, right) => left.startAt.localeCompare(right.startAt))
+    .forEach((slot) => {
+      const event = getCalendarEvent?.(slot)
+      if (event == null || getState(slot) !== 'unavailable') return
+      if (!calendarLabelAnchors.has(event.id)) calendarLabelAnchors.set(event.id, slot.startAt)
+    })
+
+  function getNextState(state: SlotState): ResponseValue {
+    if (state === 'available') return 'adjustable'
+    if (state === 'adjustable') return 'unavailable'
+    return 'available'
+  }
+
   function beginPaint(event: ReactPointerEvent<HTMLButtonElement>, slot: AvailabilitySlot) {
     if (event.button !== 0) return
+    const targetState = getNextState(getState(slot))
     paintedSlotsRef.current = new Set([slot.startAt])
-    onPaintSlot(slot)
+    paintTargetRef.current = targetState
+    onPaintSlot(slot, targetState)
   }
 
   function continuePaint(event: ReactPointerEvent<HTMLButtonElement>, slot: AvailabilitySlot) {
     if (event.pointerType === 'touch' || paintedSlotsRef.current == null) return
     if (paintedSlotsRef.current.has(slot.startAt)) return
     paintedSlotsRef.current.add(slot.startAt)
-    onPaintSlot(slot)
+    if (paintTargetRef.current) onPaintSlot(slot, paintTargetRef.current)
+  }
+
+  function continuePaintFromTable(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === 'touch' || paintedSlotsRef.current == null) return
+    const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-slot-start]')
+    const slotStart = target?.dataset.slotStart
+    if (slotStart == null || paintedSlotsRef.current.has(slotStart)) return
+    const slot = slots.find((item) => item.startAt === slotStart)
+    if (slot == null) return
+    paintedSlotsRef.current.add(slot.startAt)
+    if (paintTargetRef.current) onPaintSlot(slot, paintTargetRef.current)
   }
 
   function finishPaint() {
     paintedSlotsRef.current = null
+    paintTargetRef.current = null
   }
 
   function renderStateCell(slot: AvailabilitySlot, context: 'desktop' | 'mobile') {
     const state = getState(slot)
-    const avoidPreferred = getAvoidPreferred(slot)
     const calendarEvent = getCalendarEvent?.(slot) ?? null
     const isManuallyEdited = getIsManuallyEdited?.(slot) ?? false
     const stateClass = state == null ? 'unset' : state
+    const visibleCalendarEvent = state === 'unavailable' ? calendarEvent : null
+    const isCalendarLabelAnchor =
+      visibleCalendarEvent != null && calendarLabelAnchors.get(visibleCalendarEvent.id) === slot.startAt
+    const nextState = getNextState(state)
 
     return (
       <div
         className={`participant-time-cell is-${stateClass}${context === 'mobile' ? ' is-mobile' : ''}${
-          calendarEvent ? ` has-calendar-event is-event-${calendarEvent.segment}` : ''
+          visibleCalendarEvent ? ` has-calendar-event is-event-${visibleCalendarEvent.segment}` : ''
+        }${isCalendarLabelAnchor ? ' is-calendar-anchor' : ''
         }${isManuallyEdited ? ' is-manually-edited' : ''}`}
         key={`${context}-${slot.startAt}`}
       >
         <button
           className="participant-time-cell__paint"
           type="button"
+          data-slot-start={slot.startAt}
           aria-label={`${slotClockRange(slot)}${
-            calendarEvent ? `, Google Calendar 일정 ${calendarEvent.title}` : ''
-          }, 현재 ${state ? stateLabels[state] : '미선택'}, ${stateLabels[brush]}로 변경`}
-          title={state ? stateLabels[state] : '미선택'}
+            visibleCalendarEvent ? `, Google Calendar 일정 ${visibleCalendarEvent.title}` : ''
+          }, 현재 ${state ? stateLabels[state] : '미선택'}, 누르면 ${stateLabels[nextState]}로 변경`}
+          title={`${state ? stateLabels[state] : '미선택'} · 누르면 ${stateLabels[nextState]}`}
           onPointerDown={(event) => beginPaint(event, slot)}
           onPointerEnter={(event) => continuePaint(event, slot)}
           onPointerUp={finishPaint}
           onPointerCancel={finishPaint}
           onClick={(event) => {
-            if (event.detail === 0) onPaintSlot(slot)
+            if (event.detail === 0) onPaintSlot(slot, getNextState(getState(slot)))
           }}
         >
-          {calendarEvent ? (
-            <span className="participant-calendar-event">
-              {calendarEvent.segment === 'start' ? (
-                <>
-                  <strong>{calendarEvent.title}</strong>
-                  <small>{calendarEvent.timeLabel}</small>
-                </>
-              ) : null}
-            </span>
-          ) : context === 'mobile' ? (
+          <span className="participant-time-cell__state-symbol" aria-hidden="true">
+            {state === 'available' ? '○' : state === 'adjustable' ? '△' : state === 'unavailable' ? '×' : '·'}
+          </span>
+          {context === 'mobile' && !isCalendarLabelAnchor ? (
             <strong>{state ? stateLabels[state] : '미선택'}</strong>
           ) : null}
-          <span className="participant-time-cell__state-dot" aria-hidden="true" />
         </button>
-        {state === 'available' || state === 'adjustable' ? (
-          <button
-            className={`participant-time-cell__avoid${avoidPreferred ? ' is-selected' : ''}`}
-            type="button"
-            title="가능하면 피하기"
-            aria-label={`${slotClockRange(slot)} 가능하면 피하기`}
-            aria-pressed={avoidPreferred}
-            onClick={() => onToggleAvoidPreferred(slot)}
-          >
-            <CircleMinus
-              size={context === 'mobile' ? 18 : 14}
-              strokeWidth={2.4}
-              aria-hidden="true"
-            />
-          </button>
+        {isCalendarLabelAnchor && visibleCalendarEvent ? (
+          <span className="participant-calendar-event" aria-hidden="true">
+            <CalendarDays size={12} />
+            <strong>{visibleCalendarEvent.title}</strong>
+          </span>
         ) : null}
       </div>
     )
@@ -225,7 +236,20 @@ export function ParticipantTimeGrid({
   if (groups.length === 0) return null
 
   return (
-    <div className="participant-time-table" onPointerLeave={finishPaint}>
+    <div
+      className="participant-time-table"
+      onPointerMove={continuePaintFromTable}
+      onPointerLeave={finishPaint}
+      onPointerUp={finishPaint}
+      onPointerCancel={finishPaint}
+    >
+      <div className="participant-state-guide" aria-label="응답 상태 색상 안내">
+        <strong>칸을 누를 때마다 상태가 바뀌어요</strong>
+        <span><i className="is-available" aria-hidden="true">○</i>{stateLabels.available}</span>
+        <span><i className="is-adjustable" aria-hidden="true">△</i>{stateLabels.adjustable}</span>
+        <span><i className="is-unavailable" aria-hidden="true">×</i>{stateLabels.unavailable}</span>
+        <small>여러 칸을 드래그하면 같은 상태로 한 번에 바뀌어요.</small>
+      </div>
       <div
         className="participant-week-grid"
         style={{ '--participant-day-count': groups.length } as CSSProperties}
@@ -237,9 +261,6 @@ export function ParticipantTimeGrid({
           <div className="participant-week-grid__day" role="columnheader" key={group.key}>
             <span>{weekdayFormatter.format(group.date)}</span>
             <strong>{dayFormatter.format(group.date)}</strong>
-            <button type="button" onClick={() => onPaintDay(group.slots)}>
-              모두 {stateLabels[brush]}
-            </button>
           </div>
         ))}
         {timeRows.map((minutes) => (
@@ -279,9 +300,6 @@ export function ParticipantTimeGrid({
         </div>
         <header className="participant-day-table__header">
           <strong>{dateHeadingFormatter.format(activeGroup.date)}</strong>
-          <button type="button" onClick={() => onPaintDay(activeGroup.slots)}>
-            이 날 모두 {stateLabels[brush]}
-          </button>
         </header>
         <div className="participant-day-table__slots">
           {timeRows.map((minutes) => {

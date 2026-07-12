@@ -152,6 +152,34 @@ export function selectCandidateShortlist(
   return shortlist
 }
 
+export function hasSameRecommendationPriority(
+  left: CandidateEvaluation,
+  right: CandidateEvaluation,
+) {
+  if (left.status !== right.status) return false
+
+  if (left.status === 'ready') {
+    return (
+      left.adjustableCount === right.adjustableCount &&
+      left.preferenceTagCount === right.preferenceTagCount &&
+      left.optionalPendingPool.length === right.optionalPendingPool.length &&
+      left.availableCount === right.availableCount
+    )
+  }
+
+  if (left.status === 'pending') {
+    return (
+      left.requiredPending.length === right.requiredPending.length &&
+      left.positiveResponsesNeededAfterRequiredYes ===
+        right.positiveResponsesNeededAfterRequiredYes &&
+      left.adjustableCount === right.adjustableCount &&
+      left.preferenceTagCount === right.preferenceTagCount
+    )
+  }
+
+  return true
+}
+
 export function generateConfirmationMessage(meeting: Meeting, evaluation: CandidateEvaluation) {
   const time = formatShortTime(evaluation.candidate)
   const adjustmentNotice =

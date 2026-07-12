@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { CalendarDate, getLocalTimeZone, startOfWeek, today } from '@internationalized/date'
 import { Toaster, toast } from 'sonner'
 import {
@@ -36,7 +37,6 @@ import {
   deriveParticipantResponses,
   fillAvailabilitySlots,
   getAvailabilityStateForSlot,
-  getAvailabilityWindowForSlot,
   mergeAvailabilityWindows,
   removeAvailabilityRange,
   replaceAvailabilitySlot,
@@ -45,6 +45,7 @@ import {
 import {
   evaluateCandidates,
   generateConfirmationMessage,
+  hasSameRecommendationPriority,
   selectCandidateShortlist,
   type CandidateEvaluation,
 } from './domain/evaluation'
@@ -69,6 +70,9 @@ import {
 } from './domain/meeting'
 import { ParticipantTimeGrid } from './components/ParticipantTimeGrid'
 import './App.css'
+
+const meetCueEmblemUrl = `${import.meta.env.BASE_URL}brand/meetcue-emblem-64.png`
+const isTossDemoPath = /(?:^|\/)toss\/?$/.test(window.location.pathname)
 
 type AppRoute =
   | 'entry'
@@ -188,6 +192,47 @@ const devScreenGroups: Array<{ label: string; screens: DevScreen[] }> = [
   },
 ]
 
+const demoGuideSteps: Array<
+  DevScreen & { title: string; description: string }
+> = [
+  {
+    label: '1',
+    title: '회의 만들기',
+    description: '회의 정보와 참석 기준, 확인할 시간 범위를 정해요.',
+    route: 'create',
+    fixture: 'draft',
+  },
+  {
+    label: '2',
+    title: '응답이 필요한 상황',
+    description: '현재 응답만으로 무엇을 결정할 수 있는지 확인해요.',
+    route: 'host',
+    fixture: 'collecting',
+  },
+  {
+    label: '3',
+    title: '참석자 응답',
+    description: '캘린더를 불러오고 가능한 시간을 직접 조정해요.',
+    route: 'invite',
+    fixture: 'current',
+    participantToken: 'token-p-sujin',
+  },
+  {
+    label: '4',
+    title: '바뀐 결과 확인',
+    description: '새 응답이 후보 시간과 판단 근거에 반영된 모습을 봐요.',
+    route: 'host',
+    fixture: 'current',
+  },
+  {
+    label: '5',
+    title: '회의 확정',
+    description: '참석 부담을 확인하고 최종 시간을 확정해요.',
+    route: 'host',
+    fixture: 'confirmed',
+  },
+]
+
 const SHOW_DURATION_CONTROLS = true
 
 const attendeeDecisionOptions: Array<{
@@ -210,7 +255,6 @@ const attendeeDecisionOptions: Array<{
 const attendeeDirectory = ['유진', '현우', '다은', '도윤']
 const recentInviteesStorageKey = 'confirmation-board-recent-invitees'
 
-const responseOptions: ResponseValue[] = ['available', 'adjustable', 'unavailable']
 const participantResponseLabels: Record<ResponseValue, string> = {
   available: '가능해요',
   adjustable: '조정하면 가능해요',
@@ -223,28 +267,39 @@ function getSimulatedCalendarEvent(slot: AvailabilitySlot) {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Seoul',
     day: 'numeric',
+    weekday: 'short',
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(date)
   const day = Number(parts.find((part) => part.type === 'day')?.value ?? 0)
+  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? ''
   const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
   const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
 
-  if (hour === 12) {
+  if (weekday === 'Tue' && hour === 14) {
     return {
-      id: `${day}-lunch`,
-      title: day === 15 ? '팀 점심 약속' : '점심 약속',
-      timeLabel: '오후 12:00-오후 1:00',
+      id: `${day}-design-review`,
+      title: '디자인 리뷰',
+      timeLabel: '오후 2:00-오후 3:00',
       segment: minute === 0 ? ('start' as const) : ('end' as const),
     }
   }
 
-  if (day % 2 === 0 && hour === 15) {
+  if (weekday === 'Wed' && hour === 10) {
     return {
-      id: `${day}-afternoon`,
-      title: day === 14 ? '디자인 리뷰' : '파트너사 미팅',
-      timeLabel: '오후 3:00-오후 4:00',
+      id: `${day}-daily`,
+      title: '제품팀 데일리',
+      timeLabel: '오전 10:00-오전 11:00',
+      segment: minute === 0 ? ('start' as const) : ('end' as const),
+    }
+  }
+
+  if (weekday === 'Thu' && hour === 14) {
+    return {
+      id: `${day}-partner-meeting`,
+      title: '파트너사 미팅',
+      timeLabel: '오후 2:00-오후 3:00',
       segment: minute === 0 ? ('start' as const) : ('end' as const),
     }
   }
@@ -255,6 +310,7 @@ function getSimulatedCalendarEvent(slot: AvailabilitySlot) {
 function isSimulatedCalendarBusy(slot: AvailabilitySlot) {
   return getSimulatedCalendarEvent(slot) != null
 }
+
 
 const createSteps: Array<{
   id: HostCreateStep
@@ -1195,8 +1251,104 @@ function App() {
         gap={8}
         toastOptions={{ className: 'meeting-cue-toast' }}
       />
-      {import.meta.env.DEV ? <DevScreenSwitcher route={route} onOpen={openDevScreen} /> : null}
+      {isTossDemoPath ? (
+        <DemoGuide route={route} meeting={meeting} onOpen={openDevScreen} />
+      ) : import.meta.env.DEV ? (
+        <DevScreenSwitcher route={route} onOpen={openDevScreen} />
+      ) : null}
     </div>
+  )
+}
+
+function DemoGuide({
+  route,
+  meeting,
+  onOpen,
+}: {
+  route: AppRoute
+  meeting: Meeting
+  onOpen: (screen: DevScreen) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const currentStepIndex =
+    route === 'create'
+      ? 0
+      : route === 'invite' || route === 'invite-edit' || route === 'invite-done'
+        ? 2
+        : route === 'host' && meeting.status === 'confirmed'
+          ? 4
+          : route === 'host' &&
+              meeting.participants.find((participant) => participant.id === 'p-sujin')
+                ?.responseStatus === 'submitted'
+            ? 3
+            : route === 'host'
+              ? 1
+              : -1
+
+  return (
+    <aside className={`demo-guide${isOpen ? ' is-open' : ''}`} aria-label="데모 가이드">
+      <button
+        type="button"
+        className="demo-guide__toggle"
+        aria-expanded={isOpen}
+        aria-label={isOpen ? '데모 가이드 닫기' : '데모 가이드 열기'}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        {isOpen ? <X size={18} /> : <PanelsTopLeft size={18} />}
+        <span>{isOpen ? '닫기' : '데모 가이드'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="demo-guide__panel">
+          <header className="demo-guide__header">
+            <div>
+              <span>약 3분</span>
+              <strong>MeetCue 둘러보기</strong>
+            </div>
+            <p>원하는 장면부터 확인해도 흐름이 이어져요.</p>
+          </header>
+
+          <ol className="demo-guide__steps">
+            {demoGuideSteps.map((step, index) => {
+              const isCurrent = index === currentStepIndex
+
+              return (
+                <li key={`${step.route}-${step.label}`}>
+                  <button
+                    type="button"
+                    className={isCurrent ? 'is-current' : ''}
+                    aria-current={isCurrent ? 'step' : undefined}
+                    onClick={() => {
+                      onOpen(step)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <span className="demo-guide__step-number">{step.label}</span>
+                    <span className="demo-guide__step-copy">
+                      <strong>{step.title}</strong>
+                      <small>{step.description}</small>
+                    </span>
+                    <ChevronRight aria-hidden="true" size={17} />
+                  </button>
+                </li>
+              )
+            })}
+          </ol>
+
+          <button
+            type="button"
+            className="demo-guide__restart"
+            onClick={() => {
+              onOpen(demoGuideSteps[0])
+              setIsOpen(false)
+            }}
+          >
+            <RotateCcw aria-hidden="true" size={16} />
+            처음부터 보기
+          </button>
+        </div>
+      ) : null}
+    </aside>
   )
 }
 
@@ -1366,7 +1518,7 @@ function GlobalAccountHeader({
           type="button"
           onClick={isFocused ? onCreate : () => onNavigate('home')}
         >
-          <img className="brand-dot" src="/brand/meetcue-emblem-64.png" alt="" />
+          <img className="brand-dot" src={meetCueEmblemUrl} alt="" />
           <strong className="brand-wordmark">MeetCue</strong>
         </button>
 
@@ -1812,9 +1964,7 @@ function HostShell({
           route === 'share' ? ' host-shell--share' : ''
         }${route === 'message' || state === 'HOST_CONFIRMED' ? ' host-shell--message' : ''}${
           route === 'host' && isWaitingState(state) ? ' host-shell--waiting' : ''
-        }${
-          route === 'host' && state === 'HOST_DECISION' ? ' host-shell--decision' : ''
-        }`}
+        }${route === 'host' && state === 'HOST_DECISION' ? ' host-shell--decision' : ''}`}
       >
         <header className="host-context-bar" aria-label="회의 조율 상태">
           <div className="host-context-main">
@@ -2275,10 +2425,9 @@ function HostDecideScreen({
     (_, index) => firstCandidateMinute + index * 30,
   )
   const shortlistEvaluations = selectCandidateShortlist(evaluations, 6)
-  const selectedRank = evaluations.findIndex(
-    (evaluation) => evaluation.candidate.id === recommendedEvaluation.candidate.id,
-  )
-  const isSystemRecommendation = selectedRank === 0
+  const isSystemRecommendation =
+    systemRecommendedEvaluation.status === 'ready' &&
+    hasSameRecommendationPriority(recommendedEvaluation, systemRecommendedEvaluation)
   const canConfirm = recommendedEvaluation.status === 'ready'
   const fallbackEvaluation = evaluations.find(
     (evaluation) =>
@@ -2296,6 +2445,14 @@ function HostDecideScreen({
   const selectedPendingCount = selectedResponseRows.filter(
     (detail) => detail.state === 'unknown',
   ).length
+  const adjustmentParticipants = recommendedEvaluation.adjustmentCommitParticipants
+  const avoidPreferredParticipants = selectedResponseRows
+    .filter(
+      (detail) =>
+        (detail.state === 'available' || detail.state === 'adjustment_commit') &&
+        (detail.response?.preferenceTags?.length ?? 0) > 0,
+    )
+    .map((detail) => detail.participant)
   const statusTitle =
     recommendedEvaluation.status === 'ready'
       ? `${recommendedEvaluation.availableCount}명 참석 가능, 지금 확정할 수 있어요`
@@ -2327,7 +2484,10 @@ function HostDecideScreen({
 
         <div className="decision-reference-candidates" aria-label="후보 시간 목록">
           <header>
-            <strong>추천 후보</strong>
+            <div>
+              <strong>추천 후보</strong>
+              <small>참석 기준을 충족한 뒤 일정 조정과 기피 표시가 적은 순이에요.</small>
+            </div>
             <span>
               {shortlistEvaluations.length}개 · 전체 {evaluations.length}개
             </span>
@@ -2359,10 +2519,11 @@ function HostDecideScreen({
                       {evaluation.availableCount}/{meeting.participants.length}명 가능
                     </em>
                   </span>
-                  {evaluation.candidate.id === systemRecommendedEvaluation.candidate.id ? (
+                  {systemRecommendedEvaluation.status === 'ready' &&
+                  hasSameRecommendationPriority(evaluation, systemRecommendedEvaluation) ? (
                     <span
                       className="decision-reference-card__recommendation"
-                      aria-label="추천 후보"
+                      aria-label="같은 우선순위의 추천 후보"
                     >
                       <Star aria-hidden="true" size={15} fill="currentColor" />
                     </span>
@@ -2424,6 +2585,34 @@ function HostDecideScreen({
             </span>
             <h3>{statusTitle}</h3>
             <p>{statusDescription}</p>
+            {recommendedEvaluation.status === 'ready' ? (
+              <div className="decision-burden-summary" aria-label="확정 전 확인할 일정 부담">
+                <div className={adjustmentParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
+                  {adjustmentParticipants.length > 0 ? (
+                    <CalendarDays aria-hidden="true" size={16} />
+                  ) : (
+                    <Check aria-hidden="true" size={16} />
+                  )}
+                  <span>
+                    {adjustmentParticipants.length > 0
+                      ? `${formatParticipantSummary(adjustmentParticipants)} 기존 일정을 옮겨 참석해요.`
+                      : '일정 변경 없이 참석할 수 있어요.'}
+                  </span>
+                </div>
+                <div className={avoidPreferredParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
+                  {avoidPreferredParticipants.length > 0 ? (
+                    <Clock3 aria-hidden="true" size={16} />
+                  ) : (
+                    <Check aria-hidden="true" size={16} />
+                  )}
+                  <span>
+                    {avoidPreferredParticipants.length > 0
+                      ? `${formatParticipantSummary(avoidPreferredParticipants)} 가능하면 피하고 싶다고 표시했어요.`
+                      : '피하고 싶은 표시가 없어요.'}
+                  </span>
+                </div>
+              </div>
+            ) : null}
             <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
               <span className="is-positive">
                 <strong>{recommendedEvaluation.availableCount}명</strong> 가능
@@ -2528,7 +2717,7 @@ function HostDecideScreen({
         </section>
       </section>
 
-      <details className="decision-matrix-disclosure">
+      <details className="decision-matrix-disclosure" open>
         <summary>
           <div>
             <span>참석 가능 현황</span>
@@ -2759,7 +2948,8 @@ function HostDecideScreen({
                   const connectsBefore = hasSameDecisionBand(previous, evaluation)
                   const connectsAfter = hasSameDecisionBand(next, evaluation)
                   const isRecommended =
-                    evaluation.candidate.id === systemRecommendedEvaluation.candidate.id
+                    systemRecommendedEvaluation.status === 'ready' &&
+                    hasSameRecommendationPriority(evaluation, systemRecommendedEvaluation)
                   const isSelected = evaluation.candidate.id === recommendedEvaluation.candidate.id
 
                   return (
@@ -2819,6 +3009,27 @@ function ResponseRequestSelector({
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const selectedIdSet = new Set(selectedIds)
+  const dialogRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+
+    document.body.style.overflow = 'hidden'
+    dialogRef.current?.querySelector<HTMLButtonElement>('.icon-button')?.focus()
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === 'Escape') onCancel()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+      previouslyFocusedElement?.focus()
+    }
+  }, [onCancel])
 
   function toggleParticipant(participantId: string) {
     setSelectedIds((currentIds) =>
@@ -2847,8 +3058,21 @@ function ResponseRequestSelector({
     )
   }
 
-  return (
-    <section className="request-recipient-panel" aria-labelledby="request-recipient-title">
+  return createPortal(
+    <div
+      className="request-recipient-modal"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) onCancel()
+      }}
+    >
+      <section
+        ref={dialogRef}
+        className="request-recipient-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="request-recipient-title"
+      >
       <header>
         <div>
           <span>응답 요청</span>
@@ -2885,7 +3109,7 @@ function ResponseRequestSelector({
         </fieldset>
       ) : null}
 
-      <footer>
+        <footer>
         <p>응답이 필요한 사람 중에서 이번에 요청할 사람을 골라주세요.</p>
         <button
           className="primary-button"
@@ -2897,8 +3121,10 @@ function ResponseRequestSelector({
             ? `${selectedIds.length}명에게 응답 요청하기`
             : '요청할 사람을 선택해 주세요'}
         </button>
-      </footer>
-    </section>
+        </footer>
+      </section>
+    </div>,
+    document.body,
   )
 }
 
@@ -4847,7 +5073,9 @@ function CreateScreen({
         >
           <div className="create-task__surface">
             <div className="create-task__layout">
-              <section className="create-main-panel">
+              <section
+                className={`create-main-panel${step === 'meeting' ? ' create-main-panel--meeting' : ''}`}
+              >
                 <header className="create-task__header">
                   <span>
                     {activeCreateStep.eyebrow} · {activeCreateStep.label}
@@ -4896,7 +5124,7 @@ function InvalidParticipantInviteScreen({
     <div className="respond-app">
       <header className="respond-header">
         <div className="respond-brand">
-          <img className="brand-dot" src="/brand/meetcue-emblem-64.png" alt="" />
+          <img className="brand-dot" src={meetCueEmblemUrl} alt="" />
           <strong className="brand-wordmark">MeetCue</strong>
         </div>
         <button className="respond-host-link" type="button" onClick={onExit}>
@@ -4950,7 +5178,6 @@ function ParticipantShell({
     useState<ParticipantInputSource | null>(() =>
       participant.responseStatus !== 'not_started' || draftWindows.length > 0 ? 'existing' : null,
     )
-  const [responseBrush, setResponseBrush] = useState<ResponseValue>('available')
   const [manuallyEditedSlotStarts, setManuallyEditedSlotStarts] = useState<Set<string>>(
     () => new Set(),
   )
@@ -4979,7 +5206,10 @@ function ParticipantShell({
   ).length
   const remainingCount = slots.length - answeredCount
   const simulatedCalendarEventCount = new Set(
-    slots.map(getSimulatedCalendarEvent).filter((event) => event != null).map((event) => event.id),
+    slots
+      .map(getSimulatedCalendarEvent)
+      .filter((event) => event != null)
+      .map((event) => event.id),
   ).size
   const referenceMaterial = meeting.referenceMaterial?.trim()
   const deadlinePassed = new Date(meeting.responseDeadline).getTime() <= now.getTime()
@@ -4988,7 +5218,6 @@ function ParticipantShell({
     setDraftWindows((currentWindows) =>
       fillAvailabilitySlots(currentWindows, participant.id, slots, state, meeting.id),
     )
-    setResponseBrush(state === 'available' ? 'unavailable' : 'available')
     setHasChosenResponseBaseline(true)
     setParticipantInputSource('manual')
     setEditorStatus('draft')
@@ -5016,7 +5245,6 @@ function ParticipantShell({
       })
       return nextWindows
     })
-    setResponseBrush('adjustable')
     setHasChosenResponseBaseline(true)
     setIsManualSetupOpen(false)
     setParticipantInputSource('calendar')
@@ -5025,65 +5253,29 @@ function ParticipantShell({
     setIsSaveConfirmationOpen(false)
   }
 
-  function paintResponseSlot(slot: AvailabilitySlot, state = responseBrush) {
-    const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
-    setIsSaveConfirmationOpen(false)
-    setEditorStatus('draft')
-    if (participantInputSource === 'calendar') {
-      setManuallyEditedSlotStarts((current) => new Set(current).add(slot.startAt))
-    }
+  function paintParticipantSlot(slot: AvailabilitySlot, state: ResponseValue) {
     setDraftWindows((currentWindows) =>
       replaceAvailabilitySlot(
         currentWindows,
         participant.id,
         slot,
         state,
-        Boolean(currentWindow?.avoidPreferred) && state !== 'unavailable',
+        false,
         meeting.id,
       ),
     )
-  }
-
-  function paintResponseDay(daySlots: AvailabilitySlot[]) {
-    setDraftWindows((currentWindows) =>
-      fillAvailabilitySlots(currentWindows, participant.id, daySlots, responseBrush, meeting.id),
-    )
-    setEditorStatus('draft')
-    if (participantInputSource === 'calendar') {
-      setManuallyEditedSlotStarts((current) => {
-        const next = new Set(current)
-        daySlots.forEach((slot) => next.add(slot.startAt))
-        return next
-      })
-    }
-    setIsSaveConfirmationOpen(false)
-  }
-
-  function toggleAvoidPreferred(slot: AvailabilitySlot) {
-    const currentValue = getAvailabilityStateForSlot(draftWindows, participant.id, slot)
-    const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
-    if (currentValue !== 'available' && currentValue !== 'adjustable') return
-    setEditorStatus('draft')
     if (participantInputSource === 'calendar') {
       setManuallyEditedSlotStarts((current) => new Set(current).add(slot.startAt))
     }
-    setDraftWindows((currentWindows) =>
-      replaceAvailabilitySlot(
-        currentWindows,
-        participant.id,
-        slot,
-        currentWindow?.state ?? currentValue,
-        !currentWindow?.avoidPreferred,
-        meeting.id,
-      ),
-    )
+    setEditorStatus('draft')
+    setIsSaveConfirmationOpen(false)
   }
 
   return (
     <div className="respond-app">
       <header className="respond-header">
         <div className="respond-brand">
-          <img className="brand-dot" src="/brand/meetcue-emblem-64.png" alt="" />
+          <img className="brand-dot" src={meetCueEmblemUrl} alt="" />
           <strong className="brand-wordmark">MeetCue</strong>
         </div>
         {import.meta.env.DEV ? (
@@ -5202,32 +5394,30 @@ function ParticipantShell({
                 <div className="calendar-import-summary" role="status">
                   <CalendarDays size={20} aria-hidden="true" />
                   <div>
-                    <strong>Google Calendar 일정 {simulatedCalendarEventCount}개를 불러왔어요</strong>
+                    <strong>
+                      Google Calendar 일정 {simulatedCalendarEventCount}개를 불러왔어요
+                    </strong>
                     <span>
                       비어 있는 {slots.filter((slot) => !isSimulatedCalendarBusy(slot)).length}개
                       시간을 ‘가능해요’로 자동 입력했어요
                     </span>
                   </div>
-                  <div className="calendar-import-legend" aria-label="시간표 표시 기준">
-                    <span><i className="is-calendar" />Google Calendar 일정</span>
-                    <span><i className="is-automatic" />자동 입력</span>
-                    <span><i className="is-edited" />직접 수정</span>
-                  </div>
+                  <button
+                    className="calendar-import-reset"
+                    type="button"
+                    onClick={() => {
+                      applySimulatedCalendar()
+                      toast.success('캘린더를 처음 불러온 상태로 되돌렸어요.')
+                    }}
+                  >
+                    불러온 상태로 되돌리기
+                  </button>
                 </div>
               ) : null}
-              <div className="response-brush-toolbar">
-                <div className="response-brush-group" role="group" aria-label="시간 상태 선택">
-                  {responseOptions.map((value) => (
-                    <button
-                      key={value}
-                      className={`is-${value}${responseBrush === value ? ' is-selected' : ''}`}
-                      type="button"
-                      aria-pressed={responseBrush === value}
-                      onClick={() => setResponseBrush(value)}
-                    >
-                      {participantResponseLabels[value]}
-                    </button>
-                  ))}
+              <div className="response-brush-toolbar response-selection-toolbar">
+                <div>
+                  <strong>칸을 눌러 응답을 바꾸세요</strong>
+                  <span>누를 때마다 ○ 가능 → △ 조정 가능 → × 참석 어려움 순서로 바뀌어요.</span>
                 </div>
                 {participant.responseStatus === 'not_started' ? (
                   <button
@@ -5252,23 +5442,15 @@ function ParticipantShell({
           {hasChosenResponseBaseline ? (
             <ParticipantTimeGrid
               slots={slots}
-              brush={responseBrush}
               stateLabels={participantResponseLabels}
               getState={(slot) =>
                 getAvailabilityStateForSlot(draftWindows, participant.id, slot) ?? null
-              }
-              getAvoidPreferred={(slot) =>
-                Boolean(
-                  getAvailabilityWindowForSlot(draftWindows, participant.id, slot)?.avoidPreferred,
-                )
               }
               getCalendarEvent={
                 participantInputSource === 'calendar' ? getSimulatedCalendarEvent : undefined
               }
               getIsManuallyEdited={(slot) => manuallyEditedSlotStarts.has(slot.startAt)}
-              onPaintSlot={paintResponseSlot}
-              onPaintDay={paintResponseDay}
-              onToggleAvoidPreferred={toggleAvoidPreferred}
+              onPaintSlot={paintParticipantSlot}
             />
           ) : null}
           {hasChosenResponseBaseline && isSaveConfirmationOpen && remainingCount > 0 ? (
@@ -5341,7 +5523,7 @@ function ParticipantDoneScreen({
     <div className="respond-app">
       <header className="respond-header">
         <div className="respond-brand">
-          <img className="brand-dot" src="/brand/meetcue-emblem-64.png" alt="" />
+          <img className="brand-dot" src={meetCueEmblemUrl} alt="" />
           <strong className="brand-wordmark">MeetCue</strong>
         </div>
         {import.meta.env.DEV ? (
@@ -5398,7 +5580,7 @@ function ParticipantConfirmedScreen({
     <div className="respond-app">
       <header className="respond-header">
         <div className="respond-brand">
-          <img className="brand-dot" src="/brand/meetcue-emblem-64.png" alt="" />
+          <img className="brand-dot" src={meetCueEmblemUrl} alt="" />
           <strong className="brand-wordmark">MeetCue</strong>
         </div>
         {import.meta.env.DEV ? (
@@ -5471,14 +5653,14 @@ function MessageScreen({
         <footer className="message-panel__actions">
           <p>확정 알림을 보내면 참석자에게 최종 시간이 안내돼요.</p>
           <div className="button-row">
-          <button className="primary-button" type="button" onClick={onNotify}>
-            확정 알림 보내기
-          </button>
-          {onBack ? (
-            <button className="secondary-button" type="button" onClick={onBack}>
-              회의 결과로 돌아가기
+            <button className="primary-button" type="button" onClick={onNotify}>
+              확정 알림 보내기
             </button>
-          ) : null}
+            {onBack ? (
+              <button className="secondary-button" type="button" onClick={onBack}>
+                회의 결과로 돌아가기
+              </button>
+            ) : null}
           </div>
         </footer>
       </section>
@@ -5730,6 +5912,11 @@ function formatCandidateFullDate(dateKey: string) {
     weekday: 'long',
     timeZone: 'Asia/Seoul',
   }).format(candidateDateFromKey(dateKey))
+}
+
+function formatParticipantSummary(participants: Participant[]) {
+  if (participants.length === 1) return `${participants[0].name} 님은`
+  return `${participants[0].name} 님 외 ${participants.length - 1}명이`
 }
 
 function formatDateStatusSummary(evaluations: CandidateEvaluation[]) {

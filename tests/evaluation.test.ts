@@ -4,6 +4,7 @@ import {
   evaluateCandidates,
   generateResponseRequestMessage,
   groupCandidateEvaluations,
+  hasSameRecommendationPriority,
   selectCandidateShortlist,
 } from '../src/domain/evaluation.ts'
 import { createPrototypeMeeting } from '../src/domain/mockMeeting.ts'
@@ -99,6 +100,32 @@ test('shortlists diverse dates and collapses adjacent equivalent candidates', ()
     shortlist.map((evaluation) => evaluation.candidate.id),
     ['candidate-0', 'candidate-2', 'candidate-4'],
   )
+})
+
+test('treats time-only differences as the same recommendation priority', () => {
+  const source = evaluateCandidates(createPrototypeMeeting(), new Date()).find(
+    (evaluation) => evaluation.status === 'ready',
+  )
+  assert.ok(source)
+
+  const later = {
+    ...source,
+    candidate: {
+      ...source.candidate,
+      id: 'same-priority-later',
+      startAt: new Date(
+        new Date(source.candidate.startAt).getTime() + 60 * 60 * 1000,
+      ).toISOString(),
+      endAt: new Date(new Date(source.candidate.endAt).getTime() + 60 * 60 * 1000).toISOString(),
+    },
+  }
+  const moreAdjustment = {
+    ...later,
+    adjustableCount: source.adjustableCount + 1,
+  }
+
+  assert.equal(hasSameRecommendationPriority(source, later), true)
+  assert.equal(hasSameRecommendationPriority(source, moreAdjustment), false)
 })
 
 test('representative P0 candidate changes from pending to ready after Sujin responds', () => {

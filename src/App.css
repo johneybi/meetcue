@@ -52,6 +52,207 @@
   color: var(--tds-success) !important;
 }
 
+.demo-guide {
+  position: fixed;
+  z-index: 1000;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: var(--font-ui);
+}
+
+.demo-guide__toggle {
+  min-width: 128px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--tds-border-strong);
+  border-radius: 8px;
+  background: var(--tds-surface);
+  box-shadow: 0 4px 16px rgb(25 31 40 / 8%);
+  color: var(--tds-text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.demo-guide__toggle:hover {
+  background: var(--tds-subtle);
+}
+
+.demo-guide__toggle:focus-visible,
+.demo-guide__panel button:focus-visible {
+  outline: 3px solid var(--tds-blue-soft-strong);
+  outline-offset: 2px;
+}
+
+.demo-guide__panel {
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--tds-border);
+  border-radius: 12px;
+  background: var(--tds-surface);
+  box-shadow: 0 8px 24px rgb(25 31 40 / 8%);
+}
+
+.demo-guide__header {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--tds-border);
+}
+
+.demo-guide__header > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.demo-guide__header strong {
+  color: var(--tds-text);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+.demo-guide__header span {
+  order: 2;
+  color: var(--tds-blue-pressed);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.demo-guide__header p {
+  margin: 0;
+  color: var(--tds-muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.demo-guide__steps {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-guide__steps button {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tds-text-2);
+  text-align: left;
+}
+
+.demo-guide__steps button:hover {
+  background: var(--tds-subtle);
+}
+
+.demo-guide__steps button.is-current {
+  border-color: var(--tds-blue-soft-strong);
+  background: var(--tds-blue-soft);
+}
+
+.demo-guide__step-number {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--tds-subtle);
+  color: var(--tds-text-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.demo-guide__steps button.is-current .demo-guide__step-number {
+  background: var(--tds-blue);
+  color: #fff;
+}
+
+.demo-guide__step-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.demo-guide__step-copy strong {
+  color: var(--tds-text-2);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.demo-guide__step-copy small {
+  color: var(--tds-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.demo-guide__steps button > svg {
+  color: var(--tds-placeholder);
+}
+
+.demo-guide__restart {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--tds-subtle);
+  color: var(--tds-text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.demo-guide__restart:hover {
+  background: var(--tds-pressed);
+}
+
+@media (max-width: 680px) {
+  .demo-guide {
+    right: 8px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .demo-guide__toggle {
+    min-width: 44px;
+    padding: 0 12px;
+  }
+
+  .demo-guide__toggle span {
+    display: none;
+  }
+
+  .demo-guide__panel {
+    padding: 16px;
+  }
+}
+
 .dev-screen-switcher {
   position: fixed;
   z-index: 1000;
@@ -4039,6 +4240,136 @@ button:disabled {
   }
 }
 
+.response-selection-toolbar {
+  align-items: center;
+}
+
+.response-selection-toolbar > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.response-selection-toolbar > div > strong {
+  color: var(--tds-text-2);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 19px;
+}
+
+.response-selection-toolbar > div > span {
+  color: var(--tds-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 17px;
+}
+
+.participant-range-action {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 16px 24px;
+  align-items: center;
+  padding: 16px 50px 16px 18px;
+  border: 1px solid rgb(49 130 246 / 34%);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow:
+    0 8px 22px rgb(49 130 246 / 10%),
+    inset 0 0 0 1px rgb(255 255 255 / 74%);
+}
+
+.participant-range-action > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.participant-range-action > div:first-child strong {
+  color: var(--tds-text-1);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+.participant-range-action > div:first-child span {
+  color: var(--tds-text-3);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 17px;
+}
+
+.participant-range-action__options {
+  display: flex;
+  gap: 7px;
+}
+
+.participant-range-action__options button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid var(--tds-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--tds-text-2);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.participant-range-action__options button.is-available:hover,
+.participant-range-action__options button.is-available:focus-visible {
+  border-color: rgb(38 179 151 / 46%);
+  background: #dcf8ef;
+  color: #087f6c;
+}
+
+.participant-range-action__options button.is-adjustable:hover,
+.participant-range-action__options button.is-adjustable:focus-visible {
+  border-color: rgb(240 171 0 / 48%);
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.participant-range-action__options button.is-unavailable:hover,
+.participant-range-action__options button.is-unavailable:focus-visible {
+  border-color: rgb(225 74 74 / 44%);
+  background: #fff0f0;
+  color: #b4232c;
+}
+
+.participant-range-action__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tds-muted);
+}
+
+.participant-range-action__close:hover {
+  background: var(--tds-subtle);
+  color: var(--tds-text-2);
+}
+
+@media (max-width: 760px) {
+  .participant-range-action {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .participant-range-action__options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .people-search {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -5055,6 +5386,23 @@ button:disabled {
 
 .calendar-import-summary > svg {
   justify-self: center;
+}
+
+.calendar-import-reset {
+  grid-column: 1 / -1;
+  justify-self: end;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 58%);
+  color: var(--tds-blue-pressed);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.calendar-import-reset:hover {
+  background: #fff;
 }
 
 .calendar-import-summary > div {
@@ -6929,6 +7277,24 @@ button:disabled {
 .decision-shortlist__items button > svg {
   grid-area: arrow;
   color: var(--tds-muted);
+}
+
+.request-recipient-modal {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgb(25 31 40 / 32%);
+  backdrop-filter: blur(2px);
+}
+
+.request-recipient-modal .request-recipient-panel {
+  width: min(720px, 100%);
+  max-height: min(760px, calc(100dvh - 48px));
+  overflow-y: auto;
 }
 
 .request-recipient-panel {
@@ -10224,9 +10590,9 @@ button:disabled {
 .host-shell--decision .decision-candidate-workspace {
   grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
   grid-template-areas:
-    "head head"
-    "candidates detail"
-    "status detail";
+    'head head'
+    'candidates detail'
+    'status detail';
   gap: 14px 20px;
 }
 
@@ -10336,8 +10702,12 @@ button:disabled {
   font-weight: 900;
 }
 
-.decision-reference-detail.is-info .decision-state-panel__label { color: #8a5b00; }
-.decision-reference-detail.is-danger .decision-state-panel__label { color: #b4232f; }
+.decision-reference-detail.is-info .decision-state-panel__label {
+  color: #8a5b00;
+}
+.decision-reference-detail.is-danger .decision-state-panel__label {
+  color: #b4232f;
+}
 
 .decision-state-panel h3 {
   margin: 0;
@@ -10352,6 +10722,37 @@ button:disabled {
   color: var(--tds-text-3);
   font-size: 13px;
   line-height: 21px;
+}
+
+.decision-burden-summary {
+  display: grid;
+  gap: 6px;
+  padding: 10px 0;
+  border-block: 1px solid rgb(207 216 229 / 58%);
+}
+
+.decision-burden-summary > div {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--tds-text-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.decision-burden-summary svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.decision-burden-summary .is-clear svg {
+  color: #087a5b;
+}
+
+.decision-burden-summary .has-burden svg {
+  color: #9a6700;
 }
 
 .decision-state-counts {
@@ -10369,10 +10770,24 @@ button:disabled {
   font-size: 12px;
 }
 
-.decision-state-counts .is-positive { background: #e7f8f3; color: #087a5b; }
-.decision-state-counts .is-negative { background: #fff0f1; color: #b4232f; }
-.decision-state-counts .is-unknown { background: #f0f3f7; color: #536170; }
-.decision-state-panel > .primary-button { margin-top: 6px; min-height: 48px; border-radius: 9px; box-shadow: none; }
+.decision-state-counts .is-positive {
+  background: #e7f8f3;
+  color: #087a5b;
+}
+.decision-state-counts .is-negative {
+  background: #fff0f1;
+  color: #b4232f;
+}
+.decision-state-counts .is-unknown {
+  background: #f0f3f7;
+  color: #536170;
+}
+.decision-state-panel > .primary-button {
+  margin-top: 6px;
+  min-height: 48px;
+  border-radius: 9px;
+  box-shadow: none;
+}
 
 .decision-pending-groups {
   display: grid;
@@ -10397,7 +10812,9 @@ button:disabled {
   border-bottom: 1px solid #edf1f5;
 }
 
-.decision-pending-group > header strong { font-size: 13px; }
+.decision-pending-group > header strong {
+  font-size: 13px;
+}
 .decision-pending-group > header span {
   padding: 3px 7px;
   border-radius: 6px;
@@ -10427,9 +10844,17 @@ button:disabled {
   padding: 10px 14px;
 }
 
-.decision-pending-person > div { display: grid; gap: 2px; }
-.decision-pending-person strong { font-size: 14px; }
-.decision-pending-person small { color: var(--tds-text-3); font-size: 12px; }
+.decision-pending-person > div {
+  display: grid;
+  gap: 2px;
+}
+.decision-pending-person strong {
+  font-size: 14px;
+}
+.decision-pending-person small {
+  color: var(--tds-text-3);
+  font-size: 12px;
+}
 .decision-pending-person button,
 .decision-impossible-guide button {
   min-height: 38px;
@@ -10472,8 +10897,13 @@ button:disabled {
   padding: 16px;
 }
 
-.decision-impossible-guide p { padding: 0; }
-.decision-impossible-guide button { width: fit-content; margin-top: 9px; }
+.decision-impossible-guide p {
+  padding: 0;
+}
+.decision-impossible-guide button {
+  width: fit-content;
+  margin-top: 9px;
+}
 
 .decision-criteria-inline {
   min-height: 50px;
@@ -10485,9 +10915,22 @@ button:disabled {
   border-top: 1px solid #e7edf3;
 }
 
-.decision-criteria-inline span { color: var(--tds-text-3); font-size: 12px; font-weight: 800; }
-.decision-criteria-inline strong { color: var(--tds-text-2); font-size: 13px; }
-.decision-criteria-inline button { border: 0; background: transparent; color: var(--tds-blue-pressed); font-size: 12px; font-weight: 900; }
+.decision-criteria-inline span {
+  color: var(--tds-text-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+.decision-criteria-inline strong {
+  color: var(--tds-text-2);
+  font-size: 13px;
+}
+.decision-criteria-inline button {
+  border: 0;
+  background: transparent;
+  color: var(--tds-blue-pressed);
+  font-size: 12px;
+  font-weight: 900;
+}
 
 .decision-matrix-disclosure {
   overflow: hidden;
@@ -10507,12 +10950,25 @@ button:disabled {
   list-style: none;
 }
 
-.decision-matrix-disclosure > summary::-webkit-details-marker { display: none; }
-.decision-matrix-disclosure > summary > div { display: grid; gap: 2px; }
+.decision-matrix-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.decision-matrix-disclosure > summary > div {
+  display: grid;
+  gap: 2px;
+}
 .decision-matrix-disclosure > summary span,
-.decision-matrix-disclosure > summary small { color: var(--tds-text-3); font-size: 11px; }
-.decision-matrix-disclosure > summary strong { font-size: 15px; }
-.decision-matrix-scroll { overflow-x: auto; border-top: 1px solid #e7edf3; }
+.decision-matrix-disclosure > summary small {
+  color: var(--tds-text-3);
+  font-size: 11px;
+}
+.decision-matrix-disclosure > summary strong {
+  font-size: 15px;
+}
+.decision-matrix-scroll {
+  overflow-x: auto;
+  border-top: 1px solid #e7edf3;
+}
 
 .decision-matrix {
   width: 100%;
@@ -10535,27 +10991,70 @@ button:disabled {
   line-height: 17px;
 }
 
-.decision-matrix th:first-child { min-width: 128px; text-align: left; }
-.decision-matrix tbody th { display: flex; align-items: center; gap: 6px; }
-.decision-matrix tbody th strong { color: var(--tds-text); font-size: 13px; }
-.decision-matrix tbody th small { padding: 2px 5px; border-radius: 5px; background: #edf5ff; color: var(--tds-blue-pressed); font-size: 10px; }
-.decision-matrix .is-selected { background: #f2f7ff; }
-.decision-matrix td svg { margin: auto; }
+.decision-matrix th:first-child {
+  min-width: 128px;
+  text-align: left;
+}
+.decision-matrix tbody th {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.decision-matrix tbody th strong {
+  color: var(--tds-text);
+  font-size: 13px;
+}
+.decision-matrix tbody th small {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #edf5ff;
+  color: var(--tds-blue-pressed);
+  font-size: 10px;
+}
+.decision-matrix .is-selected {
+  background: #f2f7ff;
+}
+.decision-matrix td svg {
+  margin: auto;
+}
 .decision-matrix td.is-available,
-.decision-matrix td.is-adjustment_commit { color: #0a8f6b; }
-.decision-matrix td.is-unavailable { color: #c93440; }
-.decision-matrix td.is-unknown { color: #9aa6b2; }
-.decision-matrix-disclosure > footer { display: flex; gap: 16px; padding: 10px 16px; color: var(--tds-text-3); font-size: 11px; }
-.decision-matrix-disclosure > footer .is-positive::before { content: "✓ "; color: #0a8f6b; }
-.decision-matrix-disclosure > footer .is-negative::before { content: "× "; color: #c93440; }
-.decision-matrix-disclosure > footer .is-unknown::before { content: "○ "; color: #9aa6b2; }
+.decision-matrix td.is-adjustment_commit {
+  color: #0a8f6b;
+}
+.decision-matrix td.is-unavailable {
+  color: #c93440;
+}
+.decision-matrix td.is-unknown {
+  color: #9aa6b2;
+}
+.decision-matrix-disclosure > footer {
+  display: flex;
+  gap: 16px;
+  padding: 10px 16px;
+  color: var(--tds-text-3);
+  font-size: 11px;
+}
+.decision-matrix-disclosure > footer .is-positive::before {
+  content: '✓ ';
+  color: #0a8f6b;
+}
+.decision-matrix-disclosure > footer .is-negative::before {
+  content: '× ';
+  color: #c93440;
+}
+.decision-matrix-disclosure > footer .is-unknown::before {
+  content: '○ ';
+  color: #9aa6b2;
+}
 
-.host-shell--decision .candidate-calendar-disclosure { display: none; }
+.host-shell--decision .candidate-calendar-disclosure {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .host-shell--decision .decision-candidate-workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "head" "candidates" "status" "detail";
+    grid-template-areas: 'head' 'candidates' 'status' 'detail';
   }
 }
 
@@ -10569,21 +11068,41 @@ button:disabled {
     scrollbar-width: none;
   }
 
-  .host-shell--decision .decision-reference-candidates::-webkit-scrollbar { display: none; }
+  .host-shell--decision .decision-reference-candidates::-webkit-scrollbar {
+    display: none;
+  }
 
   .host-shell--decision .decision-reference-card {
     flex: 0 0 min(82%, 300px);
     scroll-snap-align: start;
   }
 
-  .decision-focus-head { display: grid; }
-  .decision-focus-head h2 { font-size: 21px; line-height: 30px; }
-  .decision-state-panel { padding: 18px 16px; }
-  .decision-state-panel h3 { font-size: 18px; line-height: 27px; }
-  .decision-pending-person { align-items: flex-start; }
-  .decision-criteria-inline { grid-template-columns: minmax(0, 1fr) auto; }
-  .decision-criteria-inline span { grid-column: 1 / -1; }
-  .decision-matrix-disclosure > summary small { display: none; }
+  .decision-focus-head {
+    display: grid;
+  }
+  .decision-focus-head h2 {
+    font-size: 21px;
+    line-height: 30px;
+  }
+  .decision-state-panel {
+    padding: 18px 16px;
+  }
+  .decision-state-panel h3 {
+    font-size: 18px;
+    line-height: 27px;
+  }
+  .decision-pending-person {
+    align-items: flex-start;
+  }
+  .decision-criteria-inline {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .decision-criteria-inline span {
+    grid-column: 1 / -1;
+  }
+  .decision-matrix-disclosure > summary small {
+    display: none;
+  }
 }
 
 /* Host decision surface: one continuous decision workflow. */
@@ -13563,11 +14082,28 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   border-bottom: 1px solid #edf1f5;
 }
 
-.waiting-card .target-row:last-child { border-bottom: 0; }
-.waiting-card .target-row > div { display: grid; gap: 2px; }
-.waiting-card .target-row strong { font-size: 14px; line-height: 20px; }
-.waiting-card .target-row small { color: var(--tds-text-3); font-size: 12px; line-height: 18px; }
-.waiting-card .target-row .secondary-button { min-height: 38px; padding: 0 12px; border-radius: 8px; box-shadow: none; }
+.waiting-card .target-row:last-child {
+  border-bottom: 0;
+}
+.waiting-card .target-row > div {
+  display: grid;
+  gap: 2px;
+}
+.waiting-card .target-row strong {
+  font-size: 14px;
+  line-height: 20px;
+}
+.waiting-card .target-row small {
+  color: var(--tds-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+.waiting-card .target-row .secondary-button {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  box-shadow: none;
+}
 
 .waiting-response-state {
   display: inline-flex;
@@ -13578,8 +14114,12 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   font-weight: 800;
 }
 
-.waiting-response-state.is-complete { color: #087a5b; }
-.waiting-row-spacer { width: 104px; }
+.waiting-response-state.is-complete {
+  color: #087a5b;
+}
+.waiting-row-spacer {
+  width: 104px;
+}
 
 .waiting-card .prototype-flow-action {
   margin: 0;
@@ -13605,17 +14145,28 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   display: grid;
   grid-template-columns: minmax(260px, 0.34fr) minmax(0, 1fr);
   grid-template-areas:
-    "head head"
-    "candidates detail"
-    "status detail";
+    'head head'
+    'candidates detail'
+    'status detail';
   gap: 16px 20px;
   align-items: start;
 }
 
-.decision-candidate-head { grid-area: head; }
-.decision-reference-candidates { grid-area: candidates; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.decision-reference-status { grid-area: status; }
-.decision-reference-detail { grid-area: detail; }
+.decision-candidate-head {
+  grid-area: head;
+}
+.decision-reference-candidates {
+  grid-area: candidates;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.decision-reference-status {
+  grid-area: status;
+}
+.decision-reference-detail {
+  grid-area: detail;
+}
 
 .decision-reference-card {
   min-height: 0;
@@ -13624,7 +14175,9 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   background: #fff;
 }
 
-.decision-reference-card.is-selected { background: #f5f9ff; }
+.decision-reference-card.is-selected {
+  background: #f5f9ff;
+}
 
 .decision-reference-card__select {
   grid-template-columns: 36px minmax(0, 1fr) auto;
@@ -13642,10 +14195,19 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   border-radius: 8px;
 }
 
-.decision-reference-card__status-icon { display: none; }
-.decision-reference-card__copy strong { font-size: 15px; line-height: 22px; }
-.decision-reference-card__copy small { margin-top: 3px; }
-.decision-reference-card > .primary-button { display: none; }
+.decision-reference-card__status-icon {
+  display: none;
+}
+.decision-reference-card__copy strong {
+  font-size: 15px;
+  line-height: 22px;
+}
+.decision-reference-card__copy small {
+  margin-top: 3px;
+}
+.decision-reference-card > .primary-button {
+  display: none;
+}
 
 .decision-reference-status {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -13653,11 +14215,23 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   border-radius: 10px;
 }
 
-.decision-reference-status > span { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto; padding: 10px 12px; }
-.decision-reference-status > span:last-child { display: none; }
-.decision-reference-status svg { display: none; }
-.decision-reference-status small { align-self: center; }
-.decision-reference-status strong { font-size: 15px; }
+.decision-reference-status > span {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  padding: 10px 12px;
+}
+.decision-reference-status > span:last-child {
+  display: none;
+}
+.decision-reference-status svg {
+  display: none;
+}
+.decision-reference-status small {
+  align-self: center;
+}
+.decision-reference-status strong {
+  font-size: 15px;
+}
 
 .decision-reference-detail {
   grid-template-columns: minmax(0, 0.44fr) minmax(320px, 1fr);
@@ -13667,11 +14241,24 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   background: #fff;
 }
 
-.decision-reference-summary { padding: 0 4px 0 0; }
-.decision-reference-summary h2 { font-size: 25px; line-height: 34px; letter-spacing: -0.02em; }
+.decision-reference-summary {
+  padding: 0 4px 0 0;
+}
+.decision-reference-summary h2 {
+  font-size: 25px;
+  line-height: 34px;
+  letter-spacing: -0.02em;
+}
 
-.decision-reference-actions { margin-top: 2px; }
-.decision-reference-actions .primary-button { width: 100%; min-height: 48px; border-radius: 9px; box-shadow: none; }
+.decision-reference-actions {
+  margin-top: 2px;
+}
+.decision-reference-actions .primary-button {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 9px;
+  box-shadow: none;
+}
 
 .decision-reference-detail > .decision-response-disclosure {
   overflow: hidden;
@@ -13679,37 +14266,86 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   border-radius: 10px;
 }
 
-.candidate-calendar-disclosure { border: 1px solid #e1e8f0; box-shadow: none; }
+.candidate-calendar-disclosure {
+  border: 1px solid #e1e8f0;
+  box-shadow: none;
+}
 
 @media (min-width: 761px) {
-  .decision-candidate-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-  .decision-candidate-head h1 { font-size: 24px; line-height: 34px; }
+  .decision-candidate-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .decision-candidate-head h1 {
+    font-size: 24px;
+    line-height: 34px;
+  }
 }
 
 @media (max-width: 1000px) {
   .decision-candidate-workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "head" "candidates" "status" "detail";
+    grid-template-areas: 'head' 'candidates' 'status' 'detail';
   }
-  .decision-reference-detail { grid-template-columns: minmax(0, 1fr); }
+  .decision-reference-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 760px) {
-  .waiting-workspace { width: 100%; padding: 0 0 48px; }
-  .waiting-card { gap: 22px; padding: 22px 16px; border-radius: 14px; }
-  .waiting-header h1 { font-size: 23px; line-height: 32px; }
-  .waiting-progress { padding: 18px 16px; }
-  .waiting-progress__copy { align-items: flex-start; }
-  .waiting-progress__copy small { max-width: 120px; text-align: right; }
-  .waiting-progress__meta { display: grid; gap: 3px; }
-  .waiting-card .target-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
-  .waiting-response-state { justify-self: end; }
+  .waiting-workspace {
+    width: 100%;
+    padding: 0 0 48px;
+  }
+  .waiting-card {
+    gap: 22px;
+    padding: 22px 16px;
+    border-radius: 14px;
+  }
+  .waiting-header h1 {
+    font-size: 23px;
+    line-height: 32px;
+  }
+  .waiting-progress {
+    padding: 18px 16px;
+  }
+  .waiting-progress__copy {
+    align-items: flex-start;
+  }
+  .waiting-progress__copy small {
+    max-width: 120px;
+    text-align: right;
+  }
+  .waiting-progress__meta {
+    display: grid;
+    gap: 3px;
+  }
+  .waiting-card .target-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .waiting-response-state {
+    justify-self: end;
+  }
   .waiting-card .target-row .secondary-button,
-  .waiting-row-spacer { grid-column: 1 / -1; width: 100%; }
-  .waiting-card .prototype-flow-action { align-items: stretch; }
-  .host-shell--decision .decision-board { padding: 16px; border-radius: 14px; }
-  .decision-reference-detail { padding: 16px; }
-  .decision-reference-summary h2 { font-size: 22px; line-height: 30px; }
+  .waiting-row-spacer {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .waiting-card .prototype-flow-action {
+    align-items: stretch;
+  }
+  .host-shell--decision .decision-board {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .decision-reference-detail {
+    padding: 16px;
+  }
+  .decision-reference-summary h2 {
+    font-size: 22px;
+    line-height: 30px;
+  }
 }
 
 :where(button, label, input, textarea, select, [role='button']) {
@@ -13733,8 +14369,7 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 .host-shell--create {
   background:
     radial-gradient(circle at 16% 10%, rgb(232 243 255 / 72%) 0, transparent 30rem),
-    radial-gradient(circle at 84% 18%, rgb(230 248 243 / 56%) 0, transparent 26rem),
-    #f7f9fc;
+    radial-gradient(circle at 84% 18%, rgb(230 248 243 / 56%) 0, transparent 26rem), #f7f9fc;
 }
 
 .host-shell--create .host-context-bar {
@@ -13853,7 +14488,7 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 }
 
 .meeting-brief-fields {
-  gap: 18px;
+  gap: 22px;
 }
 
 .meeting-brief-fields .field {
@@ -14070,6 +14705,11 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   background: rgb(255 255 255 / 78%);
 }
 
+.create-main-panel.create-main-panel--meeting {
+  gap: 12px;
+  padding-bottom: 28px;
+}
+
 .create-main-panel .create-task__header {
   justify-items: start;
   padding-bottom: 18px;
@@ -14112,6 +14752,11 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     border-radius: 12px;
   }
 
+  .create-main-panel.create-main-panel--meeting {
+    gap: 10px;
+    padding-bottom: 22px;
+  }
+
   .create-context-panel {
     display: none;
   }
@@ -14142,8 +14787,8 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
   grid-template-areas:
-    "head head"
-    "candidates detail";
+    'head head'
+    'candidates detail';
   gap: 14px 20px;
   padding: 0;
   border: 0;
@@ -14207,6 +14852,19 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   font-size: 13px;
 }
 
+.host-shell--decision .decision-reference-candidates > header > div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.host-shell--decision .decision-reference-candidates > header small {
+  color: var(--tds-text-3);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+}
+
 .host-shell--decision .decision-reference-candidates > header span {
   color: var(--tds-text-3);
   font-size: 11px;
@@ -14266,9 +14924,15 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   line-height: 17px;
 }
 
-.host-shell--decision .decision-reference-card.is-success .decision-reference-card__copy small { color: #087a5b; }
-.host-shell--decision .decision-reference-card.is-info .decision-reference-card__copy small { color: #8a5b00; }
-.host-shell--decision .decision-reference-card.is-danger .decision-reference-card__copy small { color: #b4232f; }
+.host-shell--decision .decision-reference-card.is-success .decision-reference-card__copy small {
+  color: #087a5b;
+}
+.host-shell--decision .decision-reference-card.is-info .decision-reference-card__copy small {
+  color: #8a5b00;
+}
+.host-shell--decision .decision-reference-card.is-danger .decision-reference-card__copy small {
+  color: #b4232f;
+}
 
 .host-shell--decision .decision-reference-card__copy i {
   padding: 1px 5px;
@@ -14358,9 +15022,9 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   .host-shell--decision .decision-candidate-workspace {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "head"
-      "detail"
-      "candidates";
+      'head'
+      'detail'
+      'candidates';
     gap: 14px;
   }
 
@@ -14406,7 +15070,9 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     scroll-snap-type: x proximity;
   }
 
-  .host-shell--decision .decision-reference-candidates > header { display: none; }
+  .host-shell--decision .decision-reference-candidates > header {
+    display: none;
+  }
 
   .host-shell--decision .decision-reference-card {
     flex: 0 0 214px;
@@ -14609,7 +15275,7 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 }
 
 .host-shell--create .create-workflow {
-  --create-surface-width: 760px;
+  --create-surface-width: 820px;
 }
 
 .host-shell--create .create-workflow--review {
@@ -14617,9 +15283,10 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 }
 
 .host-shell--create .create-workflow--time-candidates {
-  --create-surface-width: 1040px;
+  --create-surface-width: 820px;
 }
 
+.host-shell--create .create-progress,
 .host-shell--create .create-task__layout,
 .host-shell--create .create-actions {
   width: min(100%, var(--create-surface-width));
@@ -14627,6 +15294,12 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 }
 
 .host-shell--create .create-main-panel {
+  width: 100%;
+  margin-inline: 0;
+}
+
+.host-shell--create .create-main-panel > .create-task__header,
+.host-shell--create .create-main-panel > .create-phase-body {
   width: 100%;
   margin-inline: 0;
 }
@@ -14683,27 +15356,29 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   font-weight: var(--type-weight-medium) !important;
 }
 
-#root :where(
-  .status-label,
-  .state-badge,
-  .response-badge,
-  .account-status,
-  .required-chip,
-  .decision-state-panel__label,
-  .decision-reference-card__copy small,
-  .decision-matrix th small,
-  .create-task__header > span
-) {
+#root
+  :where(
+    .status-label,
+    .state-badge,
+    .response-badge,
+    .account-status,
+    .required-chip,
+    .decision-state-panel__label,
+    .decision-reference-card__copy small,
+    .decision-matrix th small,
+    .create-task__header > span
+  ) {
   font-weight: var(--type-weight-semibold) !important;
 }
 
-#root :where(
-  .create-progress__status span,
-  .field > span,
-  .decision-state-counts span,
-  .decision-criteria-inline > span,
-  .candidate-map-legend span
-) {
+#root
+  :where(
+    .create-progress__status span,
+    .field > span,
+    .decision-state-counts span,
+    .decision-criteria-inline > span,
+    .candidate-map-legend span
+  ) {
   font-weight: var(--type-weight-medium) !important;
 }
 
@@ -14727,48 +15402,51 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   line-height: 18px !important;
 }
 
-#root :where(
-  .create-task__header > span,
-  .create-progress__status span,
-  .field > span,
-  .create-main-panel .field > small,
-  .decision-candidate-head > div > span,
-  .decision-candidate-head > p,
-  .decision-focus-head > div > span,
-  .decision-state-panel__label,
-  .decision-state-counts span,
-  .decision-criteria-inline > span,
-  .decision-criteria-inline > button,
-  .decision-reference-card__copy em
-) {
+#root
+  :where(
+    .create-task__header > span,
+    .create-progress__status span,
+    .field > span,
+    .create-main-panel .field > small,
+    .decision-candidate-head > div > span,
+    .decision-candidate-head > p,
+    .decision-focus-head > div > span,
+    .decision-state-panel__label,
+    .decision-state-counts span,
+    .decision-criteria-inline > span,
+    .decision-criteria-inline > button,
+    .decision-reference-card__copy em
+  ) {
   font-size: 13px !important;
   line-height: 20px !important;
 }
 
-#root :where(
-  .decision-reference-card__copy small,
-  .decision-reference-candidates > header span,
-  .decision-matrix th,
-  .decision-matrix th small,
-  .decision-matrix-disclosure footer span,
-  .decision-matrix-disclosure > summary > div > span,
-  .decision-matrix-disclosure__affordance,
-  .decision-matrix-disclosure__affordance small,
-  .candidate-calendar-disclosure > summary span,
-  .candidate-calendar-disclosure > summary small,
-  .candidate-map-legend span
-) {
+#root
+  :where(
+    .decision-reference-card__copy small,
+    .decision-reference-candidates > header span,
+    .decision-matrix th,
+    .decision-matrix th small,
+    .decision-matrix-disclosure footer span,
+    .decision-matrix-disclosure > summary > div > span,
+    .decision-matrix-disclosure__affordance,
+    .decision-matrix-disclosure__affordance small,
+    .candidate-calendar-disclosure > summary span,
+    .candidate-calendar-disclosure > summary small,
+    .candidate-map-legend span
+  ) {
   font-size: 12px !important;
   line-height: 18px !important;
 }
 
-#root :where(
-  .decision-matrix th small,
-  .decision-matrix-disclosure footer span,
-  .decision-matrix-disclosure > summary > div > span,
-  .decision-matrix-disclosure__affordance,
-  .candidate-map-legend span
-) {
+#root
+  :where(
+    .decision-matrix th small,
+    .decision-matrix-disclosure footer span,
+    .decision-matrix-disclosure > summary > div > span,
+    .decision-matrix-disclosure__affordance,
+    .candidate-map-legend span
+  ) {
   font-weight: var(--type-weight-medium) !important;
 }
 
@@ -14784,71 +15462,77 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
    Standard and compact actions own their type size; descendants inherit it so
    screen-specific span/small rules cannot shrink otherwise identical actions.
    Composite selection cards intentionally keep their internal hierarchy. */
-#root :where(
-  .primary-button,
-  .secondary-button,
-  .create-button,
-  .add-time-button,
-  .account-create-button,
-  .decision-primary-action,
-  .people-search button,
-  .create-actions > button
-) {
+#root
+  :where(
+    .primary-button,
+    .secondary-button,
+    .create-button,
+    .add-time-button,
+    .account-create-button,
+    .decision-primary-action,
+    .people-search button,
+    .create-actions > button
+  ) {
   font-size: var(--button-text-default) !important;
   font-weight: var(--type-weight-semibold) !important;
   line-height: var(--button-leading-default) !important;
 }
 
-#root :where(
-  .primary-button,
-  .secondary-button,
-  .create-button,
-  .add-time-button,
-  .account-create-button,
-  .decision-primary-action,
-  .people-search button,
-  .create-actions > button
-) :where(span, strong, small, b, em) {
+#root
+  :where(
+    .primary-button,
+    .secondary-button,
+    .create-button,
+    .add-time-button,
+    .account-create-button,
+    .decision-primary-action,
+    .people-search button,
+    .create-actions > button
+  )
+  :where(span, strong, small, b, em) {
   font-size: inherit !important;
   font-weight: inherit !important;
   line-height: inherit !important;
 }
 
-#root :where(
-  .text-button,
-  .respond-host-link,
-  .create-back-button,
-  .account-restart-button,
-  .waiting-remind-button,
-  .availability-reset-button,
-  .response-baseline-reset,
-  .time-step-summary button,
-  .people-picker-head > button,
-  .decision-pending-group > header button,
-  .decision-pending-person button,
-  .decision-impossible-guide button,
-  .decision-criteria-inline button
-) {
+#root
+  :where(
+    .text-button,
+    .respond-host-link,
+    .create-back-button,
+    .account-restart-button,
+    .waiting-remind-button,
+    .availability-reset-button,
+    .response-baseline-reset,
+    .time-step-summary button,
+    .people-picker-head > button,
+    .decision-pending-group > header button,
+    .decision-pending-person button,
+    .decision-impossible-guide button,
+    .decision-criteria-inline button
+  ) {
   font-size: var(--button-text-compact) !important;
   font-weight: var(--type-weight-semibold) !important;
   line-height: var(--button-leading-compact) !important;
 }
 
-#root :where(
-  .text-button,
-  .respond-host-link,
-  .create-back-button,
-  .account-restart-button,
-  .waiting-remind-button,
-  .availability-reset-button,
-  .response-baseline-reset,
-  .time-step-summary button,
-  .people-picker-head > button,
-  .decision-pending-group > header button,
-  .decision-pending-person button,
-  .decision-impossible-guide button,
-  .decision-criteria-inline button
-) :where(span, strong, small, b, em) {
+#root
+  :where(
+    .text-button,
+    .respond-host-link,
+    .create-back-button,
+    .account-restart-button,
+    .waiting-remind-button,
+    .availability-reset-button,
+    .response-baseline-reset,
+    .time-step-summary button,
+    .people-picker-head > button,
+    .decision-pending-group > header button,
+    .decision-pending-person button,
+    .decision-impossible-guide button,
+    .decision-criteria-inline button
+  )
+  :where(span, strong, small, b, em) {
   font-size: inherit !important;
   font-weight: inherit !important;
   line-height: inherit !important;
@@ -14982,7 +15666,10 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   border-radius: 6px;
   background: #fff;
   color: transparent;
-  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .request-recipient-option:hover .request-recipient-check {
@@ -15004,9 +15691,7 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 /* Elevation scale for host coordination surfaces. */
 .host-shell--waiting,
 .host-shell--decision {
-  --meetcue-elevation-primary:
-    0 14px 34px rgb(31 52 83 / 7%),
-    0 3px 10px rgb(31 52 83 / 4%);
+  --meetcue-elevation-primary: 0 14px 34px rgb(31 52 83 / 7%), 0 3px 10px rgb(31 52 83 / 4%);
 }
 
 .host-shell--waiting .waiting-card,
@@ -15015,24 +15700,167 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   box-shadow: var(--meetcue-elevation-primary);
 }
 
-.host-shell--waiting :where(
-  .waiting-overview,
-  .waiting-response-row,
-  .waiting-demo-card
-),
-.host-shell--decision :where(
-  .decision-reference-card,
-  .decision-reference-detail,
-  .decision-state-panel,
-  .decision-response-disclosure,
-  .candidate-calendar-disclosure,
-  .request-recipient-option
-) {
+.host-shell--waiting :where(.waiting-overview, .waiting-response-row, .waiting-demo-card),
+.host-shell--decision
+  :where(
+    .decision-reference-card,
+    .decision-reference-detail,
+    .decision-state-panel,
+    .decision-response-disclosure,
+    .candidate-calendar-disclosure,
+    .request-recipient-option
+  ) {
   box-shadow: none;
 }
 
 .host-shell--decision .request-recipient-option:has(input:checked) {
   box-shadow: inset 0 0 0 1px var(--tds-blue);
+}
+
+/* Portaled request dialog must live above every host-page stacking context. */
+body > .request-recipient-modal {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  width: 100vw;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgb(17 24 39 / 48%);
+  backdrop-filter: none;
+  isolation: isolate;
+}
+
+body > .request-recipient-modal .request-recipient-panel {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  border: 1px solid #e5e8eb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 72px rgb(15 23 42 / 24%);
+  backdrop-filter: none;
+  isolation: isolate;
+}
+
+@media (max-width: 760px) {
+  body > .request-recipient-modal {
+    place-items: end center;
+    padding: 16px 0 0;
+  }
+
+  body > .request-recipient-modal .request-recipient-panel {
+    width: 100%;
+    max-height: min(88dvh, 760px);
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .request-recipient-modal {
+    align-items: end;
+    padding: 16px 0 0;
+  }
+
+  .request-recipient-modal .request-recipient-panel {
+    width: 100%;
+    max-height: min(88dvh, 760px);
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+.participant-block-editor {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.participant-block-policy {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px 24px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid rgb(49 130 246 / 18%);
+  border-radius: 10px;
+  background: #f5f9ff;
+}
+
+.participant-block-policy > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.participant-block-policy strong {
+  color: var(--tds-text-1);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 20px;
+}
+
+.participant-block-policy > div:first-child > span {
+  color: var(--tds-text-3);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.participant-block-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  justify-content: flex-end;
+}
+
+.participant-block-legend span {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--tds-text-2);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.participant-block-legend i {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--tds-border);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.participant-block-legend i.is-available {
+  border-color: rgb(38 179 151 / 42%);
+  background: #dcf8ef;
+}
+
+.participant-block-legend i.is-adjustable {
+  border-color: rgb(240 171 0 / 46%);
+  background: #fff4d6;
+}
+
+.participant-block-legend i.is-unavailable {
+  border-color: rgb(225 74 74 / 42%);
+  background: #fff0f0;
+}
+
+@media (max-width: 760px) {
+  .participant-block-policy {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .participant-block-legend {
+    justify-content: flex-start;
+  }
 }
 
 /* Final state-scoped overrides for confirmation and participant response. */
@@ -15192,24 +16020,24 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 
 /* Create uses the same low bento elevation on its single primary task surface. */
 .host-shell--create {
-  --meetcue-elevation-tile:
-    0 6px 18px rgb(31 52 83 / 4%),
-    inset 0 0 0 1px rgb(255 255 255 / 52%);
+  --meetcue-elevation-tile: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);
 }
 
 .host-shell--create .create-main-panel {
   box-shadow: var(--meetcue-elevation-tile);
 }
 
-.host-shell--create .create-main-panel :where(
-  .reference-source-panel,
-  .add-reference-button,
-  .selected-invitees,
-  .selected-invitee-row,
-  .time-candidate-card,
-  .availability-editor,
-  .review-fact-row
-) {
+.host-shell--create
+  .create-main-panel
+  :where(
+    .reference-source-panel,
+    .add-reference-button,
+    .selected-invitees,
+    .selected-invitee-row,
+    .time-candidate-card,
+    .availability-editor,
+    .review-fact-row
+  ) {
   box-shadow: none;
 }
 
@@ -15254,9 +16082,7 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 
 /* Host bento depth belongs to information tiles, not the workspace canvas. */
 .host-shell--decision {
-  --meetcue-elevation-tile:
-    0 6px 18px rgb(31 52 83 / 4%),
-    inset 0 0 0 1px rgb(255 255 255 / 52%);
+  --meetcue-elevation-tile: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);
 }
 
 .host-shell--decision .decision-board {
