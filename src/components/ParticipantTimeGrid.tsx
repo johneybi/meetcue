@@ -26,6 +26,7 @@ export type ParticipantTimeGridProps = {
   getState: (slot: AvailabilitySlot) => SlotState
   getAvoidPreferred: (slot: AvailabilitySlot) => boolean
   getCalendarEvent?: (slot: AvailabilitySlot) => CalendarEvent | null
+  getIsManuallyEdited?: (slot: AvailabilitySlot) => boolean
   onPaintSlot: (slot: AvailabilitySlot) => void
   onPaintDay: (slots: AvailabilitySlot[]) => void
   onToggleAvoidPreferred: (slot: AvailabilitySlot) => void
@@ -120,6 +121,7 @@ export function ParticipantTimeGrid({
   getState,
   getAvoidPreferred,
   getCalendarEvent,
+  getIsManuallyEdited,
   onPaintSlot,
   onPaintDay,
   onToggleAvoidPreferred,
@@ -161,13 +163,14 @@ export function ParticipantTimeGrid({
     const state = getState(slot)
     const avoidPreferred = getAvoidPreferred(slot)
     const calendarEvent = getCalendarEvent?.(slot) ?? null
+    const isManuallyEdited = getIsManuallyEdited?.(slot) ?? false
     const stateClass = state == null ? 'unset' : state
 
     return (
       <div
         className={`participant-time-cell is-${stateClass}${context === 'mobile' ? ' is-mobile' : ''}${
           calendarEvent ? ` has-calendar-event is-event-${calendarEvent.segment}` : ''
-        }`}
+        }${isManuallyEdited ? ' is-manually-edited' : ''}`}
         key={`${context}-${slot.startAt}`}
       >
         <button
