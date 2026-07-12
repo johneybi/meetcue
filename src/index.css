@@ -1,17 +1,34 @@
 @import '@astryxdesign/core/reset.css';
 @import '@astryxdesign/core/astryx.css';
 @import '@astryxdesign/theme-neutral/theme.css';
+@import url('https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.0/packages/wanted-sans/fonts/webfonts/variable/complete/WantedSansVariable.min.css');
 
 :root {
-  color: var(--color-text-primary);
-  background: #f8f9fa;
-  font-family:
+  --tracking-ko-body: 0;
+  --tracking-ko-caption: 0;
+  --tracking-ko-control: 0;
+  --tracking-ko-title: 0;
+  --tracking-ko-title-compact: 0;
+  --font-ui:
+    'Wanted Sans Variable',
+    'Wanted Sans',
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
     system-ui,
     'Segoe UI',
     sans-serif;
+  --font-brand:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    'Segoe UI',
+    sans-serif;
+  color: var(--color-text-primary);
+  background: #f6f8fb;
+  font-family: var(--font-ui);
+  letter-spacing: 0;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -26,10 +43,21 @@ body {
   margin: 0;
   min-width: 20rem;
   min-height: 100vh;
-  background: #f8f9fa;
-  color: #191f28;
+  background:
+    radial-gradient(circle at 18% 0%, rgb(232 243 255 / 72%), transparent 30rem),
+    radial-gradient(circle at 92% 14%, rgb(230 248 243 / 64%), transparent 26rem),
+    linear-gradient(180deg, #fbfcfe 0%, #f5f8fc 48%, #f7f9fb 100%);
+  color: #151b24;
+  letter-spacing: 0;
 }
 
 #root {
   min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  letter-spacing: 0;
 }

@@ -2,15 +2,11 @@ export type ParticipantRole = 'required' | 'optional'
 
 export type ResponseValue = 'available' | 'adjustable' | 'unavailable'
 
-export type ResponsePreferenceTag =
-  'avoid_if_possible' | 'after_lunch' | 'tight_schedule' | 'travel'
+export type ResponsePreferenceTag = 'avoid_if_possible'
 
-export type CandidateStatus = 'confirmable' | 'needs_adjustment' | 'waiting_required' | 'excluded'
+export type CandidateStatus = 'ready' | 'pending' | 'impossible'
 
-export type CandidateSetStatus =
-  'has_confirmable' | 'exploration_recommended' | 'exploration_required'
-
-export type ParticipantResponseStatus = 'pending' | 'completed'
+export type ParticipantResponseStatus = 'not_started' | 'draft' | 'submitted'
 
 export type MeetingPreset = 'all_hands' | 'core_attendees' | 'quorum'
 
@@ -26,13 +22,11 @@ export type MeetingWorkContext =
 
 export type MeetingIntent = 'decide' | 'review' | 'align' | 'unblock' | 'next_actions'
 
-export type ResponseUpdateSource = 'initial' | 'participant_edit' | 'candidate_added'
+export type ResponseUpdateSource = 'initial' | 'participant_edit'
 
-export type ChangeLogType =
-  'response_updated' | 'availability_extended' | 'candidate_added' | 'request_copied'
+export type ChangeLogType = 'response_updated' | 'request_copied'
 
-export type MeetingStatus =
-  'draft' | 'collecting' | 'confirmable' | 'confirmed' | 'needs_exploration'
+export type MeetingStatus = 'draft' | 'collecting' | 'confirmed'
 
 export interface Meeting {
   id: string
@@ -64,6 +58,7 @@ export interface AvailabilityWindow {
   startAt: string
   endAt: string
   state: ResponseValue
+  avoidPreferred?: boolean
 }
 
 export interface SchedulingWindow {
@@ -85,9 +80,6 @@ export interface Candidate {
   meetingId: string
   startAt: string
   endAt: string
-  candidateRound?: number
-  addedAt?: string
-  addedByHost?: boolean
 }
 
 export interface Response {
@@ -117,28 +109,24 @@ export const participantRoleLabels: Record<ParticipantRole, string> = {
 
 export const responseValueLabels: Record<ResponseValue, string> = {
   available: '가능해요',
-  adjustable: '일정 조정하면 가능해요',
+  adjustable: '정해지면 일정을 조정해 참석할게요',
   unavailable: '어려워요',
 }
 
 export const responseValueDescriptions: Record<ResponseValue, string> = {
-  available: '이 시간에 참석할 수 있어요.',
-  adjustable: '앞뒤 일정을 조금 바꾸면 참석할 수 있어요.',
-  unavailable: '외근, 다른 회의, 개인 일정 때문에 참석하기 어려워요.',
+  available: '현재 일정을 바꾸지 않고 참석할 수 있어요.',
+  adjustable: '이 시간으로 정해지면 다른 일정을 옮겨 참석해요.',
+  unavailable: '이 시간에는 참석하기 어려워요.',
 }
 
 export const responsePreferenceTagLabels: Record<ResponsePreferenceTag, string> = {
   avoid_if_possible: '가급적 피하고 싶어요',
-  after_lunch: '점심 직후예요',
-  tight_schedule: '앞뒤 일정이 촉박해요',
-  travel: '이동이 있어요',
 }
 
 export const candidateStatusLabels: Record<CandidateStatus, string> = {
-  confirmable: '바로 정할 수 있어요',
-  needs_adjustment: '정하기 전에 한 번 확인해 주세요',
-  waiting_required: '아직 정하기 어려워요',
-  excluded: '이 시간은 어려워요',
+  ready: '지금 정할 수 있어요',
+  pending: '응답이 더 필요해요',
+  impossible: '다른 시간을 찾아야 해요',
 }
 
 export const meetingPresetLabels: Record<MeetingPreset, string> = {
@@ -172,16 +160,19 @@ export function formatCandidateTime(candidate: Candidate) {
   const start = new Date(candidate.startAt)
   const end = new Date(candidate.endAt)
   const day = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     weekday: 'short',
     month: 'numeric',
     day: 'numeric',
   }).format(start)
   const startTime = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   }).format(start)
   const endTime = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -192,6 +183,7 @@ export function formatCandidateTime(candidate: Candidate) {
 
 export function formatDeadline(deadline: string) {
   return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     weekday: 'short',
     month: 'numeric',
     day: 'numeric',
@@ -220,10 +212,12 @@ export function formatSchedulingWindow(window: SchedulingWindow) {
   const start = parseLocalDate(window.startDate)
   const end = parseLocalDate(window.endDate)
   const startLabel = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     month: 'numeric',
     day: 'numeric',
   }).format(start)
   const endLabel = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     month: 'numeric',
     day: 'numeric',
   }).format(end)

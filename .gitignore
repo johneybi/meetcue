@@ -16,10 +16,26 @@ dist-ssr
 .local-docs/*
 !.local-docs/prd-v1.5.md
 !.local-docs/prd-v2.0.md
+!.local-docs/prd-v2.1-onepage.md
+!.local-docs/prd-v2.1.md
+!.local-docs/decision-model-v2.1.md
 !.local-docs/host-time-model-decision-v2.0.md
 !.local-docs/meeting-time-reservation-decision-v2.1.md
 !.local-docs/time-quantum-decision-v2.2.md
 !.local-docs/availability-window-model-decision-v2.3.md
+!.local-docs/README.md
+!.local-docs/research-internalized-thinking-v1.md
+!.local-docs/sprint-decision-coherence-v2.2.1.md
+!.local-docs/prd-v2.2.md
+!.local-docs/prd-v2.2.1.md
+!.local-docs/decision-model-v2.2.md
+!.local-docs/host-search-scope-input-decision-v2.4.md
+!.local-docs/participant-availability-input-decision-v2.5.md
+!.local-docs/participant-availability-input-decision-v2.6.md
+!.local-docs/personal-invite-identity-decision-v2.7.md
+!.local-docs/account-based-request-delivery-decision-v2.8.md
+!.local-docs/account-navigation-ia-decision-v2.9.md
+!.local-docs/p0-submission-scope-lock-v2.10.md
 
 # Local product-making notes, reviews, audits, and agent artifacts
 .product-design-audit/
@@ -32,6 +48,8 @@ oh-my-design/
 .claude/
 .opencode/
 design-qa.md
+outputs/
+.audit/
 start-*.txt
 dev-server*.pid
 

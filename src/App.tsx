@@ -1,6 +1,8 @@
 import {
+  Fragment,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -8,31 +10,42 @@ import {
   useState,
 } from 'react'
 import { CalendarDate, getLocalTimeZone, startOfWeek, today } from '@internationalized/date'
+import { Toaster, toast } from 'sonner'
 import {
-  ArrowRight,
+  Bell,
+  CalendarCheck2,
   CalendarDays,
   Check,
+  Clock3,
   ChevronLeft,
   ChevronRight,
+  Home,
+  Inbox,
   Minus,
+  PanelsTopLeft,
   Plus,
+  RotateCcw,
   X,
 } from 'lucide-react'
 import {
+  createDefaultHostAvailabilityWindows,
   deriveAvailabilitySlots,
   deriveCandidatesFromAvailabilityWindows,
   deriveParticipantResponses,
+  fillAvailabilitySlots,
   getAvailabilityStateForSlot,
+  getAvailabilityWindowForSlot,
   mergeAvailabilityWindows,
+  removeAvailabilityRange,
+  replaceAvailabilitySlot,
   type AvailabilitySlot,
 } from './domain/availability'
 import {
   evaluateCandidates,
   generateConfirmationMessage,
-  generateRecoveryRequestMessage,
   type CandidateEvaluation,
 } from './domain/evaluation'
-import { createDraftMeeting, createPrototypeMeeting, prototypeNow } from './domain/mockMeeting'
+import { createDraftMeeting, createPrototypeMeeting } from './domain/mockMeeting'
 import {
   candidateStatusLabels,
   formatCandidateTime,
@@ -40,8 +53,6 @@ import {
   formatMeetingDuration,
   formatSchedulingWindow,
   participantRoleLabels,
-  responsePreferenceTagLabels,
-  responseValueDescriptions,
   responseValueLabels,
   type AvailabilityWindow,
   type CandidateStatus,
@@ -50,41 +61,132 @@ import {
   type MeetingDuration,
   type Participant,
   type ParticipantRole,
+  type Response,
   type ResponseValue,
   type SchedulingWindow,
 } from './domain/meeting'
+import { ParticipantTimeGrid } from './components/ParticipantTimeGrid'
 import './App.css'
 
 type AppRoute =
   | 'entry'
+  | 'home'
+  | 'meetings'
+  | 'requests'
+  | 'notifications'
   | 'create'
+  | 'criteria'
   | 'share'
   | 'host'
-  | 'recover'
   | 'message'
   | 'invite'
   | 'invite-edit'
-  | 'invite-added'
   | 'invite-done'
 
-type Audience = 'entry' | 'host' | 'participant'
+type Audience = 'account' | 'host' | 'participant'
 
 type HostCoordinationState =
-  | 'HOST_DRAFT'
-  | 'HOST_SHARE_READY'
-  | 'HOST_WAITING_EMPTY'
-  | 'HOST_WAITING_PARTIAL'
-  | 'HOST_DECISION_READY'
-  | 'HOST_REVIEW_NEEDED'
-  | 'HOST_RECOVERY_REQUIRED'
-  | 'HOST_CONFIRMED'
+  'HOST_DRAFT' | 'HOST_SHARE_READY' | 'HOST_WAITING_EMPTY' | 'HOST_DECISION' | 'HOST_CONFIRMED'
 
 type ParticipantCoordinationState =
-  'PARTICIPANT_NEW' | 'PARTICIPANT_EDITING' | 'PARTICIPANT_ADDED_ONLY' | 'PARTICIPANT_DONE'
+  'PARTICIPANT_NEW' | 'PARTICIPANT_EDITING' | 'PARTICIPANT_DONE' | 'PARTICIPANT_CONFIRMED'
 
 type HostCreateStep = 'meeting' | 'attendees' | 'times' | 'review'
 type TimeCreateStep = 'constraints' | 'candidates' | 'deadline'
+type ScopeBrushMode = 'exclude' | 'add'
 type AttendeeDecisionMode = 'everyone' | 'required'
+type AttendanceThresholdMode = 'required_only' | 'minimum_count'
+type ParticipantInputSource = 'calendar' | 'manual' | 'existing'
+type AccountScenarioId = 'product-review' | 'onboarding' | 'quarterly-goals' | 'design-qa'
+
+type DevScreen = {
+  label: string
+  route: AppRoute
+  fixture: 'draft' | 'waiting' | 'collecting' | 'confirmed' | 'current'
+  participantToken?: string
+}
+
+const devScreenGroups: Array<{ label: string; screens: DevScreen[] }> = [
+  {
+    label: '핵심 시연',
+    screens: [
+      { label: '1. 생성', route: 'create', fixture: 'draft' },
+      { label: '2. PENDING 결과', route: 'host', fixture: 'collecting' },
+      {
+        label: '3. 수진 응답',
+        route: 'invite',
+        fixture: 'current',
+        participantToken: 'token-p-sujin',
+      },
+      { label: '4. 재판정 결과', route: 'host', fixture: 'current' },
+      { label: '5. 확정', route: 'host', fixture: 'confirmed' },
+    ],
+  },
+  {
+    label: '주최자',
+    screens: [
+      { label: '회의 만들기', route: 'create', fixture: 'draft' },
+      { label: '요청 발송 완료', route: 'share', fixture: 'collecting' },
+      { label: '응답 대기', route: 'host', fixture: 'waiting' },
+      { label: '결과 확인', route: 'host', fixture: 'collecting' },
+      { label: '진행 기준', route: 'criteria', fixture: 'collecting' },
+      { label: '확정 안내', route: 'host', fixture: 'confirmed' },
+    ],
+  },
+  {
+    label: '참여자 fixture',
+    screens: [
+      {
+        label: '수진 · 신규',
+        route: 'invite',
+        fixture: 'collecting',
+        participantToken: 'token-p-sujin',
+      },
+      {
+        label: '민수 · 수정',
+        route: 'invite-edit',
+        fixture: 'collecting',
+        participantToken: 'token-p-minsu',
+      },
+      {
+        label: '서연 · 수정',
+        route: 'invite-edit',
+        fixture: 'collecting',
+        participantToken: 'token-p-seoyeon',
+      },
+      {
+        label: '준호 · 수정',
+        route: 'invite-edit',
+        fixture: 'collecting',
+        participantToken: 'token-p-junho',
+      },
+      {
+        label: '하나 · 수정',
+        route: 'invite-edit',
+        fixture: 'collecting',
+        participantToken: 'token-p-hana',
+      },
+      {
+        label: '민수 · 완료',
+        route: 'invite-done',
+        fixture: 'collecting',
+        participantToken: 'token-p-minsu',
+      },
+      { label: '잘못된 링크', route: 'invite', fixture: 'collecting' },
+    ],
+  },
+  {
+    label: '후속 제품 · P0 보류',
+    screens: [
+      { label: '홈', route: 'home', fixture: 'collecting' },
+      { label: '내 회의', route: 'meetings', fixture: 'collecting' },
+      { label: '받은 요청', route: 'requests', fixture: 'collecting' },
+      { label: '알림', route: 'notifications', fixture: 'collecting' },
+    ],
+  },
+]
+
+const SHOW_DURATION_CONTROLS = true
 
 const attendeeDecisionOptions: Array<{
   id: AttendeeDecisionMode
@@ -109,50 +211,21 @@ const recentInviteesStorageKey = 'confirmation-board-recent-invitees'
 const responseOptions: ResponseValue[] = ['available', 'adjustable', 'unavailable']
 const participantResponseLabels: Record<ResponseValue, string> = {
   available: '가능해요',
-  adjustable: '내 일정 조정',
+  adjustable: '일정 조정해요',
   unavailable: '어려워요',
 }
-const participantDateHeadingFormatter = new Intl.DateTimeFormat('ko-KR', {
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long',
-})
-const participantClockFormatter = new Intl.DateTimeFormat('ko-KR', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-})
-
-interface AvailabilitySlotDateGroup {
-  key: string
-  date: Date
-  slots: AvailabilitySlot[]
-}
-
-function groupAvailabilitySlotsByDate(slots: AvailabilitySlot[]): AvailabilitySlotDateGroup[] {
-  const groups = new Map<string, AvailabilitySlotDateGroup>()
-
-  slots.forEach((slot) => {
-    const date = new Date(slot.startAt)
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-      date.getDate(),
-    ).padStart(2, '0')}`
-    const group = groups.get(key)
-
-    if (group) {
-      group.slots.push(slot)
-    } else {
-      groups.set(key, { key, date, slots: [slot] })
-    }
-  })
-
-  return [...groups.values()]
-}
-
-function formatAvailabilitySlotClockRange(slot: AvailabilitySlot) {
-  return `${participantClockFormatter.format(new Date(slot.startAt))}-${participantClockFormatter.format(
-    new Date(slot.endAt),
-  )}`
+const candidateStatusOrder: CandidateStatus[] = ['ready', 'pending', 'impossible']
+function isSimulatedCalendarBusy(slot: AvailabilitySlot) {
+  const date = new Date(slot.startAt)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    day: 'numeric',
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const day = Number(parts.find((part) => part.type === 'day')?.value ?? 0)
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
+  return hour === 12 || (day % 2 === 0 && hour === 15)
 }
 
 const createSteps: Array<{
@@ -187,21 +260,24 @@ const createSteps: Array<{
     id: 'review',
     label: '확인',
     eyebrow: '4단계',
-    title: '이대로 참석자에게 보낼까요?',
-    description: '참석자가 링크를 열었을 때 볼 내용을 마지막으로 확인해요.',
+    title: '이 내용으로 시간을 물어볼까요?',
+    description: '참석자가 확인할 회의 정보와 시간 범위를 마지막으로 살펴보세요.',
   },
 ]
 
 const routeHashes: Record<AppRoute, string> = {
   entry: '#/',
+  home: '#/home',
+  meetings: '#/meetings',
+  requests: '#/requests',
+  notifications: '#/notifications',
   create: '#/create',
+  criteria: '#/criteria',
   share: '#/share',
   host: '#/host',
-  recover: '#/recover',
   message: '#/message',
   invite: '#/invite',
   'invite-edit': '#/invite/edit',
-  'invite-added': '#/invite/added',
   'invite-done': '#/invite/done',
 }
 
@@ -211,70 +287,75 @@ const hostStateCopy: Record<HostCoordinationState, { title: string; description:
     description: '참석자에게 무엇을 물어볼지 먼저 정리합니다.',
   },
   HOST_SHARE_READY: {
-    title: '응답 링크를 보낼 수 있어요',
-    description: '링크를 복사해 참석자에게 공유하세요.',
+    title: '참석자에게 응답을 요청했어요',
+    description: '각 참석자는 자신의 계정에서 회의 요청을 확인하고 응답합니다.',
   },
   HOST_WAITING_EMPTY: {
     title: '아직 응답을 기다리고 있어요',
     description: '응답이 모이면 정할 수 있는 시간이 보입니다.',
   },
-  HOST_WAITING_PARTIAL: {
-    title: '꼭 필요한 응답이 더 필요해요',
-    description: '필수 참석자에게만 다시 요청하면 됩니다.',
-  },
-  HOST_DECISION_READY: {
-    title: '정할 수 있는 시간이 있어요',
-    description: '가장 안정적인 후보를 확인하고 회의 시간을 확정하세요.',
-  },
-  HOST_REVIEW_NEEDED: {
-    title: '정하기 전에 한 번 확인해 주세요',
-    description: '가능하지만 일정 조정이 필요한 참석자가 있습니다.',
-  },
-  HOST_RECOVERY_REQUIRED: {
-    title: '다시 물어볼 시간이 필요해요',
-    description: '기존 응답은 유지하고 필요한 시간만 추가로 확인합니다.',
+  HOST_DECISION: {
+    title: '현재 응답으로 회의 시간을 판단해 보세요',
+    description: '정할 수 있는 시간과 더 필요한 가능 응답 조건을 함께 보여드려요.',
   },
   HOST_CONFIRMED: {
     title: '회의 시간이 정해졌어요',
-    description: '참석자에게 보낼 확정 문구를 복사하면 됩니다.',
+    description: '참석자에게 확정 시간을 알릴 수 있어요.',
   },
 }
 
-const addedAvailabilityWindowSlots = [
-  ['2026-07-06T16:00:00+09:00', '2026-07-06T17:00:00+09:00'],
-  ['2026-07-07T11:00:00+09:00', '2026-07-07T12:00:00+09:00'],
-  ['2026-07-08T15:00:00+09:00', '2026-07-08T16:00:00+09:00'],
-] as const
-
 function parseRouteHash(): AppRoute {
   const parts = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean)
-  const [first, second] = parts
+  const [first, second, third] = parts
 
-  if (first == null) return 'entry'
+  if (first == null) return 'create'
+  if (import.meta.env.DEV && first === 'home') return 'home'
+  if (import.meta.env.DEV && first === 'meetings') return 'meetings'
+  if (import.meta.env.DEV && first === 'requests') return 'requests'
+  if (import.meta.env.DEV && first === 'notifications') return 'notifications'
   if (first === 'results' || first === 'host') return 'host'
-  if (first === 'explore' || first === 'recover') return 'recover'
+  if (first === 'explore' || first === 'recover') return 'host'
   if (first === 'create') return 'create'
+  if (first === 'criteria') return 'criteria'
   if (first === 'share') return 'share'
   if (first === 'message') return 'message'
 
   if (first === 'respond' || first === 'invite') {
-    if (second === 'edit') return 'invite-edit'
-    if (second === 'added') return 'invite-added'
-    if (second === 'done') return 'invite-done'
+    const stateSegment = second?.startsWith('token-') ? third : second
+    if (stateSegment === 'edit') return 'invite-edit'
+    if (stateSegment === 'added') return 'invite'
+    if (stateSegment === 'done') return 'invite-done'
     return 'invite'
   }
 
-  return 'entry'
+  return 'create'
+}
+
+function getInviteTokenFromHash() {
+  const parts = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean)
+  return parts[0] === 'invite' && parts[1]?.startsWith('token-') ? parts[1] : undefined
 }
 
 function getAudience(route: AppRoute): Audience {
-  if (route === 'entry') return 'entry'
+  if (
+    route === 'entry' ||
+    route === 'home' ||
+    route === 'meetings' ||
+    route === 'requests' ||
+    route === 'notifications'
+  ) {
+    return 'account'
+  }
   if (route.startsWith('invite')) return 'participant'
   return 'host'
 }
 
-function updateRouteHash(route: AppRoute, replace = false) {
-  const nextHash = routeHashes[route]
+function updateRouteHash(route: AppRoute, replace = false, participantToken?: string) {
+  const participantSuffix = route === 'invite-edit' ? 'edit' : route === 'invite-done' ? 'done' : ''
+  const nextHash =
+    route.startsWith('invite') && participantToken
+      ? `#/invite/${participantToken}${participantSuffix ? `/${participantSuffix}` : ''}`
+      : routeHashes[route]
 
   if (window.location.hash === nextHash) return
 
@@ -284,14 +365,6 @@ function updateRouteHash(route: AppRoute, replace = false) {
   }
 
   window.history.pushState(null, '', nextHash)
-}
-
-async function copyText(value: string) {
-  try {
-    await navigator.clipboard?.writeText(value)
-  } catch {
-    // Clipboard access can be unavailable in local preview surfaces.
-  }
 }
 
 function createChangeLog(
@@ -314,40 +387,138 @@ function createChangeLog(
   }
 }
 
+function createPendingPrototypeState(meeting: Meeting) {
+  const invitees = meeting.participants.filter((participant) => participant.id !== meeting.hostId)
+  const requiredCount = meeting.participants.filter(
+    (participant) => participant.role === 'required',
+  ).length
+  const optionalTarget = invitees.find(
+    (participant) => participant.role === 'optional' && meeting.minAttendeeCount > requiredCount,
+  )
+  const target =
+    optionalTarget ??
+    invitees.find((participant) => participant.role === 'required') ??
+    invitees.at(-1)
+  const pendingCandidate = meeting.candidates[0]
+
+  if (target == null || pendingCandidate == null) {
+    return { meeting, target: undefined, pendingCandidateId: undefined }
+  }
+
+  const requiredUnavailableId = invitees.find(
+    (participant) => participant.role === 'required' && participant.id !== target.id,
+  )?.id
+  const responses: Response[] = []
+  const responseWindows: AvailabilityWindow[] = []
+
+  meeting.candidates.forEach((candidate, candidateIndex) => {
+    const candidateResponses = new Map<string, ResponseValue>()
+
+    if (candidateIndex === 0) {
+      let committedCount = 1
+      invitees.forEach((participant) => {
+        if (participant.id === target.id) return
+        if (participant.role === 'required') {
+          candidateResponses.set(participant.id, 'available')
+          committedCount += 1
+        }
+      })
+      invitees.forEach((participant) => {
+        if (participant.id === target.id || participant.role === 'required') return
+        const shouldCommit = committedCount < meeting.minAttendeeCount - 1
+        candidateResponses.set(participant.id, shouldCommit ? 'available' : 'unavailable')
+        if (shouldCommit) committedCount += 1
+      })
+    } else if (candidateIndex === 2) {
+      invitees.forEach((participant) => {
+        candidateResponses.set(
+          participant.id,
+          requiredUnavailableId == null || participant.id === requiredUnavailableId
+            ? 'unavailable'
+            : 'available',
+        )
+      })
+    } else {
+      invitees.forEach((participant) => {
+        if (participant.id === target.id && candidateIndex % 2 === 0) return
+        candidateResponses.set(
+          participant.id,
+          participant.role === 'required' || candidateIndex % 3 !== 0 ? 'available' : 'adjustable',
+        )
+      })
+    }
+
+    candidateResponses.forEach((value, participantId) => {
+      responses.push({
+        id: `response-${participantId}-${candidate.id}`,
+        participantId,
+        candidateId: candidate.id,
+        value,
+        updatedAt: new Date().toISOString(),
+        updateSource: 'initial',
+      })
+      responseWindows.push({
+        id: `aw-${participantId}-${candidate.id}`,
+        meetingId: meeting.id,
+        ownerId: participantId,
+        startAt: candidate.startAt,
+        endAt: candidate.endAt,
+        state: value,
+      })
+    })
+  })
+
+  return {
+    meeting: {
+      ...meeting,
+      status: 'collecting' as const,
+      participants: meeting.participants.map((participant) =>
+        participant.id === meeting.hostId
+          ? participant
+          : {
+              ...participant,
+              responseStatus:
+                participant.id === target.id ? ('not_started' as const) : ('submitted' as const),
+            },
+      ),
+      availabilityWindows: [
+        ...meeting.availabilityWindows.filter((window) => window.ownerId === meeting.hostId),
+        ...responseWindows,
+      ],
+      responses,
+    },
+    target,
+    pendingCandidateId: pendingCandidate.id,
+  }
+}
+
 function App() {
   const [route, setRoute] = useState<AppRoute>(() => parseRouteHash())
+  const [inviteToken, setInviteToken] = useState<string | undefined>(() => getInviteTokenFromHash())
   const [meeting, setMeeting] = useState<Meeting>(() =>
     parseRouteHash() === 'create' ? createDraftMeeting() : createPrototypeMeeting(),
   )
+  const [evaluationNow, setEvaluationNow] = useState(() => new Date())
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>()
-  const [latestAddedCandidateId, setLatestAddedCandidateId] = useState<string | undefined>()
-  const [selectedParticipantId] = useState(() => {
-    const meetingData = createPrototypeMeeting()
-    return (
-      meetingData.participants.find((participant) => participant.responseStatus === 'pending')
-        ?.id ??
-      meetingData.participants[0]?.id ??
-      ''
-    )
-  })
-  const [copyStatus, setCopyStatus] = useState('')
+  const [requestedParticipantId, setRequestedParticipantId] = useState<string | undefined>()
 
-  const evaluations = useMemo(() => evaluateCandidates(meeting, prototypeNow), [meeting])
-  const hostState = getHostCoordinationState(meeting, evaluations, route)
+  const evaluations = useMemo(
+    () => evaluateCandidates(meeting, evaluationNow),
+    [evaluationNow, meeting],
+  )
+  const hostState = getHostCoordinationState(meeting, route)
   const audience = getAudience(route)
   const selectedEvaluation = getSelectedEvaluation(
     evaluations,
     selectedCandidateId,
     meeting.confirmedCandidateId,
   )
-  const selectedParticipant =
-    meeting.participants.find(
-      (participant) =>
-        participant.id === selectedParticipantId && participant.id !== meeting.hostId,
-    ) ?? meeting.participants.find((participant) => participant.id !== meeting.hostId)
+  const selectedParticipant = meeting.participants.find(
+    (participant) => participant.responseToken === inviteToken && participant.id !== meeting.hostId,
+  )
   const participantState =
     selectedParticipant != null
-      ? getParticipantState(route, selectedParticipant, latestAddedCandidateId)
+      ? getParticipantState(meeting, route, selectedParticipant)
       : 'PARTICIPANT_NEW'
   const createMeeting = useMemo(() => {
     if (route !== 'create' || meeting.status !== 'draft') {
@@ -364,14 +535,19 @@ function App() {
       ? meeting
       : { ...meeting, candidates: selectableCandidates }
   }, [meeting, route])
+  const accountMeeting = useMemo(
+    () => (meeting.status === 'draft' ? createPrototypeMeeting() : meeting),
+    [meeting],
+  )
 
   useEffect(() => {
     if (!window.location.hash) {
-      updateRouteHash('entry', true)
+      updateRouteHash('create', true)
     }
 
     function handleRouteChange() {
       setRoute(parseRouteHash())
+      setInviteToken(getInviteTokenFromHash())
     }
 
     window.addEventListener('hashchange', handleRouteChange)
@@ -383,13 +559,26 @@ function App() {
     }
   }, [])
 
-  function navigateTo(nextRoute: AppRoute) {
-    if (route === 'entry' && nextRoute === 'create') {
-      setMeeting(createDraftMeeting())
+  useEffect(() => {
+    const timer = window.setInterval(() => setEvaluationNow(new Date()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (route === 'message' && hostState !== 'HOST_CONFIRMED') {
+      navigateTo('host', true)
+      return
     }
 
+    if (route === 'criteria' && meeting.status === 'confirmed') {
+      navigateTo('host', true)
+    }
+  }, [hostState, meeting.status, route])
+
+  function navigateTo(nextRoute: AppRoute, replace = false, participantToken?: string) {
     setRoute(nextRoute)
-    updateRouteHash(nextRoute)
+    setInviteToken(participantToken)
+    updateRouteHash(nextRoute, replace, participantToken)
   }
 
   function updateTitle(title: string) {
@@ -421,6 +610,7 @@ function App() {
         availabilityWindows,
         candidates: deriveCandidatesFromAvailabilityWindows(
           currentMeeting.id,
+          currentMeeting.hostId,
           availabilityWindows,
           currentMeeting.durationMinutes,
         ),
@@ -434,6 +624,7 @@ function App() {
       durationMinutes,
       candidates: deriveCandidatesFromAvailabilityWindows(
         currentMeeting.id,
+        currentMeeting.hostId,
         currentMeeting.availabilityWindows,
         durationMinutes,
       ),
@@ -446,10 +637,19 @@ function App() {
 
   function updateAvailabilityWindows(availabilityWindows: AvailabilityWindow[]) {
     setMeeting((currentMeeting) => {
-      const mergedWindows = mergeAvailabilityWindows(availabilityWindows)
+      const mergedHostWindows = mergeAvailabilityWindows(
+        availabilityWindows.filter((window) => window.ownerId === currentMeeting.hostId),
+      )
+      const mergedWindows = [
+        ...currentMeeting.availabilityWindows.filter(
+          (window) => window.ownerId !== currentMeeting.hostId,
+        ),
+        ...mergedHostWindows,
+      ]
       const candidates = deriveCandidatesFromAvailabilityWindows(
         currentMeeting.id,
-        mergedWindows,
+        currentMeeting.hostId,
+        mergedHostWindows,
         currentMeeting.durationMinutes,
       )
       const candidateIds = new Set(candidates.map((candidate) => candidate.id))
@@ -532,6 +732,23 @@ function App() {
     })
   }
 
+  function updateAttendanceThresholdMode(mode: AttendanceThresholdMode) {
+    setMeeting((currentMeeting) => {
+      const requiredCount = currentMeeting.participants.filter(
+        (participant) => participant.role === 'required',
+      ).length
+
+      return {
+        ...currentMeeting,
+        preset: mode === 'required_only' ? 'core_attendees' : 'quorum',
+        minAttendeeCount:
+          mode === 'required_only'
+            ? requiredCount
+            : Math.max(requiredCount, currentMeeting.minAttendeeCount),
+      }
+    })
+  }
+
   function addParticipant(name?: string) {
     setMeeting((currentMeeting) => {
       const nextIndex =
@@ -560,7 +777,7 @@ function App() {
           name: participantName,
           role: participantRole,
           responseToken: `token-${participantId}`,
-          responseStatus: 'pending' as const,
+          responseStatus: 'not_started' as const,
         },
       ]
 
@@ -599,52 +816,10 @@ function App() {
     })
   }
 
-  function updateParticipantAvailability(
+  function submitParticipantAvailability(
     participantId: string,
-    slot: AvailabilitySlot,
-    value: ResponseValue,
+    participantDraftWindows: AvailabilityWindow[],
   ) {
-    setMeeting((currentMeeting) => {
-      const slotStart = new Date(slot.startAt).getTime()
-      const slotEnd = new Date(slot.endAt).getTime()
-      const retainedWindows = currentMeeting.availabilityWindows.filter(
-        (window) =>
-          window.ownerId !== participantId ||
-          new Date(window.endAt).getTime() <= slotStart ||
-          new Date(window.startAt).getTime() >= slotEnd,
-      )
-      const availabilityWindows = mergeAvailabilityWindows([
-        ...retainedWindows,
-        {
-          id: `aw-${participantId}-${slotStart}`,
-          meetingId: currentMeeting.id,
-          ownerId: participantId,
-          startAt: slot.startAt,
-          endAt: slot.endAt,
-          state: value,
-        },
-      ])
-      const responses = deriveParticipantResponses(
-        participantId,
-        currentMeeting.candidates,
-        availabilityWindows,
-        prototypeNow.toISOString(),
-      )
-
-      return {
-        ...currentMeeting,
-        availabilityWindows,
-        responses: [
-          ...currentMeeting.responses.filter(
-            (response) => response.participantId !== participantId,
-          ),
-          ...responses,
-        ],
-      }
-    })
-  }
-
-  function completeParticipantAvailability(participantId: string) {
     setMeeting((currentMeeting) => {
       const slots = deriveAvailabilitySlots(
         currentMeeting.availabilityWindows,
@@ -653,8 +828,7 @@ function App() {
       const unansweredWindows = slots
         .filter(
           (slot) =>
-            getAvailabilityStateForSlot(currentMeeting.availabilityWindows, participantId, slot) ==
-            null,
+            getAvailabilityStateForSlot(participantDraftWindows, participantId, slot) == null,
         )
         .map((slot) => ({
           id: `aw-${participantId}-${new Date(slot.startAt).getTime()}`,
@@ -665,14 +839,15 @@ function App() {
           state: 'unavailable' as const,
         }))
       const availabilityWindows = mergeAvailabilityWindows([
-        ...currentMeeting.availabilityWindows,
+        ...currentMeeting.availabilityWindows.filter((window) => window.ownerId !== participantId),
+        ...participantDraftWindows,
         ...unansweredWindows,
       ])
       const responses = deriveParticipantResponses(
         participantId,
         currentMeeting.candidates,
         availabilityWindows,
-        prototypeNow.toISOString(),
+        new Date().toISOString(),
       )
       const participant = currentMeeting.participants.find((item) => item.id === participantId)
       const changeLog =
@@ -688,7 +863,7 @@ function App() {
         ...currentMeeting,
         availabilityWindows,
         participants: currentMeeting.participants.map((item) =>
-          item.id === participantId ? { ...item, responseStatus: 'completed' as const } : item,
+          item.id === participantId ? { ...item, responseStatus: 'submitted' as const } : item,
         ),
         responses: [
           ...currentMeeting.responses.filter(
@@ -704,44 +879,28 @@ function App() {
     })
   }
 
-  async function copyShareLink() {
-    await copyText(`${window.location.origin}${window.location.pathname}#/invite`)
-    setCopyStatus('응답 링크를 복사했어요')
+  function remindParticipant(participant: Participant) {
+    toast.success(`${participant.name}님에게 다시 알렸어요`, {
+      id: `participant-reminder-${participant.id}`,
+    })
   }
 
-  async function copyRecoveryRequest(evaluation: CandidateEvaluation) {
-    await copyText(generateRecoveryRequestMessage(meeting, evaluation))
-    setCopyStatus('요청 문구를 복사했어요')
+  function sendResponseReminder(evaluation: CandidateEvaluation, recipientIds: string[]) {
+    toast.success(`${recipientIds.length}명에게 응답을 다시 요청했어요`, {
+      id: `candidate-reminder-${evaluation.candidate.id}`,
+    })
     setMeeting((currentMeeting) => ({
       ...currentMeeting,
       changeLogs: [
         createChangeLog(currentMeeting, {
           type: 'request_copied',
           candidateId: evaluation.candidate.id,
-          description:
-            evaluation.status === 'needs_adjustment'
-              ? `${formatCandidateTime(evaluation.candidate)} 확인 문구를 복사했어요.`
-              : `${formatCandidateTime(evaluation.candidate)} 응답 요청 문구를 복사했어요.`,
+          description: `${formatCandidateTime(evaluation.candidate)} 응답을 ${recipientIds.length}명에게 다시 요청했어요.`,
         }),
         ...currentMeeting.changeLogs,
       ].slice(0, 6),
     }))
-  }
-
-  async function copyAddedCandidateMessage(message: string, candidateId?: string) {
-    await copyText(message)
-    setCopyStatus('새 시간 안내 문구를 복사했어요')
-    setMeeting((currentMeeting) => ({
-      ...currentMeeting,
-      changeLogs: [
-        createChangeLog(currentMeeting, {
-          type: 'request_copied',
-          candidateId,
-          description: '새 시간 안내 문구를 복사했어요. 추가된 시간만 다시 확인하면 됩니다.',
-        }),
-        ...currentMeeting.changeLogs,
-      ].slice(0, 6),
-    }))
+    setRequestedParticipantId(recipientIds[0])
   }
 
   function confirmCandidate(candidateId: string) {
@@ -754,73 +913,155 @@ function App() {
     navigateTo('message')
   }
 
-  function addAvailabilityWindow() {
-    const index =
-      meeting.availabilityWindows.filter((window) => window.ownerId === meeting.hostId).length + 1
-    const [startAt, endAt] =
-      addedAvailabilityWindowSlots[Math.max(0, index - 6) % addedAvailabilityWindowSlots.length]
-    const availabilityWindow: AvailabilityWindow = {
-      id: `aw-recovery-${index}`,
-      meetingId: meeting.id,
-      ownerId: meeting.hostId,
-      startAt,
-      endAt,
-      state: 'available',
-    }
-    const addedCandidates = deriveCandidatesFromAvailabilityWindows(
-      meeting.id,
-      [availabilityWindow],
-      meeting.durationMinutes,
-    ).map((candidate) => ({
-      ...candidate,
-      candidateRound: 2,
-      addedAt: prototypeNow.toISOString(),
-      addedByHost: true,
-    }))
-    const existingCandidateIds = new Set(meeting.candidates.map((candidate) => candidate.id))
-    const nextCandidates = addedCandidates.filter(
-      (candidate) => !existingCandidateIds.has(candidate.id),
-    )
+  function startNewMeeting() {
+    toast.dismiss()
+    setMeeting(createDraftMeeting())
+    setSelectedCandidateId(undefined)
+    setRequestedParticipantId(undefined)
+    navigateTo('create')
+  }
 
-    setMeeting((currentMeeting) => {
-      return {
-        ...currentMeeting,
-        availabilityWindows: mergeAvailabilityWindows([
-          ...currentMeeting.availabilityWindows,
-          availabilityWindow,
-        ]),
-        candidates: [...currentMeeting.candidates, ...nextCandidates],
-        changeLogs: [
-          createChangeLog(currentMeeting, {
-            type: 'availability_extended',
-            candidateId: nextCandidates[0]?.id,
-            description: `${formatAvailabilityWindow(availabilityWindow)} 조율 가능 시간대가 추가됐어요.`,
-          }),
-          ...currentMeeting.changeLogs,
-        ].slice(0, 6),
+  function openAccountMeeting(scenarioId: AccountScenarioId = 'product-review') {
+    const scenarioMeeting =
+      scenarioId === 'product-review' && meeting.title === accountMeeting.title
+        ? accountMeeting
+        : createAccountScenarioMeeting(scenarioId)
+    setMeeting(scenarioMeeting)
+    setSelectedCandidateId(scenarioMeeting.confirmedCandidateId)
+    navigateTo('host')
+  }
+
+  function openAccountRequest(
+    scenarioId: AccountScenarioId = 'onboarding',
+    responseState: 'new' | 'done' = 'new',
+  ) {
+    const scenarioMeeting = createAccountScenarioMeeting(scenarioId)
+    const participantToken = responseState === 'done' ? 'token-p-minsu' : 'token-p-sujin'
+    setMeeting(scenarioMeeting)
+    navigateTo(responseState === 'done' ? 'invite-done' : 'invite', false, participantToken)
+  }
+
+  function sendResponseRequest() {
+    setMeeting((currentMeeting) => ({ ...currentMeeting, status: 'collecting' }))
+    navigateTo('share')
+  }
+
+  function advancePrototypeToPending() {
+    const nextState = createPendingPrototypeState(meeting)
+    setMeeting(nextState.meeting)
+    setSelectedCandidateId(nextState.pendingCandidateId)
+    setRequestedParticipantId(undefined)
+    toast.dismiss()
+    navigateTo('host', true)
+  }
+
+  function openDevScreen(screen: DevScreen) {
+    if (screen.fixture === 'current') {
+      if (meeting.status === 'draft') {
+        const fixture = createPrototypeMeeting()
+        const pendingEvaluation = evaluateCandidates(fixture, new Date()).find(
+          (evaluation) =>
+            evaluation.status === 'pending' &&
+            [...evaluation.requiredPending, ...evaluation.optionalPendingPool].some(
+              (participant) => participant.id === 'p-sujin',
+            ),
+        )
+        setMeeting(fixture)
+        setSelectedCandidateId(pendingEvaluation?.candidate.id)
       }
-    })
-    setSelectedCandidateId(nextCandidates[0]?.id)
-    setLatestAddedCandidateId(nextCandidates[0]?.id)
-    navigateTo('recover')
+      toast.dismiss()
+      navigateTo(screen.route, false, screen.participantToken)
+      return
+    }
+
+    const fixture = screen.fixture === 'draft' ? createDraftMeeting() : createPrototypeMeeting()
+
+    if (screen.fixture === 'waiting') {
+      fixture.participants = fixture.participants.map((participant) =>
+        participant.id === fixture.hostId
+          ? participant
+          : { ...participant, responseStatus: 'not_started' },
+      )
+      fixture.availabilityWindows = fixture.availabilityWindows.filter(
+        (window) => window.ownerId === fixture.hostId,
+      )
+      fixture.responses = []
+    }
+
+    if (screen.fixture === 'confirmed') {
+      fixture.status = 'confirmed'
+      fixture.confirmedCandidateId = fixture.candidates[0]?.id
+    }
+
+    const pendingEvaluation =
+      screen.route === 'host' && screen.fixture === 'collecting'
+        ? evaluateCandidates(fixture, new Date()).find(
+            (evaluation) =>
+              evaluation.status === 'pending' &&
+              [...evaluation.requiredPending, ...evaluation.optionalPendingPool].some(
+                (participant) => participant.id === 'p-sujin',
+              ),
+          )
+        : undefined
+
+    setMeeting(fixture)
+    setSelectedCandidateId(pendingEvaluation?.candidate.id ?? fixture.confirmedCandidateId)
+    toast.dismiss()
+    navigateTo(screen.route, false, screen.participantToken)
   }
 
   return (
     <div data-astryx-theme="neutral" data-theme="light">
       <div>
-        {audience === 'entry' ? <EntryScreen onStart={() => navigateTo('create')} /> : null}
+        {audience === 'account' ? (
+          <AccountShell
+            route={route === 'entry' ? 'home' : route}
+            onNavigate={navigateTo}
+            onCreate={startNewMeeting}
+          >
+            {route === 'entry' || route === 'home' ? (
+              <AccountHomeScreen
+                meeting={accountMeeting}
+                onOpenRequest={() => openAccountRequest('onboarding')}
+                onOpenMeeting={() => openAccountMeeting('product-review')}
+                onOpenConfirmed={() => openAccountMeeting('quarterly-goals')}
+                onCreate={startNewMeeting}
+              />
+            ) : null}
+            {route === 'meetings' ? (
+              <MeetingsScreen meeting={accountMeeting} onOpenMeeting={openAccountMeeting} />
+            ) : null}
+            {route === 'requests' ? (
+              <RequestsScreen meeting={accountMeeting} onOpenRequest={openAccountRequest} />
+            ) : null}
+            {route === 'notifications' ? (
+              <NotificationsScreen
+                meeting={accountMeeting}
+                onOpenRequest={openAccountRequest}
+                onOpenMeeting={openAccountMeeting}
+              />
+            ) : null}
+          </AccountShell>
+        ) : null}
+
+        {audience === 'participant' && selectedParticipant == null ? (
+          <InvalidParticipantInviteScreen meeting={meeting} onExit={startNewMeeting} />
+        ) : null}
 
         {audience === 'participant' && selectedParticipant != null ? (
           <ParticipantShell
+            key={`${selectedParticipant.id}-${participantState}`}
             meeting={meeting}
             participant={selectedParticipant}
             state={participantState}
-            onAvailabilityChange={updateParticipantAvailability}
-            onDone={() => {
-              completeParticipantAvailability(selectedParticipant.id)
-              navigateTo('invite-done')
+            now={evaluationNow}
+            onSubmit={(participantDraftWindows) => {
+              submitParticipantAvailability(selectedParticipant.id, participantDraftWindows)
+              navigateTo('invite-done', false, selectedParticipant.responseToken)
             }}
-            onEdit={() => navigateTo('invite-edit')}
+            onEdit={() => navigateTo('invite-edit', false, selectedParticipant.responseToken)}
+            onExit={() => navigateTo('host')}
+            showPrototypeReturn={requestedParticipantId === selectedParticipant.id}
           />
         ) : null}
 
@@ -829,8 +1070,8 @@ function App() {
             meeting={meeting}
             state={hostState}
             route={route}
-            copyStatus={copyStatus}
             onNavigate={navigateTo}
+            onCreate={startNewMeeting}
           >
             {route === 'create' ? (
               <CreateScreen
@@ -843,68 +1084,54 @@ function App() {
                 onDurationChange={updateDuration}
                 onResponseDeadlineChange={updateResponseDeadline}
                 onAttendanceModeChange={updateAttendanceMode}
+                onAttendanceThresholdModeChange={updateAttendanceThresholdMode}
                 onMinAttendeeCountChange={updateMinAttendeeCount}
                 onParticipantRoleChange={updateParticipantRole}
                 onParticipantAdd={addParticipant}
                 onParticipantRemove={removeParticipant}
                 onAvailabilityWindowsChange={updateAvailabilityWindows}
-                onCreateLink={() => navigateTo('share')}
+                onSendRequest={sendResponseRequest}
               />
             ) : null}
 
             {route === 'share' ? (
-              <ShareLinkScreen
-                meeting={meeting}
-                onCopyLink={copyShareLink}
-                onOpenInvite={() => navigateTo('invite')}
-                onOpenHost={() => navigateTo('host')}
-              />
+              <RequestSentScreen meeting={meeting} onOpenHost={() => navigateTo('host')} />
             ) : null}
 
             {route === 'host' && isWaitingState(hostState) ? (
               <HostWaitingScreen
                 meeting={meeting}
-                evaluations={evaluations}
-                state={hostState}
-                onCopyLink={copyShareLink}
-                onOpenInvite={() => navigateTo('invite')}
+                onRemindParticipant={remindParticipant}
+                onAdvancePrototype={advancePrototypeToPending}
               />
             ) : null}
 
-            {route === 'host' && isDecisionState(hostState) && selectedEvaluation != null ? (
+            {route === 'host' && hostState === 'HOST_DECISION' && selectedEvaluation != null ? (
               <HostDecideScreen
                 meeting={meeting}
                 evaluations={evaluations}
-                state={hostState}
                 selectedEvaluation={selectedEvaluation}
                 onSelectCandidate={setSelectedCandidateId}
                 onConfirm={confirmCandidate}
-                onRecover={() => navigateTo('recover')}
-                onCopyRequest={copyRecoveryRequest}
+                onReviewCriteria={() => navigateTo('criteria')}
+                onSendRequest={sendResponseReminder}
+                requestedParticipant={meeting.participants.find(
+                  (participant) => participant.id === requestedParticipantId,
+                )}
+                onOpenRequestedParticipant={(participant) =>
+                  navigateTo('invite', false, participant.responseToken)
+                }
               />
             ) : null}
 
-            {route === 'host' && hostState === 'HOST_RECOVERY_REQUIRED' ? (
-              <HostRecoverScreen
+            {route === 'criteria' ? (
+              <MeetingCriteriaReviewScreen
                 meeting={meeting}
-                evaluations={evaluations}
-                selectedEvaluation={selectedEvaluation}
-                latestAddedCandidateId={latestAddedCandidateId}
-                onAddAvailabilityWindow={addAvailabilityWindow}
-                onCopyAddedCandidateMessage={copyAddedCandidateMessage}
-                onOpenInvite={() => navigateTo('invite-added')}
-              />
-            ) : null}
-
-            {route === 'recover' ? (
-              <HostRecoverScreen
-                meeting={meeting}
-                evaluations={evaluations}
-                selectedEvaluation={selectedEvaluation}
-                latestAddedCandidateId={latestAddedCandidateId}
-                onAddAvailabilityWindow={addAvailabilityWindow}
-                onCopyAddedCandidateMessage={copyAddedCandidateMessage}
-                onOpenInvite={() => navigateTo('invite-added')}
+                onAttendanceModeChange={updateAttendanceMode}
+                onAttendanceThresholdModeChange={updateAttendanceThresholdMode}
+                onMinAttendeeCountChange={updateMinAttendeeCount}
+                onParticipantRoleChange={updateParticipantRole}
+                onDone={() => navigateTo('host')}
               />
             ) : null}
 
@@ -913,42 +1140,614 @@ function App() {
                 meeting={meeting}
                 evaluation={selectedEvaluation}
                 onBack={() => navigateTo('host')}
-                onCopy={(message) => {
-                  void copyText(message)
-                  setCopyStatus('확정 문구를 복사했어요')
-                }}
+                onNotify={() =>
+                  toast.success('참석자에게 확정 알림을 보냈어요', {
+                    id: 'confirmation-notification',
+                  })
+                }
+              />
+            ) : null}
+
+            {route === 'host' && hostState === 'HOST_CONFIRMED' && selectedEvaluation != null ? (
+              <MessageScreen
+                meeting={meeting}
+                evaluation={selectedEvaluation}
+                onNotify={() =>
+                  toast.success('참석자에게 확정 알림을 보냈어요', {
+                    id: 'confirmation-notification',
+                  })
+                }
               />
             ) : null}
           </HostShell>
         ) : null}
       </div>
+      <Toaster
+        position="bottom-center"
+        duration={2600}
+        visibleToasts={2}
+        gap={8}
+        toastOptions={{ className: 'meeting-cue-toast' }}
+      />
+      {import.meta.env.DEV ? <DevScreenSwitcher route={route} onOpen={openDevScreen} /> : null}
     </div>
   )
 }
 
-function EntryScreen({ onStart }: { onStart: () => void }) {
+function DevScreenSwitcher({
+  route,
+  onOpen,
+}: {
+  route: AppRoute
+  onOpen: (screen: DevScreen) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
-    <main className="entry-shell">
-      <section className="entry-panel">
-        <div className="brand-mark">
+    <aside className={`dev-screen-switcher${isOpen ? ' is-open' : ''}`} aria-label="개발 화면 이동">
+      <button
+        type="button"
+        className="dev-screen-switcher__toggle"
+        aria-expanded={isOpen}
+        aria-label={isOpen ? '개발 화면 이동 닫기' : '개발 화면 이동 열기'}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        {isOpen ? <X size={18} /> : <PanelsTopLeft size={18} />}
+        <span>{isOpen ? '닫기' : '화면'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="dev-screen-switcher__panel">
+          <header>
+            <span>DEV</span>
+            <strong>화면 바로가기</strong>
+          </header>
+          {devScreenGroups.map((group) => (
+            <section key={group.label}>
+              <p>{group.label}</p>
+              <div>
+                {group.screens.map((screen) => {
+                  const isCurrent =
+                    route === screen.route &&
+                    (screen.participantToken == null
+                      ? getInviteTokenFromHash() == null
+                      : getInviteTokenFromHash() === screen.participantToken)
+
+                  return (
+                    <button
+                      key={`${screen.route}-${screen.label}`}
+                      type="button"
+                      className={isCurrent ? 'is-current' : ''}
+                      onClick={() => {
+                        onOpen(screen)
+                        setIsOpen(false)
+                      }}
+                    >
+                      {screen.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : null}
+    </aside>
+  )
+}
+
+const accountNavigationItems: Array<{
+  route: 'home' | 'meetings' | 'requests'
+  label: string
+  icon: typeof Home
+}> = [
+  { route: 'home', label: '홈', icon: Home },
+  { route: 'meetings', label: '내 회의', icon: CalendarCheck2 },
+  { route: 'requests', label: '받은 요청', icon: Inbox },
+]
+
+function createAccountScenarioMeeting(scenarioId: AccountScenarioId) {
+  const fixture = createPrototypeMeeting()
+
+  if (scenarioId === 'onboarding') {
+    return {
+      ...fixture,
+      title: '온보딩 개선안 논의',
+      hostLabel: '피플팀 지우',
+      purpose: '신규 입사자의 첫 주 경험에서 우선 개선할 항목을 정합니다.',
+    }
+  }
+
+  if (scenarioId === 'quarterly-goals') {
+    return {
+      ...fixture,
+      title: '3분기 목표 점검',
+      hostLabel: '프로덕트팀 민지',
+      purpose: '3분기 핵심 목표의 진행 상황과 다음 우선순위를 점검합니다.',
+      status: 'confirmed' as const,
+      confirmedCandidateId: fixture.candidates[0]?.id,
+    }
+  }
+
+  if (scenarioId === 'design-qa') {
+    return {
+      ...fixture,
+      title: '디자인 QA 기준 정리',
+      hostLabel: '디자인팀 서연',
+      purpose: '출시 전 디자인 QA에서 공통으로 확인할 기준을 정리합니다.',
+    }
+  }
+
+  return fixture
+}
+
+function AccountShell({
+  route,
+  onNavigate,
+  onCreate,
+  children,
+}: {
+  route: AppRoute
+  onNavigate: (route: AppRoute) => void
+  onCreate: () => void
+  children: ReactNode
+}) {
+  return (
+    <div className="account-shell">
+      <GlobalAccountHeader route={route} onNavigate={onNavigate} onCreate={onCreate} />
+
+      <main className="account-main">{children}</main>
+
+      <nav className="account-mobile-nav" aria-label="주요 메뉴">
+        {accountNavigationItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <button
+              key={item.route}
+              type="button"
+              className={route === item.route ? 'is-active' : ''}
+              aria-current={route === item.route ? 'page' : undefined}
+              onClick={() => onNavigate(item.route)}
+            >
+              <Icon size={21} aria-hidden="true" />
+              <span>{item.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+    </div>
+  )
+}
+
+function GlobalAccountHeader({
+  route,
+  onNavigate,
+  onCreate,
+  mode = 'account',
+}: {
+  route: AppRoute
+  onNavigate: (route: AppRoute) => void
+  onCreate: () => void
+  mode?: 'account' | 'focused'
+}) {
+  const isFocused = mode === 'focused'
+
+  return (
+    <header className="account-topbar">
+      <div className="account-topbar__inner">
+        <button
+          className="account-brand"
+          type="button"
+          onClick={isFocused ? onCreate : () => onNavigate('home')}
+        >
           <span className="brand-dot" />
-          <strong>Meeting Cue</strong>
-        </div>
+          <strong>MeetCue</strong>
+        </button>
 
-        <div className="entry-copy">
-          <h1>지금 회의를 정해도 되는지 알려드려요.</h1>
-          <p>참석자의 답변을 모아, 확정할 시간과 다음 행동을 보여드립니다.</p>
-        </div>
+        {isFocused ? (
+          <div className="account-focused-context">회의 시간 결정</div>
+        ) : (
+          <nav className="account-desktop-nav" aria-label="주요 메뉴">
+            {accountNavigationItems.map((item) => (
+              <button
+                key={item.route}
+                type="button"
+                className={route === item.route ? 'is-active' : ''}
+                aria-current={route === item.route ? 'page' : undefined}
+                onClick={() => onNavigate(item.route)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        )}
 
-        <div className="entry-action">
-          <button className="primary-button" type="button" onClick={onStart}>
-            회의 시간 정하기
-            <ArrowRight aria-hidden="true" size={18} strokeWidth={2.5} />
+        <div className="account-topbar__actions">
+          {isFocused ? (
+            <button className="account-restart-button" type="button" onClick={onCreate}>
+              <RotateCcw size={17} aria-hidden="true" />
+              <span>처음부터</span>
+            </button>
+          ) : (
+            <>
+              <button
+                className={`account-icon-button${route === 'notifications' ? ' is-active' : ''}`}
+                type="button"
+                aria-label="알림"
+                onClick={() => onNavigate('notifications')}
+              >
+                <Bell size={20} aria-hidden="true" />
+                <span className="account-notification-dot" />
+              </button>
+              <button
+                className={`account-create-button${route === 'create' ? ' is-current' : ''}`}
+                type="button"
+                aria-current={route === 'create' ? 'page' : undefined}
+                onClick={onCreate}
+              >
+                <Plus size={18} aria-hidden="true" />
+                <span>새 회의</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function AccountPageHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow?: string
+  title: string
+  description?: string
+}) {
+  return (
+    <header className="account-page-head">
+      {eyebrow ? <span>{eyebrow}</span> : null}
+      <h1>{title}</h1>
+      {description ? <p>{description}</p> : null}
+    </header>
+  )
+}
+
+function AccountHomeScreen({
+  meeting,
+  onOpenRequest,
+  onOpenMeeting,
+  onOpenConfirmed,
+  onCreate,
+}: {
+  meeting: Meeting
+  onOpenRequest: () => void
+  onOpenMeeting: () => void
+  onOpenConfirmed: () => void
+  onCreate: () => void
+}) {
+  const responseTargets = meeting.participants.filter(
+    (participant) => participant.id !== meeting.hostId,
+  )
+  const completedCount = responseTargets.filter(
+    (participant) => participant.responseStatus === 'submitted',
+  ).length
+  const meetingActionLabel = meeting.status === 'confirmed' ? '확정 내용 보기' : '결과 확인'
+
+  return (
+    <div className="account-page account-home">
+      <AccountPageHeader
+        title="지금 확인할 일이 있어요"
+        description="답할 요청과 내가 만든 회의의 변화를 한곳에서 확인하세요."
+      />
+
+      <section className="account-section" aria-labelledby="home-action-title">
+        <div className="account-section__head">
+          <h2 id="home-action-title">먼저 확인해 주세요</h2>
+          <button type="button" onClick={() => (window.location.hash = routeHashes.requests)}>
+            모두 보기
           </button>
-          <p className="entry-note">초대받은 사람은 링크에서 바로 응답할 수 있어요.</p>
+        </div>
+        <div className="account-task-stack">
+          <button
+            className="account-task-row account-task-row--primary"
+            type="button"
+            onClick={onOpenRequest}
+          >
+            <span className="account-task-icon account-task-icon--request">
+              <Inbox size={20} aria-hidden="true" />
+            </span>
+            <span className="account-task-copy">
+              <span className="account-task-kicker">오늘 18:00까지 응답</span>
+              <strong>온보딩 개선안 논의</strong>
+              <small>피플팀 지우 · 1시간</small>
+            </span>
+            <span className="account-task-action">
+              응답하기
+              <ChevronRight size={18} aria-hidden="true" />
+            </span>
+          </button>
+          <button className="account-task-row" type="button" onClick={onOpenMeeting}>
+            <span className="account-task-icon account-task-icon--meeting">
+              <CalendarCheck2 size={20} aria-hidden="true" />
+            </span>
+            <span className="account-task-copy">
+              <span className="account-task-kicker">
+                {meeting.status === 'confirmed'
+                  ? '확정 완료'
+                  : `새 응답 · ${completedCount}/${responseTargets.length}명 완료`}
+              </span>
+              <strong>{meeting.title}</strong>
+              <small>현재 응답으로 정할 수 있는 시간을 확인하세요</small>
+            </span>
+            <span className="account-task-action">
+              {meetingActionLabel}
+              <ChevronRight size={18} aria-hidden="true" />
+            </span>
+          </button>
         </div>
       </section>
-    </main>
+
+      <section className="account-section" aria-labelledby="home-upcoming-title">
+        <div className="account-section__head">
+          <h2 id="home-upcoming-title">다가오는 회의</h2>
+          <button type="button" onClick={() => (window.location.hash = routeHashes.meetings)}>
+            내 회의
+          </button>
+        </div>
+        <button className="account-upcoming-row" type="button" onClick={onOpenConfirmed}>
+          <span className="account-date-tile account-date-tile--confirmed">
+            <small>7월</small>
+            <strong>15</strong>
+          </span>
+          <span>
+            <strong>3분기 목표 점검</strong>
+            <small>오전 10:00 · 1시간 · 프로덕트팀</small>
+          </span>
+          <span className="account-status account-status--done">확정</span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+      </section>
+
+      <button className="account-empty-action" type="button" onClick={onCreate}>
+        <Plus size={19} aria-hidden="true" />
+        다른 회의 만들기
+      </button>
+    </div>
+  )
+}
+
+function MeetingsScreen({
+  meeting,
+  onOpenMeeting,
+}: {
+  meeting: Meeting
+  onOpenMeeting: (scenarioId: AccountScenarioId) => void
+}) {
+  const [filter, setFilter] = useState<'all' | 'active' | 'confirmed'>('all')
+  const responseTargets = meeting.participants.filter(
+    (participant) => participant.id !== meeting.hostId,
+  )
+  const completedCount = responseTargets.filter(
+    (participant) => participant.responseStatus === 'submitted',
+  ).length
+
+  return (
+    <div className="account-page">
+      <AccountPageHeader eyebrow="내가 만든 회의" title="진행 상황을 이어서 확인하세요" />
+      <div className="account-filter-tabs" role="tablist" aria-label="내 회의 필터">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'all'}
+          className={filter === 'all' ? 'is-active' : ''}
+          onClick={() => setFilter('all')}
+        >
+          전체 2
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'active'}
+          className={filter === 'active' ? 'is-active' : ''}
+          onClick={() => setFilter('active')}
+        >
+          진행 중 1
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'confirmed'}
+          className={filter === 'confirmed' ? 'is-active' : ''}
+          onClick={() => setFilter('confirmed')}
+        >
+          확정 1
+        </button>
+      </div>
+      <section className="account-list" aria-label="내가 만든 회의 목록">
+        {filter !== 'confirmed' ? (
+          <button
+            className="account-list-row"
+            type="button"
+            onClick={() => onOpenMeeting('product-review')}
+          >
+            <span className="account-date-tile">
+              <small>7월</small>
+              <strong>15</strong>
+            </span>
+            <span className="account-list-row__copy">
+              <strong>{meeting.title}</strong>
+              <span>{formatSchedulingWindow(meeting.schedulingWindow)}</span>
+              <small>
+                {completedCount}/{responseTargets.length}명 응답 · 새 응답이 들어왔어요
+              </small>
+            </span>
+            <span className="account-status account-status--attention">결정 필요</span>
+            <ChevronRight size={19} aria-hidden="true" />
+          </button>
+        ) : null}
+        {filter !== 'active' ? (
+          <button
+            className="account-list-row"
+            type="button"
+            onClick={() => onOpenMeeting('quarterly-goals')}
+          >
+            <span className="account-date-tile account-date-tile--confirmed">
+              <small>7월</small>
+              <strong>15</strong>
+            </span>
+            <span className="account-list-row__copy">
+              <strong>3분기 목표 점검</strong>
+              <span>7. 15. (수) 오전 10:00</span>
+              <small>참석자 6명 · 확정 알림 전송 완료</small>
+            </span>
+            <span className="account-status account-status--done">확정</span>
+            <ChevronRight size={19} aria-hidden="true" />
+          </button>
+        ) : null}
+      </section>
+    </div>
+  )
+}
+
+function RequestsScreen({
+  onOpenRequest,
+}: {
+  meeting: Meeting
+  onOpenRequest: (scenarioId: AccountScenarioId, responseState?: 'new' | 'done') => void
+}) {
+  const [filter, setFilter] = useState<'pending' | 'done'>('pending')
+
+  return (
+    <div className="account-page">
+      <AccountPageHeader
+        eyebrow="받은 요청"
+        title="내 응답이 필요한 회의"
+        description="마감이 가까운 요청부터 보여드려요."
+      />
+      <div className="account-filter-tabs" role="tablist" aria-label="받은 요청 필터">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'pending'}
+          className={filter === 'pending' ? 'is-active' : ''}
+          onClick={() => setFilter('pending')}
+        >
+          응답 필요 1
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'done'}
+          className={filter === 'done' ? 'is-active' : ''}
+          onClick={() => setFilter('done')}
+        >
+          응답 완료 1
+        </button>
+      </div>
+      <section className="account-list" aria-label="받은 회의 요청 목록">
+        {filter === 'pending' ? (
+          <button
+            className="account-list-row"
+            type="button"
+            onClick={() => onOpenRequest('onboarding')}
+          >
+            <span className="account-date-tile account-date-tile--request">
+              <small>마감</small>
+              <strong>13</strong>
+            </span>
+            <span className="account-list-row__copy">
+              <strong>온보딩 개선안 논의</strong>
+              <span>피플팀 지우</span>
+              <small>7. 14. - 7. 16. · 1시간 · 오늘 18:00까지</small>
+            </span>
+            <span className="account-status account-status--attention">응답 필요</span>
+            <ChevronRight size={19} aria-hidden="true" />
+          </button>
+        ) : (
+          <button
+            className="account-list-row"
+            type="button"
+            onClick={() => onOpenRequest('design-qa', 'done')}
+          >
+            <span className="account-date-tile account-date-tile--complete">
+              <small>제출</small>
+              <Check size={21} aria-hidden="true" />
+            </span>
+            <span className="account-list-row__copy">
+              <strong>디자인 QA 기준 정리</strong>
+              <span>디자인팀 서연</span>
+              <small>7. 14. - 7. 16. · 응답을 수정할 수 있어요</small>
+            </span>
+            <span className="account-status account-status--done">응답 완료</span>
+            <ChevronRight size={19} aria-hidden="true" />
+          </button>
+        )}
+      </section>
+    </div>
+  )
+}
+
+function NotificationsScreen({
+  meeting,
+  onOpenRequest,
+  onOpenMeeting,
+}: {
+  meeting: Meeting
+  onOpenRequest: (scenarioId: AccountScenarioId, responseState?: 'new' | 'done') => void
+  onOpenMeeting: (scenarioId: AccountScenarioId) => void
+}) {
+  return (
+    <div className="account-page">
+      <AccountPageHeader eyebrow="알림" title="새로 바뀐 내용을 확인하세요" />
+      <section className="notification-list" aria-label="알림 목록">
+        <button type="button" onClick={() => onOpenRequest('onboarding')}>
+          <span className="notification-unread" />
+          <span>
+            <strong>온보딩 개선안 논의 응답 요청이 도착했어요</strong>
+            <small>피플팀 지우 · 10분 전</small>
+          </span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+        <button type="button" onClick={() => onOpenMeeting('product-review')}>
+          <span className="notification-unread" />
+          <span>
+            <strong>{meeting.title}에 새 응답이 들어왔어요</strong>
+            <small>현재 응답을 기준으로 결과가 다시 계산됐어요 · 1시간 전</small>
+          </span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+        <button type="button" onClick={() => onOpenMeeting('quarterly-goals')}>
+          <span className="notification-unread" />
+          <span>
+            <strong>3분기 목표 점검 시간이 확정됐어요</strong>
+            <small>7. 15. (수) 오전 10:00 · 3시간 전</small>
+          </span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+        <button
+          className="is-read"
+          type="button"
+          onClick={() => onOpenRequest('design-qa', 'done')}
+        >
+          <span className="notification-unread" />
+          <span>
+            <strong>디자인 QA 기준 정리 응답이 저장됐어요</strong>
+            <small>필요하면 마감 전까지 수정할 수 있어요 · 어제</small>
+          </span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+        <button className="is-read" type="button" onClick={() => onOpenMeeting('product-review')}>
+          <span className="notification-unread" />
+          <span>
+            <strong>제품 리뷰 회의 응답 마감이 내일이에요</strong>
+            <small>아직 1명이 응답하지 않았어요 · 어제</small>
+          </span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
+      </section>
+    </div>
   )
 }
 
@@ -956,109 +1755,272 @@ function HostShell({
   meeting,
   state,
   route,
-  copyStatus,
   onNavigate,
+  onCreate,
   children,
 }: {
   meeting: Meeting
   state: HostCoordinationState
   route: AppRoute
-  copyStatus: string
   onNavigate: (route: AppRoute) => void
+  onCreate: () => void
   children: ReactNode
 }) {
   const copy = hostStateCopy[state]
-  const navigationItems = getHostNavigationItems(route, state)
+  const navigationItems = getHostNavigationItems(route)
   const contextDescription =
     route === 'create'
       ? '회의 요청을 만드는 중'
       : `${meeting.participants.filter((participant) => participant.id !== meeting.hostId).length}명에게 ${formatMeetingDuration(meeting.durationMinutes)} 회의 시간을 묻는 중`
 
   return (
-    <div className="tds-app host-shell">
-      <header className="host-context-bar" aria-label="회의 조율 상태">
-        <button className="host-brand" type="button" onClick={() => onNavigate('entry')}>
-          <span className="brand-dot" />
-          <strong>Meeting Cue</strong>
-        </button>
-        <div className="host-context-main">
-          <strong>{meeting.title}</strong>
-          <span>{contextDescription}</span>
-        </div>
-        {navigationItems.length > 0 ? (
-          <div className="host-context-actions">
-            {navigationItems.map((item) => (
-              <button
-                key={item.route}
-                className={route === item.route ? 'is-active' : ''}
-                type="button"
-                onClick={() => onNavigate(item.route)}
-              >
-                {item.label}
-              </button>
-            ))}
+    <div className="account-shell host-account-shell">
+      <GlobalAccountHeader
+        route={route}
+        onNavigate={onNavigate}
+        onCreate={onCreate}
+        mode="focused"
+      />
+      <div
+        className={`tds-app host-shell${route === 'create' ? ' host-shell--create' : ''}${
+          route === 'host' && state === 'HOST_DECISION' ? ' host-shell--decision' : ''
+        }`}
+      >
+        <header className="host-context-bar" aria-label="회의 조율 상태">
+          <div className="host-context-main">
+            <strong>{meeting.title || '새 회의 만들기'}</strong>
+            <span>{contextDescription}</span>
           </div>
-        ) : null}
-      </header>
+          {navigationItems.length > 0 ? (
+            <div className="host-context-actions">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.route}
+                  className={route === item.route ? 'is-active' : ''}
+                  type="button"
+                  onClick={() => onNavigate(item.route)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </header>
 
-      <main className={`host-stage${route === 'create' ? ' host-stage--create' : ''}`}>
-        {route !== 'create' ? (
-          <section className="host-stage__head">
-            <span className={`state-badge state-badge--${getHostStateTone(state)}`}>
-              {getHostStateLabel(state)}
-            </span>
-            <h1>{copy.title}</h1>
-            <p>{copy.description}</p>
-            {copyStatus ? <div className="copy-toast">{copyStatus}</div> : null}
-          </section>
-        ) : null}
-        {children}
-      </main>
+        <main className={`host-stage${route === 'create' ? ' host-stage--create' : ''}`}>
+          {route !== 'create' &&
+          route !== 'criteria' &&
+          !(route === 'host' && state === 'HOST_DECISION') ? (
+            <section className="host-stage__head">
+              <span className={`state-badge state-badge--${getHostStateTone(state)}`}>
+                {getHostStateLabel(state)}
+              </span>
+              <h1>{copy.title}</h1>
+              <p>{copy.description}</p>
+            </section>
+          ) : null}
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
 
-function ShareLinkScreen({
-  meeting,
-  onCopyLink,
-  onOpenInvite,
-  onOpenHost,
-}: {
-  meeting: Meeting
-  onCopyLink: () => void
-  onOpenInvite: () => void
-  onOpenHost: () => void
-}) {
+function RequestSentScreen({ meeting, onOpenHost }: { meeting: Meeting; onOpenHost: () => void }) {
   const responseTargets = meeting.participants.filter(
     (participant) => participant.id !== meeting.hostId,
   )
   const completedCount = responseTargets.filter(
-    (participant) => participant.responseStatus === 'completed',
+    (participant) => participant.responseStatus === 'submitted',
   ).length
 
   return (
     <div className="share-workspace">
       <section className="share-card">
-        <PanelTitle eyebrow="공유" title="참석자에게 이 링크를 보내세요" />
-        <div className="link-box">
-          <span>{`${window.location.origin}${window.location.pathname}#/invite`}</span>
-          <button className="primary-button" type="button" onClick={onCopyLink}>
-            링크 복사
-          </button>
+        <h2 className="share-card__title">요청 현황</h2>
+        <div className="request-recipient-list" aria-label="응답 요청 대상">
+          {responseTargets.map((participant) => (
+            <div className="request-recipient-row" key={participant.id}>
+              <span className="avatar">{participant.name.slice(0, 1)}</span>
+              <div>
+                <strong>{participant.name}</strong>
+                <small>{participantRoleLabels[participant.role]}</small>
+              </div>
+              <span
+                className={`request-delivery-status${
+                  participant.responseStatus === 'submitted' ? ' is-complete' : ''
+                }`}
+              >
+                {participant.responseStatus === 'submitted' ? '응답 완료' : '요청됨'}
+              </span>
+            </div>
+          ))}
         </div>
         <div className="share-metrics">
           <SummaryLine label="응답" value={`${completedCount}/${responseTargets.length}명`} />
           <SummaryLine label="마감" value={formatDeadline(meeting.responseDeadline)} />
-          <SummaryLine label="기준" value={`최소 ${meeting.minAttendeeCount}명`} />
+          <SummaryLine
+            label="참석 기준"
+            value={`최소 ${meeting.minAttendeeCount}명 · 주최자 포함`}
+          />
         </div>
         <div className="button-row">
-          <button className="secondary-button" type="button" onClick={onOpenInvite}>
-            참석자 화면 보기
-          </button>
-          <button className="secondary-button" type="button" onClick={onOpenHost}>
-            응답 상태 보기
+          <button className="primary-button" type="button" onClick={onOpenHost}>
+            응답 현황 보기
           </button>
         </div>
+      </section>
+    </div>
+  )
+}
+
+function MeetingCriteriaReviewScreen({
+  meeting,
+  onAttendanceModeChange,
+  onAttendanceThresholdModeChange,
+  onMinAttendeeCountChange,
+  onParticipantRoleChange,
+  onDone,
+}: {
+  meeting: Meeting
+  onAttendanceModeChange: (mode: AttendeeDecisionMode) => void
+  onAttendanceThresholdModeChange: (mode: AttendanceThresholdMode) => void
+  onMinAttendeeCountChange: (count: number) => void
+  onParticipantRoleChange: (participantId: string, role: ParticipantRole) => void
+  onDone: () => void
+}) {
+  const invitees = meeting.participants.filter((participant) => participant.id !== meeting.hostId)
+  const requiredInvitees = invitees.filter((participant) => participant.role === 'required')
+  const isEveryoneRequired = meeting.preset === 'all_hands'
+  const thresholdMode: AttendanceThresholdMode =
+    meeting.preset === 'quorum' ? 'minimum_count' : 'required_only'
+  const minimumAllowed = requiredInvitees.length + 1
+
+  return (
+    <div className="criteria-review-workspace">
+      <section className="criteria-review-panel" aria-labelledby="criteria-review-title">
+        <header>
+          <span>회의 기준</span>
+          <h1 id="criteria-review-title">현재 응답을 어떤 기준으로 판단할까요?</h1>
+          <p>참석자의 응답과 후보 시간은 그대로 두고, 회의가 성립하는 기준만 다시 계산해요.</p>
+        </header>
+
+        <fieldset className="criteria-choice-group">
+          <legend>이 회의는 모두 참석해야 하나요?</legend>
+          <button
+            className={isEveryoneRequired ? 'is-selected' : ''}
+            type="button"
+            aria-pressed={isEveryoneRequired}
+            onClick={() => onAttendanceModeChange('everyone')}
+          >
+            모두 참석해야 해요
+          </button>
+          <button
+            className={!isEveryoneRequired ? 'is-selected' : ''}
+            type="button"
+            aria-pressed={!isEveryoneRequired}
+            onClick={() => onAttendanceModeChange('required')}
+          >
+            몇 명은 빠져도 진행할 수 있어요
+          </button>
+        </fieldset>
+
+        {!isEveryoneRequired ? (
+          <>
+            <fieldset className="criteria-required-group">
+              <legend>꼭 참석해야 하는 사람</legend>
+              <p>주최자는 항상 포함돼요.</p>
+              <div>
+                {invitees.map((participant) => {
+                  const isRequired = participant.role === 'required'
+                  return (
+                    <button
+                      className={isRequired ? 'is-selected' : ''}
+                      key={participant.id}
+                      type="button"
+                      aria-pressed={isRequired}
+                      onClick={() =>
+                        onParticipantRoleChange(
+                          participant.id,
+                          isRequired ? 'optional' : 'required',
+                        )
+                      }
+                    >
+                      <span className="avatar avatar--small">{participant.name.slice(0, 1)}</span>
+                      <strong>{participant.name}</strong>
+                      <small>{isRequired ? '꼭 필요' : '선택 안 함'}</small>
+                    </button>
+                  )
+                })}
+              </div>
+            </fieldset>
+
+            <fieldset className="criteria-choice-group">
+              <legend>필수 참석자만 오면 진행할 수 있나요?</legend>
+              <button
+                className={thresholdMode === 'required_only' ? 'is-selected' : ''}
+                type="button"
+                aria-pressed={thresholdMode === 'required_only'}
+                onClick={() => onAttendanceThresholdModeChange('required_only')}
+              >
+                네, 필수 참석자만 오면 돼요
+              </button>
+              <button
+                className={thresholdMode === 'minimum_count' ? 'is-selected' : ''}
+                type="button"
+                aria-pressed={thresholdMode === 'minimum_count'}
+                onClick={() => onAttendanceThresholdModeChange('minimum_count')}
+              >
+                아니요, 전체 참석 인원도 중요해요
+              </button>
+            </fieldset>
+
+            {thresholdMode === 'minimum_count' ? (
+              <section className="minimum-attendance" aria-labelledby="criteria-minimum-title">
+                <div>
+                  <strong id="criteria-minimum-title">몇 명이 모이면 진행할까요?</strong>
+                  <span>주최자와 꼭 필요한 사람을 포함해요.</span>
+                </div>
+                <div className="minimum-attendance__stepper">
+                  <button
+                    type="button"
+                    aria-label="최소 참석 인원 줄이기"
+                    disabled={meeting.minAttendeeCount <= minimumAllowed}
+                    onClick={() => onMinAttendeeCountChange(meeting.minAttendeeCount - 1)}
+                  >
+                    <Minus size={18} />
+                  </button>
+                  <output aria-live="polite">
+                    <strong>{meeting.minAttendeeCount}명</strong>
+                    <span>총 {meeting.participants.length}명</span>
+                  </output>
+                  <button
+                    type="button"
+                    aria-label="최소 참석 인원 늘리기"
+                    disabled={meeting.minAttendeeCount >= meeting.participants.length}
+                    onClick={() => onMinAttendeeCountChange(meeting.minAttendeeCount + 1)}
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </section>
+            ) : null}
+          </>
+        ) : null}
+
+        <footer>
+          <div>
+            <span>현재 기준</span>
+            <strong>
+              {isEveryoneRequired
+                ? `주최자 포함 ${meeting.participants.length}명 모두`
+                : `필수 ${requiredInvitees.length + 1}명 · 최소 ${meeting.minAttendeeCount}명`}
+            </strong>
+          </div>
+          <button className="primary-button" type="button" onClick={onDone}>
+            이 기준으로 결과 다시 보기
+          </button>
+        </footer>
       </section>
     </div>
   )
@@ -1066,82 +2028,74 @@ function ShareLinkScreen({
 
 function HostWaitingScreen({
   meeting,
-  evaluations,
-  state,
-  onCopyLink,
-  onOpenInvite,
+  onRemindParticipant,
+  onAdvancePrototype,
 }: {
   meeting: Meeting
-  evaluations: CandidateEvaluation[]
-  state: HostCoordinationState
-  onCopyLink: () => void
-  onOpenInvite: () => void
+  onRemindParticipant: (participant: Participant) => void
+  onAdvancePrototype?: () => void
 }) {
+  const [remindedParticipantIds, setRemindedParticipantIds] = useState<string[]>([])
   const responseTargets = meeting.participants.filter(
     (participant) => participant.id !== meeting.hostId,
   )
   const completedParticipants = responseTargets.filter(
-    (participant) => participant.responseStatus === 'completed',
+    (participant) => participant.responseStatus === 'submitted',
   )
   const pendingParticipants = responseTargets.filter(
-    (participant) => participant.responseStatus === 'pending',
+    (participant) => participant.responseStatus !== 'submitted',
   )
-  const firstWaitingCandidate = evaluations.find(
-    (evaluation) => evaluation.status === 'waiting_required',
-  )
-  const targetParticipants =
-    firstWaitingCandidate?.missingRequired.length != null &&
-    firstWaitingCandidate.missingRequired.length > 0
-      ? firstWaitingCandidate.missingRequired
-      : pendingParticipants
-
   return (
     <div className="waiting-workspace">
       <section className="waiting-card">
-        <PanelTitle
-          eyebrow={state === 'HOST_WAITING_EMPTY' ? '응답 대기' : '필수 응답'}
-          title={
-            state === 'HOST_WAITING_EMPTY'
-              ? '먼저 응답을 모아야 해요'
-              : '이 사람들의 답변이 있으면 정할 수 있어요'
-          }
-        />
+        <PanelTitle eyebrow="응답 대기" title="첫 응답이 오면 회의 가능 여부를 계산해요" />
         <div className="waiting-metrics">
           <SummaryLine label="응답 완료" value={`${completedParticipants.length}명`} />
           <SummaryLine label="남은 응답" value={`${pendingParticipants.length}명`} />
           <SummaryLine label="후보 시간" value={`${meeting.candidates.length}개`} />
         </div>
         <div className="request-targets">
-          {targetParticipants.map((participant) => (
+          {pendingParticipants.map((participant) => (
             <div className="target-row" key={participant.id}>
               <span className="avatar avatar--small">{participant.name.slice(0, 1)}</span>
-              <strong>{participant.name}</strong>
-              <small>{participantRoleLabels[participant.role]}</small>
+              <div>
+                <strong>{participant.name}</strong>
+                <small>{participantRoleLabels[participant.role]} · 응답 전</small>
+              </div>
+              <button
+                className="secondary-button"
+                type="button"
+                aria-label={
+                  remindedParticipantIds.includes(participant.id)
+                    ? `${participant.name}님에게 다시 알림 보냄`
+                    : `${participant.name}님에게 다시 알리기`
+                }
+                disabled={remindedParticipantIds.includes(participant.id)}
+                onClick={() => {
+                  onRemindParticipant(participant)
+                  setRemindedParticipantIds((currentIds) =>
+                    currentIds.includes(participant.id)
+                      ? currentIds
+                      : [...currentIds, participant.id],
+                  )
+                }}
+              >
+                {remindedParticipantIds.includes(participant.id) ? '다시 알림 보냄' : '다시 알리기'}
+              </button>
             </div>
           ))}
         </div>
-        <div className="button-row">
-          <button className="primary-button" type="button" onClick={onCopyLink}>
-            링크 다시 복사
-          </button>
-          <button className="secondary-button" type="button" onClick={onOpenInvite}>
-            참석자 화면 보기
-          </button>
-        </div>
-      </section>
-
-      <section className="waiting-candidates">
-        <PanelTitle eyebrow="현재 후보" title="응답이 들어온 시간" />
-        <div className="mini-list">
-          {evaluations.slice(0, 4).map((evaluation, index) => (
-            <CandidateMiniRow
-              key={evaluation.candidate.id}
-              index={index + 1}
-              label={`${formatCandidateTime(evaluation.candidate)} · ${candidateStatusLabels[evaluation.status]}`}
-              durationMinutes={meeting.durationMinutes}
-            />
-          ))}
-        </div>
+        {onAdvancePrototype ? (
+          <div className="prototype-flow-action">
+            <div>
+              <span>일부 응답이 도착했어요</span>
+              <strong>지금 정할 수 있는 시간이 있는지 확인해 보세요</strong>
+            </div>
+            <button className="primary-button" type="button" onClick={onAdvancePrototype}>
+              결과 확인하기
+            </button>
+          </div>
+        ) : null}
       </section>
     </div>
   )
@@ -1150,258 +2104,476 @@ function HostWaitingScreen({
 function HostDecideScreen({
   meeting,
   evaluations,
-  state,
   selectedEvaluation,
   onSelectCandidate,
   onConfirm,
-  onRecover,
-  onCopyRequest,
+  onReviewCriteria,
+  onSendRequest,
+  requestedParticipant,
+  onOpenRequestedParticipant,
 }: {
   meeting: Meeting
   evaluations: CandidateEvaluation[]
-  state: HostCoordinationState
   selectedEvaluation: CandidateEvaluation
   onSelectCandidate: (candidateId: string) => void
   onConfirm: (candidateId: string) => void
-  onRecover: () => void
-  onCopyRequest: (evaluation: CandidateEvaluation) => void
+  onReviewCriteria: () => void
+  onSendRequest: (evaluation: CandidateEvaluation, recipientIds: string[]) => void
+  requestedParticipant?: Participant
+  onOpenRequestedParticipant: (participant: Participant) => void
 }) {
-  const confirmableCount = evaluations.filter(
-    (evaluation) => evaluation.status === 'confirmable',
+  const [requestCandidateId, setRequestCandidateId] = useState<string | null>(null)
+  const recommendedEvaluation = selectedEvaluation
+  const systemRecommendedEvaluation = evaluations[0] ?? selectedEvaluation
+  const recommendedDateKey = getCandidateDateKey(recommendedEvaluation.candidate.startAt)
+  const isMobileDecisionMap = useMediaQuery('(max-width: 760px)')
+  const [selectedDateKey, setSelectedDateKey] = useState(recommendedDateKey)
+  const candidateMapRef = useRef<HTMLElement>(null)
+  const readyCount = evaluations.filter((evaluation) => evaluation.status === 'ready').length
+  const pendingCount = evaluations.filter((evaluation) => evaluation.status === 'pending').length
+  const impossibleCount = evaluations.filter(
+    (evaluation) => evaluation.status === 'impossible',
   ).length
-  const reviewCount = evaluations.filter(
-    (evaluation) => evaluation.status === 'needs_adjustment',
+  const dateGroups = Array.from(
+    evaluations.reduce((groups, evaluation) => {
+      const dateKey = getCandidateDateKey(evaluation.candidate.startAt)
+      const current = groups.get(dateKey) ?? []
+      current.push(evaluation)
+      groups.set(dateKey, current)
+      return groups
+    }, new Map<string, CandidateEvaluation[]>()),
+  ).sort(([left], [right]) => left.localeCompare(right))
+  const visibleDateGroups = isMobileDecisionMap
+    ? dateGroups.filter(([dateKey]) => dateKey === selectedDateKey)
+    : dateGroups
+  const candidateMinuteValues = evaluations.map((evaluation) =>
+    getCandidateMinuteOfDay(evaluation.candidate.startAt),
+  )
+  const firstCandidateMinute = Math.min(...candidateMinuteValues)
+  const lastCandidateMinute = Math.max(...candidateMinuteValues)
+  const candidateMapMinutes = Array.from(
+    { length: Math.floor((lastCandidateMinute - firstCandidateMinute) / 30) + 1 },
+    (_, index) => firstCandidateMinute + index * 30,
+  )
+  const shortlistEvaluations = evaluations.slice(0, 3)
+  const selectedRank = evaluations.findIndex(
+    (evaluation) => evaluation.candidate.id === recommendedEvaluation.candidate.id,
+  )
+  const isSystemRecommendation = selectedRank === 0
+  const canConfirm = recommendedEvaluation.status === 'ready'
+  const fallbackEvaluation = evaluations.find(
+    (evaluation) =>
+      evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
+      evaluation.status === 'ready',
+  )
+  const requiredCount = meeting.participants.filter(
+    (participant) => participant.role === 'required',
   ).length
+  const criteriaSummary =
+    meeting.preset === 'all_hands'
+      ? `주최자 포함 ${meeting.participants.length}명 모두 참석`
+      : `필수 참석자 ${requiredCount}명 · 총 ${meeting.minAttendeeCount}명 이상`
+  const selectedResponseRows = recommendedEvaluation.responseDetails
+  const selectedPendingCount = selectedResponseRows.filter(
+    (detail) => detail.state === 'unknown',
+  ).length
+  const selectedAvailableRatio = Math.round(
+    (recommendedEvaluation.availableCount / meeting.participants.length) * 100,
+  )
+  const primaryReason = isSystemRecommendation
+    ? '필수 참석자 전원이 가능하고, 같은 조건의 후보 중 가장 이른 시간이에요.'
+    : recommendedEvaluation.reasons[0]
+  const candidateStatusSummary = `${readyCount}개 확정 가능 · ${pendingCount}개 응답 대기 · ${impossibleCount}개 제외`
 
   return (
     <div className="decision-board">
-      <section className="decision-board__summary">
-        <SummaryLine label="바로 정할 수 있음" value={`${confirmableCount}개`} />
-        <SummaryLine label="확인 후 가능" value={`${reviewCount}개`} />
-        <SummaryLine label="필요한 참석" value={`${meeting.minAttendeeCount}명`} />
-      </section>
+      <section className="decision-candidate-workspace" aria-labelledby="decision-candidates-title">
+        <header className="decision-candidate-head">
+          <div>
+            <span>추천 후보</span>
+            <h1 id="decision-candidates-title">가능성이 높은 시간부터 확인해 보세요</h1>
+          </div>
+          <p>{candidateStatusSummary}</p>
+        </header>
 
-      <div className="decision-board__body">
-        <section className="candidate-decision-list" aria-label="후보 시간 목록">
-          {evaluations.map((evaluation, index) => (
-            <CandidateDecisionCard
-              key={evaluation.candidate.id}
-              evaluation={evaluation}
-              index={index + 1}
-              isSelected={evaluation.candidate.id === selectedEvaluation.candidate.id}
-              onSelect={() => onSelectCandidate(evaluation.candidate.id)}
-              onConfirm={() => onConfirm(evaluation.candidate.id)}
-              onCopyRequest={() => onCopyRequest(evaluation)}
-            />
-          ))}
-        </section>
+        <div className="decision-reference-candidates" aria-label="추천 후보 목록">
+          {shortlistEvaluations.map((evaluation, index) => {
+              const isSelected = evaluation.candidate.id === recommendedEvaluation.candidate.id
 
-        <CandidateEvidencePanel
-          evaluation={selectedEvaluation}
-          state={state}
-          onConfirm={() => onConfirm(selectedEvaluation.candidate.id)}
-          onRecover={onRecover}
-          onCopyRequest={() => onCopyRequest(selectedEvaluation)}
-        />
-      </div>
-    </div>
-  )
-}
-
-function CandidateDecisionCard({
-  evaluation,
-  index,
-  isSelected,
-  onSelect,
-  onConfirm,
-  onCopyRequest,
-}: {
-  evaluation: CandidateEvaluation
-  index: number
-  isSelected: boolean
-  onSelect: () => void
-  onConfirm: () => void
-  onCopyRequest: () => void
-}) {
-  const canConfirm = evaluation.status === 'confirmable' || evaluation.status === 'needs_adjustment'
-
-  return (
-    <article className={`candidate-decision-card${isSelected ? ' is-selected' : ''}`}>
-      <button className="candidate-card-hit" type="button" onClick={onSelect}>
-        <span className={`status-label status-label--${getStatusTone(evaluation.status)}`}>
-          {candidateStatusLabels[evaluation.status]}
-        </span>
-        <strong>{formatCandidateTime(evaluation.candidate)}</strong>
-        <p>{evaluation.reasons[0]}</p>
-        <div className="candidate-facts">
-          <MetricInline label="가능" value={`${evaluation.availableCount}명`} />
-          <MetricInline label="조정" value={`${evaluation.adjustableCount}명`} />
-          <MetricInline label="선호 조건" value={`${evaluation.preferenceTagCount}개`} />
-          <MetricInline
-            label="응답"
-            value={`${evaluation.respondedCount}/${evaluation.responseTargetCount}명`}
-          />
+              return (
+                <article
+                  className={`decision-reference-card is-${getStatusTone(evaluation.status)}${isSelected ? ' is-selected' : ''}`}
+                  key={evaluation.candidate.id}
+                >
+                  <button
+                    className="decision-reference-card__select"
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      onSelectCandidate(evaluation.candidate.id)
+                      setSelectedDateKey(getCandidateDateKey(evaluation.candidate.startAt))
+                      setRequestCandidateId(null)
+                    }}
+                  >
+                    <span className="decision-reference-card__rank">{index + 1}순위</span>
+                    <span className="decision-reference-card__status-icon" aria-hidden="true">
+                      {evaluation.status === 'ready' ? <Check size={22} /> : evaluation.status === 'pending' ? <Clock3 size={22} /> : <X size={22} />}
+                    </span>
+                    <span className="decision-reference-card__copy">
+                      <strong>{formatCandidateTime(evaluation.candidate)}</strong>
+                      <small>{candidateStatusLabels[evaluation.status]}</small>
+                      <em>필수 참석자 {requiredCount}명 · 총 {evaluation.availableCount}명 가능</em>
+                    </span>
+                    {!isSelected ? <ChevronRight aria-hidden="true" size={20} /> : null}
+                  </button>
+                  {isSelected ? (
+                    canConfirm ? (
+                      <button className="primary-button" type="button" onClick={() => onConfirm(evaluation.candidate.id)}>
+                        이 시간으로 정하기
+                      </button>
+                    ) : evaluation.status === 'pending' ? (
+                      <button className="primary-button" type="button" onClick={() => setRequestCandidateId(evaluation.candidate.id)}>
+                        응답 요청하기
+                      </button>
+                    ) : (
+                      <button className="primary-button" type="button" onClick={() => fallbackEvaluation != null ? onSelectCandidate(fallbackEvaluation.candidate.id) : onReviewCriteria()}>
+                        다른 시간 보기
+                      </button>
+                    )
+                  ) : null}
+                </article>
+              )
+            })}
         </div>
-      </button>
-      <div className="candidate-card-actions">
-        {canConfirm ? (
-          <button className="primary-button" type="button" onClick={onConfirm}>
-            이 시간 확정
-          </button>
-        ) : null}
-        {evaluation.actionLabel != null ? (
-          <button className="secondary-button" type="button" onClick={onCopyRequest}>
-            요청 문구
-          </button>
-        ) : null}
-        <small>후보 {index}</small>
-      </div>
-    </article>
-  )
-}
 
-function CandidateEvidencePanel({
-  evaluation,
-  state,
-  onConfirm,
-  onRecover,
-  onCopyRequest,
-}: {
-  evaluation: CandidateEvaluation
-  state: HostCoordinationState
-  onConfirm: () => void
-  onRecover: () => void
-  onCopyRequest: () => void
-}) {
-  const canConfirm = evaluation.status === 'confirmable' || evaluation.status === 'needs_adjustment'
+        <div className="decision-reference-status" aria-label="전체 후보 상태">
+          <span className="is-ready"><Check aria-hidden="true" size={17} /><small>지금 결정</small><strong>{readyCount}</strong></span>
+          <span className="is-pending"><Clock3 aria-hidden="true" size={17} /><small>응답 필요</small><strong>{pendingCount}</strong></span>
+          <span className="is-impossible"><X aria-hidden="true" size={17} /><small>제외 권장</small><strong>{impossibleCount}</strong></span>
+          <span><small>전체 참여자</small><strong>{meeting.participants.length}명</strong></span>
+        </div>
 
-  return (
-    <aside className="evidence-panel" aria-label="선택한 후보 상세">
-      <div className="evidence-panel__head">
-        <span className={`state-badge state-badge--${getStatusTone(evaluation.status)}`}>
-          {candidateStatusLabels[evaluation.status]}
-        </span>
-        <h2>{formatCandidateTime(evaluation.candidate)}</h2>
-      </div>
+        <section className="decision-reference-detail" aria-labelledby="selected-time-title">
+          <aside className="decision-reference-summary">
+            <div className="decision-reference-summary__head">
+              <span>선택한 시간</span>
+              <strong>{candidateStatusLabels[recommendedEvaluation.status]}</strong>
+            </div>
+            <h2 id="selected-time-title">{formatCandidateTime(recommendedEvaluation.candidate)}</h2>
+            <p>{primaryReason}</p>
+            <div className="decision-reference-criteria">
+              <div><span>선정 기준</span><strong>{criteriaSummary}</strong></div>
+              <button type="button" onClick={onReviewCriteria}>수정</button>
+            </div>
+            <div className="decision-evidence-meter" aria-label="선택한 시간의 응답 요약">
+              <span style={{ '--meter-value': `${selectedAvailableRatio}%` } as CSSProperties} />
+              <div>
+                <strong>총 {meeting.participants.length}명 중 {recommendedEvaluation.availableCount}명 가능</strong>
+                <small>가능 {recommendedEvaluation.availableCount} · 응답 필요 {selectedPendingCount} · 불가 {recommendedEvaluation.unavailableCount}</small>
+              </div>
+            </div>
+          </aside>
 
-      <section className="evidence-section">
-        <h3>정할 때 볼 정보</h3>
-        {evaluation.reasons.map((reason) => (
-          <p key={reason}>{reason}</p>
-        ))}
+          <details className="decision-response-disclosure" open={!isMobileDecisionMap}>
+            <summary><span>참가자별 응답</span><strong>{selectedResponseRows.length}명</strong></summary>
+            <div className="decision-response-table" aria-label="선택한 시간의 참가자 응답">
+              <div className="decision-response-table__head"><span>참가자</span><span>역할</span><span>응답 상태</span></div>
+              {selectedResponseRows.map((detail) => (
+                <div className="decision-response-row" key={detail.participant.id}>
+                  <strong>{detail.participant.name}</strong>
+                  <span>{participantRoleLabels[detail.participant.role]}</span>
+                  <ResponseBadge value={detail.state === 'unknown' ? undefined : detail.state === 'adjustment_commit' ? 'adjustable' : detail.state} isImplicitHostAvailable={detail.isImplicitHostAvailable} />
+                </div>
+              ))}
+            </div>
+          </details>
+        </section>
       </section>
 
-      <section className="evidence-section">
-        <h3>참석자 응답</h3>
-        <div className="participant-list">
-          {evaluation.responseDetails.map((detail) => (
-            <div className="participant-row" key={detail.participant.id}>
-              <span className="avatar avatar--small">{detail.participant.name.slice(0, 1)}</span>
-              <div>
-                <strong>{detail.participant.name}</strong>
-                <small>{participantRoleLabels[detail.participant.role]}</small>
-                {detail.response?.preferenceTags?.length ? (
-                  <span className="response-context">
-                    {detail.response.preferenceTags
-                      .map((tag) => responsePreferenceTagLabels[tag])
-                      .join(' · ')}
-                  </span>
-                ) : null}
-              </div>
-              <ResponseBadge
-                value={detail.response?.value}
-                isImplicitHostAvailable={detail.isImplicitHostAvailable}
-              />
+      {requestCandidateId === recommendedEvaluation.candidate.id ? (
+        <ResponseRequestSelector
+          key={recommendedEvaluation.candidate.id}
+          evaluation={recommendedEvaluation}
+          onCancel={() => setRequestCandidateId(null)}
+          onSend={(recipientIds) => {
+            onSendRequest(recommendedEvaluation, recipientIds)
+            setRequestCandidateId(null)
+          }}
+        />
+      ) : null}
+
+      {requestedParticipant ? (
+        <div className="prototype-flow-action prototype-flow-action--decision">
+          <div>
+            <span>요청이 전달됐어요</span>
+            <strong>{requestedParticipant.name}님의 응답이 오면 결과를 다시 계산해요</strong>
+          </div>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => onOpenRequestedParticipant(requestedParticipant)}
+          >
+            {requestedParticipant.name}님 응답 이어보기
+          </button>
+        </div>
+      ) : null}
+
+      {evaluations.some((evaluation) => evaluation.deadlinePassed) ? (
+        <div className="decision-deadline-notice" role="status">
+          응답 마감이 지났어요. 미응답은 어려움으로 바꾸지 않았고, 늦은 응답도 같은 규칙으로 다시
+          계산해요.
+        </div>
+      ) : null}
+
+      <details className="candidate-calendar-disclosure" open={!isMobileDecisionMap}>
+        <summary>
+          <div>
+            <span>전체 후보</span>
+            <strong>시간 지도로 비교하기</strong>
+          </div>
+          <small>{evaluations.length}개 시작 시각</small>
+        </summary>
+        <section
+          className="candidate-calendar"
+          aria-labelledby="candidate-calendar-title"
+          ref={candidateMapRef}
+        >
+        <div className="candidate-comparison__head">
+          <div>
+            <span>전체 후보</span>
+            <h2 id="candidate-calendar-title">회의를 시작할 수 있는 구간을 한눈에 보세요</h2>
+          </div>
+          <div className="candidate-map-head-meta">
+            <small>{evaluations.length}개 시작 시각</small>
+            <div className="candidate-map-legend" aria-label="시간 지도 범례">
+              <span>
+                <Check aria-hidden="true" size={14} />
+                지금 결정
+              </span>
+              <span>
+                <Clock3 aria-hidden="true" size={14} />
+                응답 필요
+              </span>
+              <span>
+                <X aria-hidden="true" size={14} />
+                제외 권장
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="candidate-date-strip" aria-label="후보가 있는 날짜">
+          {dateGroups.map(([dateKey, dateEvaluations]) => {
+            const statuses = new Set(dateEvaluations.map((evaluation) => evaluation.status))
+            const isSelected = dateKey === selectedDateKey
+
+            return (
+              <button
+                key={dateKey}
+                type="button"
+                className={isSelected ? 'is-selected' : ''}
+                aria-pressed={isSelected}
+                onClick={() => {
+                  setSelectedDateKey(dateKey)
+                  setRequestCandidateId(null)
+                }}
+              >
+                <span>{formatCandidateWeekday(dateKey)}</span>
+                <strong>{formatCandidateDay(dateKey)}</strong>
+                <small>{dateEvaluations.length}개 시간</small>
+                <span
+                  className="candidate-date-dots"
+                  aria-label={formatDateStatusSummary(dateEvaluations)}
+                >
+                  {candidateStatusOrder.map((status) =>
+                    statuses.has(status) ? (
+                      <i key={status} className={`is-${getStatusTone(status)}`} />
+                    ) : null,
+                  )}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div
+          className="candidate-decision-map"
+          style={{
+            gridTemplateColumns: `64px repeat(${visibleDateGroups.length}, minmax(120px, 1fr))`,
+          }}
+          aria-label="후보 시작 시각 지도"
+        >
+          <div className="candidate-decision-map__corner">시작</div>
+          {visibleDateGroups.map(([dateKey]) => (
+            <div className="candidate-decision-map__date" key={`head-${dateKey}`}>
+              <span>{formatCandidateWeekday(dateKey)}</span>
+              <strong>{formatCandidateDay(dateKey)}</strong>
             </div>
           ))}
-        </div>
-      </section>
 
-      <div className="evidence-actions">
-        {canConfirm ? (
-          <button className="primary-button" type="button" onClick={onConfirm}>
-            이 시간으로 정하기
-          </button>
-        ) : null}
-        {evaluation.actionLabel != null ? (
-          <button className="secondary-button" type="button" onClick={onCopyRequest}>
-            필요한 사람에게 다시 묻기
-          </button>
-        ) : null}
-        {state !== 'HOST_DECISION_READY' ? (
-          <button className="text-button" type="button" onClick={onRecover}>
-            조율 가능 시간대 넓히기
-          </button>
-        ) : null}
-      </div>
-    </aside>
+          {candidateMapMinutes.map((minutes) => (
+            <Fragment key={minutes}>
+              <div className="candidate-decision-map__time">{formatCandidateMinutes(minutes)}</div>
+              {visibleDateGroups.map(([dateKey, dateEvaluations]) => {
+                const evaluation = dateEvaluations.find(
+                  (candidate) => getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes,
+                )
+
+                if (evaluation == null) {
+                  return (
+                    <div className="candidate-decision-map__empty" key={`${dateKey}-${minutes}`} />
+                  )
+                }
+
+                const previous = dateEvaluations.find(
+                  (candidate) =>
+                    getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes - 30,
+                )
+                const next = dateEvaluations.find(
+                  (candidate) =>
+                    getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes + 30,
+                )
+                const connectsBefore = hasSameDecisionBand(previous, evaluation)
+                const connectsAfter = hasSameDecisionBand(next, evaluation)
+                const isRecommended =
+                  evaluation.candidate.id === systemRecommendedEvaluation.candidate.id
+                const isSelected = evaluation.candidate.id === recommendedEvaluation.candidate.id
+
+                return (
+                  <button
+                    key={evaluation.candidate.id}
+                    type="button"
+                    className={`candidate-decision-map__slot is-${getStatusTone(evaluation.status)}${
+                      connectsBefore ? ' is-connected-before' : ''
+                    }${connectsAfter ? ' is-connected-after' : ''}${
+                      isRecommended ? ' is-recommended' : ''
+                    }${isSelected ? ' is-selected' : ''}`}
+                    aria-label={`${formatCandidateFullDate(dateKey)} ${formatCandidateStartTime(
+                      evaluation.candidate.startAt,
+                    )}, ${candidateStatusLabels[evaluation.status]}${isRecommended ? ', 추천' : ''}`}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      onSelectCandidate(evaluation.candidate.id)
+                      setSelectedDateKey(dateKey)
+                      setRequestCandidateId(null)
+                    }}
+                  >
+                    <span>{formatCandidateStartTime(evaluation.candidate.startAt)}</span>
+                    {isRecommended ? (
+                      <strong>추천</strong>
+                    ) : evaluation.status === 'ready' ? (
+                      <Check aria-hidden="true" size={13} />
+                    ) : evaluation.status === 'pending' ? (
+                      <Clock3 aria-hidden="true" size={13} />
+                    ) : (
+                      <X aria-hidden="true" size={13} />
+                    )}
+                  </button>
+                )
+              })}
+            </Fragment>
+          ))}
+        </div>
+
+        <p className="candidate-map-hint">
+          캘린더는 후보의 근거를 확인하는 영역이에요. 시간을 누르면 위의 후보와 근거가 함께 바뀌어요.
+        </p>
+        </section>
+      </details>
+    </div>
   )
 }
 
-function HostRecoverScreen({
-  meeting,
-  evaluations,
-  selectedEvaluation,
-  latestAddedCandidateId,
-  onAddAvailabilityWindow,
-  onCopyAddedCandidateMessage,
-  onOpenInvite,
+function ResponseRequestSelector({
+  evaluation,
+  onCancel,
+  onSend,
 }: {
-  meeting: Meeting
-  evaluations: CandidateEvaluation[]
-  selectedEvaluation?: CandidateEvaluation
-  latestAddedCandidateId?: string
-  onAddAvailabilityWindow: () => void
-  onCopyAddedCandidateMessage: (message: string, candidateId?: string) => void
-  onOpenInvite: () => void
+  evaluation: CandidateEvaluation
+  onCancel: () => void
+  onSend: (recipientIds: string[]) => void
 }) {
-  const blockedCount = evaluations.filter((evaluation) => evaluation.status === 'excluded').length
-  const latestAddedCandidate = meeting.candidates.find(
-    (candidate) => candidate.id === latestAddedCandidateId,
-  )
-  const fallbackEvaluation = selectedEvaluation ?? evaluations[0]
-  const message =
-    latestAddedCandidate != null
-      ? `${meeting.title} 시간을 다시 확인하려고 해요.\n기존 응답은 유지됩니다.\n${formatCandidateTime(latestAddedCandidate)}만 추가로 확인해 주세요.`
-      : fallbackEvaluation != null
-        ? generateRecoveryRequestMessage(meeting, fallbackEvaluation)
-        : `${meeting.title} 가능한 시간대를 다시 확인하려고 해요.\n기존 응답은 유지됩니다.`
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const selectedIdSet = new Set(selectedIds)
+
+  function toggleParticipant(participantId: string) {
+    setSelectedIds((currentIds) =>
+      currentIds.includes(participantId)
+        ? currentIds.filter((id) => id !== participantId)
+        : [...currentIds, participantId],
+    )
+  }
+
+  function renderParticipantOption(participant: Participant, context: string) {
+    return (
+      <label className="request-recipient-option" key={participant.id}>
+        <input
+          type="checkbox"
+          checked={selectedIdSet.has(participant.id)}
+          onChange={() => toggleParticipant(participant.id)}
+        />
+        <span className="avatar avatar--small">{participant.name.slice(0, 1)}</span>
+        <span>
+          <strong>{participant.name}</strong>
+          <small>{context}</small>
+        </span>
+        <Check aria-hidden="true" size={17} strokeWidth={3} />
+      </label>
+    )
+  }
 
   return (
-    <div className="recover-workspace">
-      <section className="soft-panel recovery-copy">
-        <PanelTitle eyebrow="조율 회복" title="기존 링크 안에서 필요한 시간만 다시 물어봐요" />
-        <p>
-          지금 바로 정하기 어려운 시간이 {blockedCount}개 있어요. 기존 응답은 유지하고, 조율 범위를
-          넓혀 필요한 시간만 더 확인합니다.
-        </p>
-        <div className="recovery-rules">
-          <ConditionRow label="기존 링크" value="유지" ok />
-          <ConditionRow label="기존 응답" value="유지" ok />
-          <ConditionRow label="시간대 확장" value="새로 열린 칸만 미응답" ok />
+    <section className="request-recipient-panel" aria-labelledby="request-recipient-title">
+      <header>
+        <div>
+          <span>응답 요청</span>
+          <h2 id="request-recipient-title">누구에게 이 시간을 물어볼까요?</h2>
         </div>
-        <div className="button-row">
-          <button className="primary-button" type="button" onClick={onAddAvailabilityWindow}>
-            가능한 시간대 넓히기
-          </button>
-          <button className="secondary-button" type="button" onClick={onOpenInvite}>
-            새 시간대 응답 화면 보기
-          </button>
-        </div>
-      </section>
-
-      <section className="soft-panel message-panel">
-        <PanelTitle eyebrow="복사할 문구" title="필요한 사람에게만 다시 물어봐요" />
-        <pre>{message}</pre>
         <button
-          className="secondary-button"
+          className="icon-button"
           type="button"
-          onClick={() => onCopyAddedCandidateMessage(message, latestAddedCandidate?.id)}
+          aria-label="응답 대상 선택 닫기"
+          onClick={onCancel}
         >
-          안내 문구 복사하기
+          <X size={20} />
         </button>
-      </section>
-    </div>
+      </header>
+
+      {evaluation.requiredPending.length > 0 ? (
+        <fieldset className="request-recipient-group">
+          <legend>반드시 가능 응답이 필요한 사람</legend>
+          {evaluation.requiredPending.map((participant) =>
+            renderParticipantOption(participant, '필수 참석자'),
+          )}
+        </fieldset>
+      ) : null}
+
+      {evaluation.positiveResponsesNeededAfterRequiredYes > 0 ? (
+        <fieldset className="request-recipient-group">
+          <legend>
+            대체 가능한 사람 · {evaluation.optionalPendingPool.length}명 중{' '}
+            {evaluation.positiveResponsesNeededAfterRequiredYes}명 이상의 가능 응답 필요
+          </legend>
+          {evaluation.optionalPendingPool.map((participant) =>
+            renderParticipantOption(participant, '대체 가능한 미응답자'),
+          )}
+        </fieldset>
+      ) : null}
+
+      <footer>
+        <p>필요한 조건은 제품이 알려드리고, 누구에게 동시에 요청할지는 직접 고를 수 있어요.</p>
+        <button
+          className="primary-button"
+          type="button"
+          disabled={selectedIds.length === 0}
+          onClick={() => onSend(selectedIds)}
+        >
+          {selectedIds.length > 0
+            ? `${selectedIds.length}명에게 응답 요청`
+            : '요청할 사람을 선택해 주세요'}
+        </button>
+      </footer>
+    </section>
   )
 }
 
@@ -1418,15 +2590,20 @@ const MAX_CUSTOM_DURATION = 240
 const CUSTOM_DURATION_STEP = 30
 type MeetingWithDuration = Meeting & { durationMinutes: MeetingDuration }
 const koreanDateFormatter = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: 'Asia/Seoul',
   month: 'long',
   day: 'numeric',
   weekday: 'short',
 })
 const koreanShortDateFormatter = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: 'Asia/Seoul',
   month: 'numeric',
   day: 'numeric',
 })
-const koreanWeekdayFormatter = new Intl.DateTimeFormat('ko-KR', { weekday: 'short' })
+const koreanWeekdayFormatter = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: 'Asia/Seoul',
+  weekday: 'short',
+})
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() =>
@@ -1530,6 +2707,7 @@ function formatAvailabilityWindow(window: AvailabilityWindow) {
 
 function formatAvailabilityStart(date: Date) {
   return `${new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
     month: 'numeric',
     day: 'numeric',
     weekday: 'short',
@@ -1555,16 +2733,24 @@ function AvailabilityWindowPicker({
   )
   const [selectedDate, setSelectedDate] = useState(windowStartDate)
   const [focusedSlot, setFocusedSlot] = useState({ dayIndex: 0, timeIndex: 0 })
-  const [anchor, setAnchor] = useState<{ date: CalendarDate; startMinutes: number } | null>(null)
   const [preview, setPreview] = useState<{
     date: CalendarDate
     startMinutes: number
     endMinutes: number
   } | null>(null)
-  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
-  const [editingWindow, setEditingWindow] = useState<AvailabilityWindow | null>(null)
-  const [removedWindow, setRemovedWindow] = useState<AvailabilityWindow | null>(null)
+  const [brushMode, setBrushMode] = useState<ScopeBrushMode>('exclude')
   const gridRef = useRef<HTMLDivElement>(null)
+  const dragSelectionRef = useRef<{
+    date: CalendarDate
+    startMinutes: number
+    currentMinutes: number
+    pointerId: number
+    startX: number
+    startY: number
+    moved: boolean
+    mode: ScopeBrushMode
+  } | null>(null)
+  const suppressNextClickRef = useRef(false)
   const activeDate =
     selectedDate.compare(windowStartDate) < 0 || selectedDate.compare(windowEndDate) > 0
       ? windowStartDate
@@ -1578,6 +2764,24 @@ function AvailabilityWindowPicker({
   const displayDays = useMemo(
     () => Array.from({ length: 7 }, (_, index) => weekStart.add({ days: index })),
     [weekStart],
+  )
+  const selectedDateCount = useMemo(
+    () =>
+      new Set(
+        meeting.availabilityWindows.map((window) =>
+          toCalendarDate(new Date(window.startAt)).toString(),
+        ),
+      ).size,
+    [meeting.availabilityWindows],
+  )
+  const selectedMinutes = useMemo(
+    () =>
+      meeting.availabilityWindows.reduce(
+        (total, window) =>
+          total + (new Date(window.endAt).getTime() - new Date(window.startAt).getTime()) / 60_000,
+        0,
+      ),
+    [meeting.availabilityWindows],
   )
 
   function isOutsideWindow(date: CalendarDate) {
@@ -1598,37 +2802,21 @@ function AvailabilityWindowPicker({
     })
   }
 
-  function countWindowsForDate(date: CalendarDate) {
-    return meeting.availabilityWindows.filter(
-      (window) => toCalendarDate(new Date(window.startAt)).compare(date) === 0,
-    ).length
+  function buildRange(date: CalendarDate, startMinutes: number) {
+    const endMinutes = startMinutes + TIME_QUANTUM_MINUTES
+
+    if (startMinutes < TIME_GRID_START_MINUTES || endMinutes > TIME_GRID_END_MINUTES) {
+      return null
+    }
+
+    return { date, startMinutes, endMinutes }
   }
 
-  function buildRange(date: CalendarDate, anchorMinutes: number, edgeMinutes: number) {
-    let startMinutes = Math.min(anchorMinutes, edgeMinutes)
-    let endMinutes = Math.max(anchorMinutes, edgeMinutes) + TIME_QUANTUM_MINUTES
+  function buildDragRange(date: CalendarDate, anchorMinutes: number, edgeMinutes: number) {
+    const startMinutes = Math.min(anchorMinutes, edgeMinutes)
+    const endMinutes = Math.max(anchorMinutes, edgeMinutes) + TIME_QUANTUM_MINUTES
 
-    if (endMinutes - startMinutes < meeting.durationMinutes) {
-      if (edgeMinutes >= anchorMinutes) {
-        endMinutes = startMinutes + meeting.durationMinutes
-      } else {
-        startMinutes = endMinutes - meeting.durationMinutes
-      }
-    }
-
-    if (startMinutes < TIME_GRID_START_MINUTES) {
-      endMinutes += TIME_GRID_START_MINUTES - startMinutes
-      startMinutes = TIME_GRID_START_MINUTES
-    }
-
-    if (endMinutes > TIME_GRID_END_MINUTES) {
-      startMinutes -= endMinutes - TIME_GRID_END_MINUTES
-      endMinutes = TIME_GRID_END_MINUTES
-    }
-
-    startMinutes = Math.max(TIME_GRID_START_MINUTES, startMinutes)
-
-    if (endMinutes - startMinutes < meeting.durationMinutes) {
+    if (startMinutes < TIME_GRID_START_MINUTES || endMinutes > TIME_GRID_END_MINUTES) {
       return null
     }
 
@@ -1641,100 +2829,160 @@ function AvailabilityWindowPicker({
       return
     }
 
-    if (anchor != null && anchor.date.compare(date) !== 0) {
-      setPreview(buildRange(date, startMinutes, startMinutes))
-      return
-    }
-
-    setPreview(buildRange(date, anchor?.startMinutes ?? startMinutes, startMinutes))
+    const range = buildRange(date, startMinutes)
+    const canPreview =
+      range != null &&
+      (brushMode === 'exclude'
+        ? windowOccupyingSlot(date, startMinutes) != null
+        : windowOccupyingSlot(date, startMinutes) == null)
+    setPreview(canPreview ? range : null)
   }
 
   function chooseBoundary(date: CalendarDate, startMinutes: number) {
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false
+      return
+    }
+
     const existingWindow = windowOccupyingSlot(date, startMinutes)
 
-    if (existingWindow != null && anchor == null) {
-      setActiveWindowId((current) => (current === existingWindow.id ? null : existingWindow.id))
+    if (brushMode === 'exclude') {
+      if (existingWindow != null) {
+        excludeRange({
+          date,
+          startMinutes,
+          endMinutes: startMinutes + TIME_QUANTUM_MINUTES,
+        })
+      }
       setPreview(null)
       return
     }
+
+    if (existingWindow != null) return
 
     if (isOutsideWindow(date)) {
       return
     }
 
-    if (anchor == null || anchor.date.compare(date) !== 0) {
-      setAnchor({ date, startMinutes })
-      setPreview(buildRange(date, startMinutes, startMinutes))
-      setActiveWindowId(null)
-      return
-    }
+    const range = buildRange(date, startMinutes)
 
-    const range = buildRange(date, anchor.startMinutes, startMinutes)
+    if (range == null) return
 
-    if (range == null) {
-      return
-    }
+    commitRange(range)
+  }
 
+  function commitRange(range: { date: CalendarDate; startMinutes: number; endMinutes: number }) {
     const nextWindow: AvailabilityWindow = {
-      id: editingWindow?.id ?? `aw-${toLocalDate(date, range.startMinutes).getTime()}`,
+      id: `aw-${meeting.hostId}-${toLocalDate(range.date, range.startMinutes).getTime()}`,
       meetingId: meeting.id,
       ownerId: meeting.hostId,
-      startAt: toLocalDate(date, range.startMinutes).toISOString(),
-      endAt: toLocalDate(date, range.endMinutes).toISOString(),
+      startAt: toLocalDate(range.date, range.startMinutes).toISOString(),
+      endAt: toLocalDate(range.date, range.endMinutes).toISOString(),
       state: 'available',
     }
 
     onAvailabilityWindowsChange([...meeting.availabilityWindows, nextWindow])
-    setAnchor(null)
     setPreview(null)
-    setEditingWindow(null)
-    setActiveWindowId(null)
   }
 
-  function removeAvailabilityWindow(window: AvailabilityWindow) {
-    setRemovedWindow(window)
-    onAvailabilityWindowsChange(meeting.availabilityWindows.filter((item) => item.id !== window.id))
-    setActiveWindowId(null)
-    if (editingWindow?.id === window.id) {
-      setEditingWindow(null)
-      setAnchor(null)
-      setPreview(null)
-    }
+  function excludeRange(range: { date: CalendarDate; startMinutes: number; endMinutes: number }) {
+    onAvailabilityWindowsChange(
+      removeAvailabilityRange(meeting.availabilityWindows, meeting.hostId, {
+        startAt: toLocalDate(range.date, range.startMinutes).toISOString(),
+        endAt: toLocalDate(range.date, range.endMinutes).toISOString(),
+      }),
+    )
+    setPreview(null)
   }
 
-  function startEditingWindow(window: AvailabilityWindow) {
-    const start = new Date(window.startAt)
-    const date = toCalendarDate(start)
-    const startMinutes = start.getHours() * 60 + start.getMinutes()
-    const end = new Date(window.endAt)
+  function resetDefaultScope() {
+    onAvailabilityWindowsChange(
+      createDefaultHostAvailabilityWindows({
+        meetingId: meeting.id,
+        hostId: meeting.hostId,
+        startDate: meeting.schedulingWindow.startDate,
+        endDate: meeting.schedulingWindow.endDate,
+      }),
+    )
+    setBrushMode('exclude')
+    setPreview(null)
+  }
 
-    onAvailabilityWindowsChange(meeting.availabilityWindows.filter((item) => item.id !== window.id))
-    setEditingWindow(window)
-    setAnchor({ date, startMinutes })
-    setPreview({
+  function beginDragSelection(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    date: CalendarDate,
+    startMinutes: number,
+  ) {
+    if (event.button !== 0 || isOutsideWindow(date)) return
+
+    const range = buildRange(date, startMinutes)
+    if (range == null) return
+
+    event.currentTarget.setPointerCapture(event.pointerId)
+    dragSelectionRef.current = {
       date,
       startMinutes,
-      endMinutes: end.getHours() * 60 + end.getMinutes(),
-    })
-    setActiveWindowId(null)
+      currentMinutes: startMinutes,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+      mode: brushMode,
+    }
+    setPreview(range)
   }
 
-  function cancelRangeSelection() {
-    if (editingWindow != null) {
-      onAvailabilityWindowsChange([...meeting.availabilityWindows, editingWindow])
+  function updateDragSelection(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragSelectionRef.current
+    if (drag == null || drag.pointerId !== event.pointerId) return
+
+    const movedDistance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY)
+    if (!drag.moved && movedDistance < 5) return
+
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLButtonElement>('[data-availability-date][data-start-minutes]')
+    const targetDate = target?.dataset.availabilityDate
+    const targetMinutes = Number(target?.dataset.startMinutes)
+
+    if (targetDate == null || !Number.isFinite(targetMinutes)) return
+
+    const date = parseCalendarDate(targetDate)
+    if (date.compare(drag.date) !== 0) return
+
+    drag.moved = true
+    drag.currentMinutes = targetMinutes
+    const range = buildDragRange(drag.date, drag.startMinutes, targetMinutes)
+    setPreview(range)
+  }
+
+  function finishDragSelection(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragSelectionRef.current
+    if (drag == null || drag.pointerId !== event.pointerId) return
+
+    if (drag.moved) {
+      const range = buildDragRange(drag.date, drag.startMinutes, drag.currentMinutes)
+      if (range != null) {
+        suppressNextClickRef.current = true
+        window.setTimeout(() => {
+          suppressNextClickRef.current = false
+        }, 0)
+        if (drag.mode === 'exclude') {
+          excludeRange(range)
+        } else {
+          commitRange(range)
+        }
+      } else {
+        setPreview(null)
+      }
     }
-    setAnchor(null)
+
+    dragSelectionRef.current = null
+  }
+
+  function cancelDragSelection() {
+    dragSelectionRef.current = null
     setPreview(null)
-    setEditingWindow(null)
-  }
-
-  function undoRemoveWindow() {
-    if (removedWindow == null) {
-      return
-    }
-
-    onAvailabilityWindowsChange([...meeting.availabilityWindows, removedWindow])
-    setRemovedWindow(null)
   }
 
   function focusGridSlot(dayIndex: number, timeIndex: number) {
@@ -1766,9 +3014,9 @@ function AvailabilityWindowPicker({
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
       focusGridSlot(dayIndex, timeIndex - 1)
-    } else if (event.key === 'Escape') {
+    } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      cancelRangeSelection()
+      chooseBoundary(displayDays[dayIndex], TIME_SLOT_MINUTES[timeIndex])
     }
   }
 
@@ -1784,78 +3032,54 @@ function AvailabilityWindowPicker({
     }
   }
 
-  function renderSelectedWindows(className = '') {
-    return (
-      <section
-        className={`selected-candidates ${className}`.trim()}
-        aria-labelledby={`selected-window-title-${isMobile ? 'mobile' : 'desktop'}`}
-      >
-        <div className="selected-candidates__head">
-          <h2 id={`selected-window-title-${isMobile ? 'mobile' : 'desktop'}`}>가능한 시간대</h2>
-          <strong>{meeting.availabilityWindows.length}개</strong>
-        </div>
-        {meeting.availabilityWindows.length > 0 ? (
-          <div className="selected-candidates__list">
-            {meeting.availabilityWindows.map((window) => {
-              const isActive = activeWindowId === window.id
-
-              return (
-                <div
-                  className={`selected-candidate-item${isActive ? ' is-active' : ''}`}
-                  key={window.id}
-                >
-                  <div className="selected-candidate-row">
-                    <span aria-hidden="true">
-                      <Check size={15} strokeWidth={3} />
-                    </span>
-                    <strong>{formatAvailabilityWindow(window)}</strong>
-                    <button
-                      className="selected-candidate-manage"
-                      type="button"
-                      aria-expanded={isActive}
-                      onClick={() => setActiveWindowId(isActive ? null : window.id)}
-                    >
-                      관리
-                    </button>
-                  </div>
-                  {isActive ? (
-                    <div className="selected-candidate-actions" aria-label="가능한 시간대 관리">
-                      <button type="button" onClick={() => startEditingWindow(window)}>
-                        다시 선택
-                      </button>
-                      <button
-                        className="is-danger"
-                        type="button"
-                        onClick={() => removeAvailabilityWindow(window)}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <p className="selected-candidates__empty">아직 가능한 시간대가 없어요.</p>
-        )}
-      </section>
-    )
-  }
-
   const weekEnd = displayDays[displayDays.length - 1]
   const weekLabel = `${koreanShortDateFormatter.format(toLocalDate(weekStart))} - ${koreanShortDateFormatter.format(toLocalDate(weekEnd))}`
   const cannotGoPrevious = weekStart.compare(firstWindowWeek) <= 0
   const cannotGoNext = weekStart.compare(lastWindowWeek) >= 0
 
   return (
-    <div className="time-picker availability-picker">
+    <div className="time-picker availability-picker" data-brush-mode={brushMode}>
       <div className="time-picker__status">
         <div>
-          <span>가능한 시간대</span>
-          <strong>{meeting.availabilityWindows.length}개</strong>
+          <span>참석자에게 물어볼 시간</span>
+          <strong>
+            {selectedDateCount}일 · {formatMeetingDuration(selectedMinutes)}
+          </strong>
         </div>
-        <span>{formatMeetingDuration(meeting.durationMinutes)} 회의 후보를 계산해요</span>
+        <span>안 되는 시간만 빼면 돼요</span>
+      </div>
+
+      <div className="availability-brush-toolbar" aria-label="시간 범위 편집 도구">
+        <div className="availability-brush-group" role="group" aria-label="편집 모드">
+          <button
+            className={brushMode === 'exclude' ? 'is-selected' : ''}
+            type="button"
+            aria-pressed={brushMode === 'exclude'}
+            onClick={() => setBrushMode('exclude')}
+          >
+            제외할 시간
+          </button>
+          <button
+            className={brushMode === 'add' ? 'is-selected' : ''}
+            type="button"
+            aria-pressed={brushMode === 'add'}
+            onClick={() => setBrushMode('add')}
+          >
+            추가할 시간
+          </button>
+        </div>
+        <button className="availability-reset-button" type="button" onClick={resetDefaultScope}>
+          기본값 복원
+        </button>
+      </div>
+
+      <div className="availability-scope-legend" aria-label="시간표 표시 의미">
+        <span>
+          <i className="is-included" aria-hidden="true" /> 파란 칸은 참석자에게 물어볼 시간
+        </span>
+        <span>
+          <i className="is-excluded" aria-hidden="true" /> 흰 칸은 제외한 시간
+        </span>
       </div>
 
       <div className="time-picker__toolbar">
@@ -1880,26 +3104,11 @@ function AvailabilityWindowPicker({
         </div>
       </div>
 
-      {anchor != null ? (
-        <div className="candidate-move-banner" role="status">
-          <div>
-            <strong>시간대의 반대쪽 끝을 선택하세요</strong>
-            <span>
-              최소 {formatMeetingDuration(meeting.durationMinutes)} 이상 선택할 수 있어요.
-            </span>
-          </div>
-          <button type="button" onClick={cancelRangeSelection}>
-            취소
-          </button>
-        </div>
-      ) : null}
-
       {isMobile ? (
         <div className="mobile-time-picker">
           <div className="mobile-date-strip" aria-label="날짜 선택">
             {displayDays.map((date) => {
               const isSelectedDate = date.compare(activeDate) === 0
-              const count = countWindowsForDate(date)
 
               return (
                 <button
@@ -1911,14 +3120,22 @@ function AvailabilityWindowPicker({
                 >
                   <span>{koreanWeekdayFormatter.format(toLocalDate(date))}</span>
                   <strong>{date.day}</strong>
-                  {count > 0 ? <small>{count}</small> : null}
                 </button>
               )
             })}
           </div>
           <section className="mobile-time-slots" aria-labelledby="mobile-availability-title">
-            <h2 id="mobile-availability-title">시간대의 시작과 끝을 차례로 선택하세요</h2>
-            <div className="mobile-time-slot-list mobile-availability-list">
+            <h2 id="mobile-availability-title">
+              {brushMode === 'exclude'
+                ? '제외할 시간을 눌러 지워주세요'
+                : '추가할 시간을 눌러 칠해주세요'}
+            </h2>
+            <div
+              className="mobile-time-slot-list mobile-availability-list"
+              onPointerMove={updateDragSelection}
+              onPointerUp={finishDragSelection}
+              onPointerCancel={cancelDragSelection}
+            >
               {TIME_SLOT_MINUTES.map((startMinutes) => {
                 const selectedWindow = windowOccupyingSlot(activeDate, startMinutes)
                 return (
@@ -1927,6 +3144,10 @@ function AvailabilityWindowPicker({
                     className={selectedWindow != null ? 'is-selected' : ''}
                     type="button"
                     aria-pressed={selectedWindow != null}
+                    disabled={isOutsideWindow(activeDate)}
+                    data-availability-date={activeDate.toString()}
+                    data-start-minutes={startMinutes}
+                    onPointerDown={(event) => beginDragSelection(event, activeDate, startMinutes)}
                     onClick={() => chooseBoundary(activeDate, startMinutes)}
                   >
                     <span>{formatTimeOfDay(startMinutes)}</span>
@@ -1935,31 +3156,31 @@ function AvailabilityWindowPicker({
               })}
             </div>
           </section>
-          {renderSelectedWindows('selected-candidates--mobile')}
         </div>
       ) : (
-        <div className="time-picker__workspace">
+        <div className="time-picker__workspace availability-paint-workspace">
           <div
             ref={gridRef}
-            className="week-time-grid"
+            className="week-time-grid availability-paint-grid"
             role="grid"
-            aria-label={`${weekLabel} 가능한 시간대 선택`}
+            aria-label={`${weekLabel} 가능한 시간 칠하기`}
+            onPointerMove={updateDragSelection}
+            onPointerUp={finishDragSelection}
+            onPointerCancel={cancelDragSelection}
             onMouseLeave={() => {
-              if (anchor == null) setPreview(null)
+              if (dragSelectionRef.current == null) {
+                setPreview(null)
+              }
             }}
           >
             <div className="week-time-grid__header" role="row">
               <span aria-hidden="true" />
-              {displayDays.map((date) => {
-                const count = countWindowsForDate(date)
-                return (
-                  <div key={date.toString()} role="columnheader">
-                    <span>{koreanWeekdayFormatter.format(toLocalDate(date))}</span>
-                    <strong>{date.day}</strong>
-                    {count > 0 ? <small>{count}</small> : null}
-                  </div>
-                )
-              })}
+              {displayDays.map((date) => (
+                <div key={date.toString()} role="columnheader">
+                  <span>{koreanWeekdayFormatter.format(toLocalDate(date))}</span>
+                  <strong>{date.day}</strong>
+                </div>
+              ))}
             </div>
 
             {TIME_SLOT_MINUTES.map((startMinutes, timeIndex) => (
@@ -1967,47 +3188,36 @@ function AvailabilityWindowPicker({
                 <span role="rowheader">{formatTimeOfDay(startMinutes)}</span>
                 {displayDays.map((date, dayIndex) => {
                   const selectedWindow = windowOccupyingSlot(date, startMinutes)
-                  const selectedStart =
-                    selectedWindow == null ? null : new Date(selectedWindow.startAt)
-                  const selectedEnd = selectedWindow == null ? null : new Date(selectedWindow.endAt)
-                  const slotStart = toLocalDate(date, startMinutes)
-                  const slotEnd = toLocalDate(date, startMinutes + TIME_QUANTUM_MINUTES)
-                  const isBlockStart = selectedStart?.getTime() === slotStart.getTime()
-                  const isBlockEnd =
-                    selectedEnd != null && slotEnd.getTime() >= selectedEnd.getTime()
                   const previewStartsHere =
                     preview != null &&
                     preview.date.compare(date) === 0 &&
                     preview.startMinutes === startMinutes
+                  const isPreviewSlot =
+                    preview != null &&
+                    preview.date.compare(date) === 0 &&
+                    startMinutes >= preview.startMinutes &&
+                    startMinutes < preview.endMinutes
+                  const previewEndsHere =
+                    isPreviewSlot &&
+                    preview != null &&
+                    startMinutes + TIME_QUANTUM_MINUTES >= preview.endMinutes
                   const className = [
                     selectedWindow != null ? 'is-selected' : '',
-                    selectedWindow != null && isBlockStart ? 'is-block-start' : '',
-                    selectedWindow != null && !isBlockStart && !isBlockEnd ? 'is-block-middle' : '',
-                    selectedWindow != null && isBlockEnd ? 'is-block-end' : '',
+                    isPreviewSlot ? 'is-preview-slot' : '',
                     previewStartsHere ? 'is-preview-start' : '',
+                    previewEndsHere ? 'is-preview-end' : '',
                   ]
                     .filter(Boolean)
                     .join(' ')
-                  const slotCount =
-                    isBlockStart && selectedWindow != null
-                      ? (new Date(selectedWindow.endAt).getTime() -
-                          new Date(selectedWindow.startAt).getTime()) /
-                        (TIME_QUANTUM_MINUTES * 60 * 1000)
-                      : previewStartsHere && preview != null
-                        ? (preview.endMinutes - preview.startMinutes) / TIME_QUANTUM_MINUTES
-                        : null
 
                   return (
                     <div role="gridcell" key={`${date.toString()}-${startMinutes}`}>
                       <button
                         className={className}
-                        style={
-                          slotCount == null
-                            ? undefined
-                            : ({ '--candidate-slot-count': slotCount } as CSSProperties)
-                        }
                         type="button"
                         data-availability-index={`${timeIndex}-${dayIndex}`}
+                        data-availability-date={date.toString()}
+                        data-start-minutes={startMinutes}
                         tabIndex={
                           focusedSlot.dayIndex === dayIndex && focusedSlot.timeIndex === timeIndex
                             ? 0
@@ -2018,53 +3228,21 @@ function AvailabilityWindowPicker({
                         disabled={isOutsideWindow(date)}
                         onFocus={() => {
                           setFocusedSlot({ dayIndex, timeIndex })
-                          if (selectedWindow == null) previewFrom(date, startMinutes)
+                          previewFrom(date, startMinutes)
                         }}
-                        onMouseEnter={() => {
-                          if (selectedWindow == null || anchor != null)
-                            previewFrom(date, startMinutes)
-                        }}
+                        onMouseEnter={() => previewFrom(date, startMinutes)}
                         onKeyDown={(event) => handleGridKeyDown(event, dayIndex, timeIndex)}
+                        onPointerDown={(event) => beginDragSelection(event, date, startMinutes)}
                         onClick={() => chooseBoundary(date, startMinutes)}
-                      >
-                        {isBlockStart ? (
-                          <span className="candidate-block-content">
-                            <Check size={18} strokeWidth={3} />
-                          </span>
-                        ) : null}
-                      </button>
-                      {isBlockStart && selectedWindow != null ? (
-                        <div className="candidate-block-remove">
-                          <button
-                            type="button"
-                            aria-label={`${formatAvailabilityWindow(selectedWindow)} 시간대 삭제`}
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              removeAvailabilityWindow(selectedWindow)
-                            }}
-                          >
-                            <X aria-hidden="true" size={13} strokeWidth={2.5} />
-                          </button>
-                        </div>
-                      ) : null}
+                      />
                     </div>
                   )
                 })}
               </div>
             ))}
           </div>
-          {renderSelectedWindows('selected-candidates--desktop')}
         </div>
       )}
-
-      {removedWindow != null ? (
-        <div className="candidate-undo" role="status" aria-live="polite">
-          <span>{formatAvailabilityWindow(removedWindow)} 시간대를 삭제했어요.</span>
-          <button type="button" onClick={undoRemoveWindow}>
-            실행 취소
-          </button>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -2079,12 +3257,13 @@ function CreateScreen({
   onDurationChange,
   onResponseDeadlineChange,
   onAttendanceModeChange,
+  onAttendanceThresholdModeChange,
   onMinAttendeeCountChange,
   onParticipantRoleChange,
   onParticipantAdd,
   onParticipantRemove,
   onAvailabilityWindowsChange,
-  onCreateLink,
+  onSendRequest,
 }: {
   meeting: Meeting
   onTitleChange: (title: string) => void
@@ -2095,16 +3274,18 @@ function CreateScreen({
   onDurationChange: (durationMinutes: MeetingDuration | null) => void
   onResponseDeadlineChange: (responseDeadline: string) => void
   onAttendanceModeChange: (mode: AttendeeDecisionMode) => void
+  onAttendanceThresholdModeChange: (mode: AttendanceThresholdMode) => void
   onMinAttendeeCountChange: (count: number) => void
   onParticipantRoleChange: (participantId: string, role: ParticipantRole) => void
   onParticipantAdd: (name?: string) => void
   onParticipantRemove: (participantId: string) => void
   onAvailabilityWindowsChange: (windows: AvailabilityWindow[]) => void
-  onCreateLink: () => void
+  onSendRequest: () => void
 }) {
   const [createNow] = useState(() => new Date())
   const [step, setStep] = useState<HostCreateStep>('meeting')
   const [timeStep, setTimeStep] = useState<TimeCreateStep>('constraints')
+  const [initializedHostScopeKey, setInitializedHostScopeKey] = useState<string | null>(null)
   const [isCustomDurationOpen, setIsCustomDurationOpen] = useState(
     () =>
       meeting.durationMinutes != null && !meetingDurationOptions.includes(meeting.durationMinutes),
@@ -2150,7 +3331,9 @@ function CreateScreen({
     0,
     createSteps.findIndex((item) => item.id === step),
   )
-  const selectedTimeLabels = meeting.availabilityWindows.map(formatAvailabilityWindow)
+  const hostAvailabilityWindows = meeting.availabilityWindows.filter(
+    (window) => window.ownerId === meeting.hostId,
+  )
   const meetingPurpose = meeting.purpose.trim()
   const referenceMaterial = meeting.referenceMaterial?.trim() ?? ''
   const referenceItems = referenceMaterial
@@ -2173,8 +3356,6 @@ function CreateScreen({
     (name, index, names) =>
       names.indexOf(name) === index && name.toLocaleLowerCase().includes(normalizedAttendeeQuery),
   )
-  const attendeeDecisionLabel =
-    attendeeDecisionOptions.find((option) => option.id === attendeeDecisionMode)?.label ?? ''
   const isMeetingComplete =
     meeting.title.trim() !== '' && meetingPurpose !== '' && meeting.hostLabel.trim() !== ''
   const todayInput = formatDateInput(createNow)
@@ -2187,6 +3368,7 @@ function CreateScreen({
     meeting.schedulingWindow.startDate >= todayInput &&
     meeting.schedulingWindow.endDate >= meeting.schedulingWindow.startDate
   const isTimeConstraintComplete = isSchedulingWindowValid && isDurationValid
+  const hostScopeKey = `${meeting.schedulingWindow.startDate}:${meeting.schedulingWindow.endDate}:${meeting.durationMinutes ?? 'unset'}`
   const meetingWithDuration: MeetingWithDuration | null =
     meeting.durationMinutes == null
       ? null
@@ -2198,7 +3380,7 @@ function CreateScreen({
     parsedCustomDuration >= MIN_CUSTOM_DURATION &&
     parsedCustomDuration <= MAX_CUSTOM_DURATION &&
     parsedCustomDuration % CUSTOM_DURATION_STEP === 0
-  const earliestAvailabilityStart = getEarliestAvailabilityStart(meeting.availabilityWindows)
+  const earliestAvailabilityStart = getEarliestAvailabilityStart(hostAvailabilityWindows)
   const responseDeadlineTime = new Date(meeting.responseDeadline).getTime()
   const isResponseDeadlineValid =
     earliestAvailabilityStart != null &&
@@ -2208,6 +3390,8 @@ function CreateScreen({
   const isRequiredSelectionMissing =
     attendeeDecisionMode === 'required' && requiredParticipants.length === 0
   const minimumAllowedAttendees = Math.max(1, requiredParticipants.length + 1)
+  const attendanceThresholdMode: AttendanceThresholdMode =
+    meeting.preset === 'quorum' ? 'minimum_count' : 'required_only'
   const maximumAttendees = invitedParticipants.length + 1
   const isMinimumAttendanceValid =
     attendeeDecisionMode !== 'required' ||
@@ -2226,7 +3410,7 @@ function CreateScreen({
           ? timeStep === 'constraints'
             ? isTimeConstraintComplete
             : timeStep === 'candidates'
-              ? meeting.availabilityWindows.length > 0
+              ? hostAvailabilityWindows.length > 0
               : isResponseDeadlineValid
           : true
   const primaryActionLabel =
@@ -2238,11 +3422,11 @@ function CreateScreen({
           ? timeStep === 'constraints'
             ? '가능한 시간대 고르기'
             : timeStep === 'candidates'
-              ? meeting.availabilityWindows.length > 0
-                ? '시간대 선택 완료'
-                : '가능한 시간대를 선택해 주세요'
+              ? hostAvailabilityWindows.length > 0
+                ? '이 시간대로 계속'
+                : '시간 범위를 남겨 주세요'
               : '요청 내용 확인하기'
-          : '응답 링크 만들기'
+          : '응답 요청 보내기'
   const isChoosingAttendees = step === 'attendees' && !areAttendeesFinalized
   const attendeePrimaryActionLabel = isChoosingAttendees
     ? hasInvitee
@@ -2481,7 +3665,7 @@ function CreateScreen({
     }
 
     if (step === 'review') {
-      onCreateLink()
+      onSendRequest()
       return
     }
 
@@ -2510,13 +3694,25 @@ function CreateScreen({
         return
       }
 
+      if (initializedHostScopeKey !== hostScopeKey) {
+        onAvailabilityWindowsChange(
+          createDefaultHostAvailabilityWindows({
+            meetingId: meeting.id,
+            hostId: meeting.hostId,
+            startDate: meeting.schedulingWindow.startDate,
+            endDate: meeting.schedulingWindow.endDate,
+          }),
+        )
+        setInitializedHostScopeKey(hostScopeKey)
+      }
+
       setTimeStep('candidates')
       return
     }
 
     if (step === 'times' && timeStep === 'candidates') {
       if (!isResponseDeadlineValid) {
-        const suggestedDeadline = suggestResponseDeadline(meeting.availabilityWindows)
+        const suggestedDeadline = suggestResponseDeadline(hostAvailabilityWindows)
 
         if (suggestedDeadline) {
           onResponseDeadlineChange(suggestedDeadline)
@@ -2918,7 +4114,31 @@ function CreateScreen({
                         </div>
                       </fieldset>
 
-                      {requiredParticipants.length > 0 ? (
+                      <fieldset className="attendance-threshold-options">
+                        <legend>필수 참석자만 오면 진행할 수 있나요?</legend>
+                        <button
+                          className={
+                            attendanceThresholdMode === 'required_only' ? 'is-selected' : ''
+                          }
+                          type="button"
+                          aria-pressed={attendanceThresholdMode === 'required_only'}
+                          onClick={() => onAttendanceThresholdModeChange('required_only')}
+                        >
+                          네, 필수 참석자만 오면 돼요
+                        </button>
+                        <button
+                          className={
+                            attendanceThresholdMode === 'minimum_count' ? 'is-selected' : ''
+                          }
+                          type="button"
+                          aria-pressed={attendanceThresholdMode === 'minimum_count'}
+                          onClick={() => onAttendanceThresholdModeChange('minimum_count')}
+                        >
+                          아니요, 전체 참석 인원도 중요해요
+                        </button>
+                      </fieldset>
+
+                      {attendanceThresholdMode === 'minimum_count' ? (
                         <section
                           className="minimum-attendance"
                           aria-labelledby="minimum-attendance-title"
@@ -3019,104 +4239,111 @@ function CreateScreen({
               </label>
             </div>
 
-            <fieldset className="meeting-duration-fieldset">
-              <legend>참석자들이 얼마 동안 시간을 비워두면 될까요?</legend>
-              {!isCustomDurationOpen ? (
-                <div className="meeting-duration-options" role="radiogroup">
-                  {meetingDurationOptions.map((duration) => (
+            {SHOW_DURATION_CONTROLS ? (
+              <fieldset className="meeting-duration-fieldset">
+                <legend>참석자들이 얼마 동안 시간을 비워두면 될까요?</legend>
+                {!isCustomDurationOpen ? (
+                  <div className="meeting-duration-options" role="radiogroup">
+                    {meetingDurationOptions.map((duration) => (
+                      <button
+                        key={duration}
+                        className={meeting.durationMinutes === duration ? 'is-selected' : ''}
+                        type="button"
+                        role="radio"
+                        aria-checked={meeting.durationMinutes === duration}
+                        onClick={() => selectPresetDuration(duration)}
+                      >
+                        {formatMeetingDuration(duration)}
+                      </button>
+                    ))}
                     <button
-                      key={duration}
-                      className={meeting.durationMinutes === duration ? 'is-selected' : ''}
+                      ref={customDurationTriggerRef}
+                      className="meeting-duration-custom-trigger"
                       type="button"
                       role="radio"
-                      aria-checked={meeting.durationMinutes === duration}
-                      onClick={() => selectPresetDuration(duration)}
+                      aria-checked="false"
+                      onClick={openCustomDuration}
                     >
-                      {formatMeetingDuration(duration)}
-                    </button>
-                  ))}
-                  <button
-                    ref={customDurationTriggerRef}
-                    className="meeting-duration-custom-trigger"
-                    type="button"
-                    role="radio"
-                    aria-checked="false"
-                    onClick={openCustomDuration}
-                  >
-                    직접 입력
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className="meeting-duration-custom-wrap"
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') {
-                      event.preventDefault()
-                      closeCustomDuration()
-                    }
-                  }}
-                >
-                  <div className="meeting-duration-custom-head">
-                    <strong>직접 입력</strong>
-                    <button
-                      type="button"
-                      aria-label="직접 입력 닫기"
-                      title="직접 입력 닫기"
-                      onClick={closeCustomDuration}
-                    >
-                      <X size={18} />
+                      직접 입력
                     </button>
                   </div>
-                  <div className="meeting-duration-custom">
-                    <button
-                      type="button"
-                      aria-label="확보 시간 30분 줄이기"
-                      title="30분 줄이기"
-                      disabled={
-                        !isCustomDurationInputValid || parsedCustomDuration <= MIN_CUSTOM_DURATION
+                ) : (
+                  <div
+                    className="meeting-duration-custom-wrap"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
+                        event.preventDefault()
+                        closeCustomDuration()
                       }
-                      onClick={() => stepCustomDuration(-1)}
-                    >
-                      <Minus size={18} />
-                    </button>
-                    <label>
-                      <span className="sr-only">회의 시간 직접 입력</span>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        min={MIN_CUSTOM_DURATION}
-                        max={MAX_CUSTOM_DURATION}
-                        step={CUSTOM_DURATION_STEP}
-                        value={customDurationInput}
-                        aria-describedby="custom-duration-help"
-                        autoFocus
-                        onChange={(event) => updateCustomDurationInput(event.target.value)}
-                      />
-                      <strong>분</strong>
-                    </label>
-                    <button
-                      type="button"
-                      aria-label="확보 시간 30분 늘리기"
-                      title="30분 늘리기"
-                      disabled={
-                        isCustomDurationInputValid && parsedCustomDuration >= MAX_CUSTOM_DURATION
-                      }
-                      onClick={() => stepCustomDuration(1)}
-                    >
-                      <Plus size={18} />
-                    </button>
-                  </div>
-                  <p
-                    id="custom-duration-help"
-                    className={
-                      customDurationInput !== '' && !isCustomDurationInputValid ? 'is-error' : ''
-                    }
+                    }}
                   >
-                    30~240분 사이에서 30분 단위로 입력해 주세요.
-                  </p>
-                </div>
-              )}
-            </fieldset>
+                    <div className="meeting-duration-custom-head">
+                      <strong>직접 입력</strong>
+                      <button
+                        type="button"
+                        aria-label="직접 입력 닫기"
+                        title="직접 입력 닫기"
+                        onClick={closeCustomDuration}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                    <div className="meeting-duration-custom">
+                      <button
+                        type="button"
+                        aria-label="확보 시간 30분 줄이기"
+                        title="30분 줄이기"
+                        disabled={
+                          !isCustomDurationInputValid || parsedCustomDuration <= MIN_CUSTOM_DURATION
+                        }
+                        onClick={() => stepCustomDuration(-1)}
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <label>
+                        <span className="sr-only">회의 시간 직접 입력</span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={MIN_CUSTOM_DURATION}
+                          max={MAX_CUSTOM_DURATION}
+                          step={CUSTOM_DURATION_STEP}
+                          value={customDurationInput}
+                          aria-describedby="custom-duration-help"
+                          autoFocus
+                          onChange={(event) => updateCustomDurationInput(event.target.value)}
+                        />
+                        <strong>분</strong>
+                      </label>
+                      <button
+                        type="button"
+                        aria-label="확보 시간 30분 늘리기"
+                        title="30분 늘리기"
+                        disabled={
+                          isCustomDurationInputValid && parsedCustomDuration >= MAX_CUSTOM_DURATION
+                        }
+                        onClick={() => stepCustomDuration(1)}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                    <p
+                      id="custom-duration-help"
+                      className={
+                        customDurationInput !== '' && !isCustomDurationInputValid ? 'is-error' : ''
+                      }
+                    >
+                      30~240분 사이에서 30분 단위로 입력해 주세요.
+                    </p>
+                  </div>
+                )}
+              </fieldset>
+            ) : (
+              <div className="meeting-duration-fixed" aria-label="확보 시간">
+                <span>참석자가 비워둘 시간</span>
+                <strong>1시간</strong>
+              </div>
+            )}
 
             {!isSchedulingWindowValid ? (
               <p className="time-create-stage__error" role="alert">
@@ -3148,13 +4375,16 @@ function CreateScreen({
             </div>
             <header className="time-create-stage__header">
               <h2 id="time-candidates-title" tabIndex={-1}>
-                회의를 잡아도 되는 시간대를 알려주세요
+                이 시간 안에서 찾아볼게요
               </h2>
-              <p>정확한 시작 시각은 나중에 계산해요. 가능한 범위를 넓게 선택해 주세요.</p>
+              <p>평일 오전 9시부터 오후 6시까지예요. 안 되는 시간만 빼주세요.</p>
             </header>
             {meetingWithDuration != null ? (
               <AvailabilityWindowPicker
-                meeting={meetingWithDuration}
+                meeting={{
+                  ...meetingWithDuration,
+                  availabilityWindows: hostAvailabilityWindows,
+                }}
                 onAvailabilityWindowsChange={onAvailabilityWindowsChange}
               />
             ) : null}
@@ -3172,7 +4402,7 @@ function CreateScreen({
             <div>
               <span>조율할 시간대</span>
               <strong>
-                {meeting.availabilityWindows.length}개 ·{' '}
+                {hostAvailabilityWindows.length}개 ·{' '}
                 {formatMeetingDuration(meeting.durationMinutes)} 확보
               </strong>
             </div>
@@ -3216,45 +4446,50 @@ function CreateScreen({
 
     return (
       <div className="create-step-body create-review">
-        <SummaryLine label="회의" value={meeting.title} />
-        <div className="meeting-overview-card">
-          <SummaryLine label="요청자" value={meeting.hostLabel} />
-          <SummaryLine label="한 문장 요약" value={meetingPurpose} />
-          {referenceMaterial ? <SummaryLine label="참고 출처" value={referenceMaterial} /> : null}
-        </div>
-        <SummaryLine label="참석 예정" value={`주최자 포함 ${invitedParticipants.length + 1}명`} />
-        <SummaryLine label="시간 선택 기준" value={attendeeDecisionLabel} />
-        {attendeeDecisionMode === 'required' && requiredParticipants.length > 0 ? (
-          <SummaryLine
-            label="꼭 필요한 응답"
-            value={requiredParticipants.map((participant) => participant.name).join(', ')}
-          />
-        ) : null}
-        <SummaryLine
-          label="진행 기준"
-          value={
-            attendeeDecisionMode === 'everyone'
-              ? `주최자 포함 ${maximumAttendees}명 모두`
-              : `주최자 포함 최소 ${meeting.minAttendeeCount}명`
-          }
-        />
-        <SummaryLine
-          label="회의 가능 기간"
-          value={formatSchedulingWindow(meeting.schedulingWindow)}
-        />
-        <SummaryLine label="회의 길이" value={formatMeetingDuration(meeting.durationMinutes)} />
-        <SummaryLine label="조율 가능 시간대" value={`${selectedTimeLabels.length}개`} />
-        <SummaryLine label="응답 마감" value={formatDeadline(meeting.responseDeadline)} />
-        <div className="create-review-participants">
-          {invitedParticipants.map((participant) => (
-            <span key={participant.id}>{participant.name}</span>
-          ))}
-        </div>
-        <div className="create-review-list">
-          {meeting.availabilityWindows.map((window, index) => (
-            <AvailabilityWindowMiniRow key={window.id} window={window} index={index + 1} />
-          ))}
-        </div>
+        <section className="create-review-section" aria-labelledby="review-meeting-title">
+          <h2 id="review-meeting-title">회의 안내</h2>
+          <div className="create-review-facts">
+            <ReviewFactRow label="회의" value={meeting.title} />
+            <ReviewFactRow label="요청자" value={meeting.hostLabel} />
+            <ReviewFactRow label="정할 내용" value={meetingPurpose} />
+            {referenceMaterial ? (
+              <ReviewFactRow label="참고 출처" value={referenceMaterial} />
+            ) : null}
+          </div>
+        </section>
+
+        <section className="create-review-section" aria-labelledby="review-people-title">
+          <h2 id="review-people-title">참석자와 진행 기준</h2>
+          <div className="create-review-facts">
+            <ReviewFactRow
+              label="참석자"
+              value={inviteeNames.join(', ')}
+              detail={`주최자 포함 ${maximumAttendees}명`}
+            />
+            <ReviewFactRow
+              label="진행 기준"
+              value={
+                attendeeDecisionMode === 'everyone'
+                  ? '모두 참석할 수 있을 때 진행'
+                  : `주최자 포함 최소 ${meeting.minAttendeeCount}명이 가능할 때 진행`
+              }
+            />
+            {attendeeDecisionMode === 'required' && requiredParticipants.length > 0 ? (
+              <ReviewFactRow
+                label="꼭 필요한 사람"
+                value={requiredParticipants.map((participant) => participant.name).join(', ')}
+              />
+            ) : null}
+          </div>
+        </section>
+
+        <section className="create-review-section" aria-labelledby="review-time-title">
+          <h2 id="review-time-title">시간</h2>
+          <ReviewAvailabilityScope meeting={meeting} windows={hostAvailabilityWindows} />
+          <div className="create-review-facts">
+            <ReviewFactRow label="응답 마감" value={formatDeadline(meeting.responseDeadline)} />
+          </div>
+        </section>
       </div>
     )
   }
@@ -3328,163 +4563,400 @@ function CreateScreen({
   )
 }
 
+function InvalidParticipantInviteScreen({
+  meeting,
+  onExit,
+}: {
+  meeting: Meeting
+  onExit: () => void
+}) {
+  return (
+    <div className="respond-app">
+      <header className="respond-header">
+        <div className="respond-brand">
+          <span className="brand-dot" />
+          <strong>MeetCue</strong>
+        </div>
+        <button className="respond-host-link" type="button" onClick={onExit}>
+          회의 만들기
+        </button>
+      </header>
+      <main className="respond-main respond-main--identity">
+        <section className="soft-panel invalid-invite" aria-labelledby="invalid-invite-title">
+          <span className="respond-eyebrow">{meeting.title}</span>
+          <h1 id="invalid-invite-title">회의 요청을 열 수 없어요</h1>
+          <p>내 계정에 도착한 회의 요청 알림에서 다시 열어주세요.</p>
+        </section>
+      </main>
+    </div>
+  )
+}
+
 function ParticipantShell({
   meeting,
   participant,
   state,
-  onAvailabilityChange,
-  onDone,
+  now,
+  onSubmit,
   onEdit,
+  onExit,
+  showPrototypeReturn,
 }: {
   meeting: Meeting
   participant: Participant
   state: ParticipantCoordinationState
-  onAvailabilityChange: (
-    participantId: string,
-    slot: AvailabilitySlot,
-    value: ResponseValue,
-  ) => void
-  onDone: () => void
+  now: Date
+  onSubmit: (participantDraftWindows: AvailabilityWindow[]) => void
   onEdit: () => void
+  onExit: () => void
+  showPrototypeReturn: boolean
 }) {
+  const [isSaveConfirmationOpen, setIsSaveConfirmationOpen] = useState(false)
+  const [editorStatus, setEditorStatus] = useState<Participant['responseStatus']>(
+    participant.responseStatus,
+  )
+  const [draftWindows, setDraftWindows] = useState<AvailabilityWindow[]>(() =>
+    meeting.availabilityWindows
+      .filter((window) => window.ownerId === participant.id)
+      .map((window) => ({ ...window })),
+  )
+  const [hasChosenResponseBaseline, setHasChosenResponseBaseline] = useState(
+    () => participant.responseStatus !== 'not_started' || draftWindows.length > 0,
+  )
+  const [isManualSetupOpen, setIsManualSetupOpen] = useState(false)
+  const [participantInputSource, setParticipantInputSource] =
+    useState<ParticipantInputSource | null>(() =>
+      participant.responseStatus !== 'not_started' || draftWindows.length > 0 ? 'existing' : null,
+    )
+  const [responseBrush, setResponseBrush] = useState<ResponseValue>('available')
+
   if (state === 'PARTICIPANT_DONE') {
-    return <ParticipantDoneScreen meeting={meeting} participant={participant} onEdit={onEdit} />
+    return (
+      <ParticipantDoneScreen
+        meeting={meeting}
+        participant={participant}
+        onEdit={onEdit}
+        onExit={onExit}
+        showPrototypeReturn={showPrototypeReturn}
+      />
+    )
+  }
+
+  if (state === 'PARTICIPANT_CONFIRMED') {
+    return (
+      <ParticipantConfirmedScreen meeting={meeting} participant={participant} onExit={onExit} />
+    )
   }
 
   const slots = deriveAvailabilitySlots(meeting.availabilityWindows, meeting.hostId)
-  const slotDateGroups = groupAvailabilitySlotsByDate(slots)
   const answeredCount = slots.filter(
-    (slot) =>
-      getAvailabilityStateForSlot(meeting.availabilityWindows, participant.id, slot) != null,
+    (slot) => getAvailabilityStateForSlot(draftWindows, participant.id, slot) != null,
   ).length
   const remainingCount = slots.length - answeredCount
   const referenceMaterial = meeting.referenceMaterial?.trim()
+  const deadlinePassed = new Date(meeting.responseDeadline).getTime() <= now.getTime()
+
+  function applyResponseBaseline(state: ResponseValue) {
+    setDraftWindows((currentWindows) =>
+      fillAvailabilitySlots(currentWindows, participant.id, slots, state, meeting.id),
+    )
+    setResponseBrush(state === 'available' ? 'unavailable' : 'available')
+    setHasChosenResponseBaseline(true)
+    setParticipantInputSource('manual')
+    setEditorStatus('draft')
+    setIsSaveConfirmationOpen(false)
+  }
+
+  function applySimulatedCalendar() {
+    setDraftWindows((currentWindows) => {
+      let nextWindows = fillAvailabilitySlots(
+        currentWindows,
+        participant.id,
+        slots,
+        'available',
+        meeting.id,
+      )
+      slots.filter(isSimulatedCalendarBusy).forEach((slot) => {
+        nextWindows = replaceAvailabilitySlot(
+          nextWindows,
+          participant.id,
+          slot,
+          'unavailable',
+          false,
+          meeting.id,
+        )
+      })
+      return nextWindows
+    })
+    setResponseBrush('adjustable')
+    setHasChosenResponseBaseline(true)
+    setIsManualSetupOpen(false)
+    setParticipantInputSource('calendar')
+    setEditorStatus('draft')
+    setIsSaveConfirmationOpen(false)
+  }
+
+  function paintResponseSlot(slot: AvailabilitySlot, state = responseBrush) {
+    const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
+    setIsSaveConfirmationOpen(false)
+    setEditorStatus('draft')
+    setDraftWindows((currentWindows) =>
+      replaceAvailabilitySlot(
+        currentWindows,
+        participant.id,
+        slot,
+        state,
+        Boolean(currentWindow?.avoidPreferred) && state !== 'unavailable',
+        meeting.id,
+      ),
+    )
+  }
+
+  function paintResponseDay(daySlots: AvailabilitySlot[]) {
+    setDraftWindows((currentWindows) =>
+      fillAvailabilitySlots(currentWindows, participant.id, daySlots, responseBrush, meeting.id),
+    )
+    setEditorStatus('draft')
+    setIsSaveConfirmationOpen(false)
+  }
+
+  function toggleAvoidPreferred(slot: AvailabilitySlot) {
+    const currentValue = getAvailabilityStateForSlot(draftWindows, participant.id, slot)
+    const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
+    if (currentValue !== 'available' && currentValue !== 'adjustable') return
+    setEditorStatus('draft')
+    setDraftWindows((currentWindows) =>
+      replaceAvailabilitySlot(
+        currentWindows,
+        participant.id,
+        slot,
+        currentWindow?.state ?? currentValue,
+        !currentWindow?.avoidPreferred,
+        meeting.id,
+      ),
+    )
+  }
 
   return (
     <div className="respond-app">
       <header className="respond-header">
         <div className="respond-brand">
           <span className="brand-dot" />
-          <strong>Meeting Cue</strong>
+          <strong>MeetCue</strong>
         </div>
+        {import.meta.env.DEV ? (
+          <button className="respond-host-link" type="button" onClick={onExit}>
+            시연 · 결과 보드
+          </button>
+        ) : null}
       </header>
 
-      <main className="respond-main">
+      <main
+        className={`respond-main${state === 'PARTICIPANT_EDITING' ? ' is-participant-editing' : ''}`}
+      >
         <section className="respond-hero" aria-label="응답 안내">
           <div>
             <span className="respond-eyebrow">{meeting.title}</span>
             <h1>{getParticipantTitle(state, participant)}</h1>
             <div className="respond-meeting-overview">
-              <span>{meeting.hostLabel}이 보낸 요청입니다.</span>
+              <span>요청자: {meeting.hostLabel}</span>
               <strong>{meeting.purpose}</strong>
               {referenceMaterial ? <small>참고 출처: {referenceMaterial}</small> : null}
             </div>
           </div>
           <div className="respond-status-card">
-            <span>응답 마감</span>
+            <span>{deadlinePassed ? '응답 마감 지남' : '응답 마감'}</span>
             <strong>{formatDeadline(meeting.responseDeadline)}</strong>
             <small>
-              {remainingCount === 0
-                ? '응답을 저장할 수 있어요'
-                : `${remainingCount}칸이 아직 선택되지 않았어요.`}
+              {deadlinePassed
+                ? '마감이 지났지만 지금 제출하면 결과에 바로 반영돼요.'
+                : remainingCount === 0
+                  ? '응답을 저장할 수 있어요'
+                  : `${remainingCount}칸이 아직 선택되지 않았어요.`}
             </small>
           </div>
         </section>
 
-        {state === 'PARTICIPANT_ADDED_ONLY' ? (
-          <section className="participant-notice">
-            <strong>기존 응답은 유지돼요.</strong>
-            <span>새로 열린 시간대를 확인하고 필요한 칸만 수정해 주세요.</span>
-          </section>
-        ) : null}
-
         {state === 'PARTICIPANT_EDITING' ? (
           <section className="participant-notice">
             <strong>이전에 고른 응답이에요.</strong>
-            <span>마감 전까지 같은 링크에서 수정할 수 있어요.</span>
+            <span>같은 링크에서 응답을 다시 수정할 수 있어요.</span>
           </section>
         ) : null}
 
         <section className="respond-progress" aria-label="응답 진행 상황">
           <div>
-            <span>응답한 시간</span>
-            <strong>
-              {answeredCount}/{slots.length}칸
-            </strong>
+            <span>조율 기간</span>
+            <strong>{formatSchedulingWindow(meeting.schedulingWindow)}</strong>
           </div>
           <div>
-            <span>회의 길이</span>
+            <span>비워둘 시간</span>
             <strong>{formatMeetingDuration(meeting.durationMinutes)}</strong>
           </div>
           <div>
-            <span>수정</span>
-            <strong>마감 전 가능</strong>
+            <span>최종 결정</span>
+            <strong>응답 후 주최자</strong>
           </div>
         </section>
 
         <section
           className="response-panel response-panel--participant"
           aria-label="가능한 시간대 응답"
+          data-submission-status={editorStatus}
         >
           <header className="response-guide">
-            <strong>회의를 잡아도 되는 시간을 표시해 주세요</strong>
-            <span>표시하지 않은 칸은 저장할 때 ‘어려워요’로 처리됩니다.</span>
+            <strong>내 일정을 알려주세요</strong>
+            <span>캘린더에서 불러온 뒤 다른 시간만 바꾸면 돼요.</span>
           </header>
-          <div className="response-list">
-            {slotDateGroups.map((group) => (
-              <section
-                className="response-date-group"
-                key={group.key}
-                aria-labelledby={`date-${group.key}`}
-              >
-                <header className="response-date-header">
-                  <CalendarDays size={18} aria-hidden="true" />
-                  <time id={`date-${group.key}`} dateTime={group.key}>
-                    {participantDateHeadingFormatter.format(group.date)}
-                  </time>
-                  {group.slots.length > 1 ? <span>{group.slots.length}개 시간 칸</span> : null}
-                </header>
-
-                <div className="response-date-candidates">
-                  {group.slots.map((slot) => {
-                    const currentValue = getAvailabilityStateForSlot(
-                      meeting.availabilityWindows,
-                      participant.id,
-                      slot,
-                    )
-
-                    return (
-                      <div className="response-card availability-response-row" key={slot.startAt}>
-                        <div className="response-card__head">
-                          <strong>{formatAvailabilitySlotClockRange(slot)}</strong>
-                        </div>
-                        <div className="response-options">
-                          {responseOptions.map((value) => (
-                            <button
-                              key={value}
-                              className={`response-option${
-                                currentValue === value ? ` is-selected is-${value}` : ''
-                              }`}
-                              type="button"
-                              aria-label={`${participantResponseLabels[value]}. ${responseValueDescriptions[value]}`}
-                              aria-pressed={currentValue === value}
-                              onClick={() => onAvailabilityChange(participant.id, slot, value)}
-                            >
-                              <strong>{participantResponseLabels[value]}</strong>
-                              {currentValue === value ? <Check size={16} strokeWidth={3} /> : null}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
+          {!hasChosenResponseBaseline ? (
+            isManualSetupOpen ? (
+              <div className="response-baseline" aria-labelledby="response-baseline-title">
+                <div className="response-baseline__head">
+                  <div>
+                    <strong id="response-baseline-title">직접 입력을 시작할까요?</strong>
+                    <span>가까운 상태를 고르면 전체 시간에 먼저 적용해요.</span>
+                  </div>
+                  <button type="button" onClick={() => setIsManualSetupOpen(false)}>
+                    이전
+                  </button>
                 </div>
-              </section>
-            ))}
-          </div>
-          <button className="primary-button response-submit" type="button" onClick={onDone}>
-            {state === 'PARTICIPANT_EDITING' ? '수정한 응답 저장하기' : '응답 저장하기'}
-          </button>
+                <div className="response-baseline__options">
+                  <button type="button" onClick={() => applyResponseBaseline('available')}>
+                    대체로 가능해요
+                  </button>
+                  <button type="button" onClick={() => applyResponseBaseline('unavailable')}>
+                    가능한 시간이 적어요
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="calendar-import-card" aria-labelledby="calendar-import-title">
+                <div className="calendar-import-card__icon" aria-hidden="true">
+                  <CalendarDays size={24} strokeWidth={2.3} />
+                </div>
+                <div className="calendar-import-card__copy">
+                  <span>연결된 Google Calendar</span>
+                  <strong id="calendar-import-title">일정을 다시 입력하지 않아도 돼요</strong>
+                  <p>비어 있는 시간과 일정이 있는 시간을 먼저 채워드릴게요.</p>
+                </div>
+                <div className="calendar-import-card__actions">
+                  <button className="primary-button" type="button" onClick={applySimulatedCalendar}>
+                    캘린더 일정 불러오기
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => setIsManualSetupOpen(true)}
+                  >
+                    직접 입력하기
+                  </button>
+                </div>
+                <small>일정 제목은 공유하지 않고 비어 있음 여부만 사용해요.</small>
+              </div>
+            )
+          ) : (
+            <>
+              {participantInputSource === 'calendar' ? (
+                <div className="calendar-import-summary" role="status">
+                  <CalendarDays size={20} aria-hidden="true" />
+                  <div>
+                    <strong>Google Calendar에서 일정을 불러왔어요</strong>
+                    <span>
+                      비어 있는 {slots.filter((slot) => !isSimulatedCalendarBusy(slot)).length}칸 ·
+                      일정 있는 {slots.filter(isSimulatedCalendarBusy).length}칸
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+              <div className="response-brush-toolbar">
+                <div className="response-brush-group" role="group" aria-label="시간 상태 선택">
+                  {responseOptions.map((value) => (
+                    <button
+                      key={value}
+                      className={`is-${value}${responseBrush === value ? ' is-selected' : ''}`}
+                      type="button"
+                      aria-pressed={responseBrush === value}
+                      onClick={() => setResponseBrush(value)}
+                    >
+                      {participantResponseLabels[value]}
+                    </button>
+                  ))}
+                </div>
+                {participant.responseStatus === 'not_started' ? (
+                  <button
+                    className="response-baseline-reset"
+                    type="button"
+                    onClick={() => {
+                      setDraftWindows([])
+                      setHasChosenResponseBaseline(false)
+                      setIsManualSetupOpen(false)
+                      setParticipantInputSource(null)
+                      setEditorStatus('not_started')
+                      setIsSaveConfirmationOpen(false)
+                    }}
+                  >
+                    처음부터
+                  </button>
+                ) : null}
+              </div>
+            </>
+          )}
+          {hasChosenResponseBaseline ? (
+            <ParticipantTimeGrid
+              slots={slots}
+              brush={responseBrush}
+              stateLabels={participantResponseLabels}
+              getState={(slot) =>
+                getAvailabilityStateForSlot(draftWindows, participant.id, slot) ?? null
+              }
+              getAvoidPreferred={(slot) =>
+                Boolean(
+                  getAvailabilityWindowForSlot(draftWindows, participant.id, slot)?.avoidPreferred,
+                )
+              }
+              onPaintSlot={paintResponseSlot}
+              onPaintDay={paintResponseDay}
+              onToggleAvoidPreferred={toggleAvoidPreferred}
+            />
+          ) : null}
+          {hasChosenResponseBaseline && isSaveConfirmationOpen && remainingCount > 0 ? (
+            <div className="response-save-confirmation" role="alert">
+              <div>
+                <strong>선택하지 않은 {remainingCount}칸은 ‘어려워요’로 저장돼요.</strong>
+                <span>저장 후에도 같은 링크에서 다시 수정할 수 있어요.</span>
+              </div>
+              <div className="button-row">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setIsSaveConfirmationOpen(false)}
+                >
+                  더 선택하기
+                </button>
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={() => onSubmit(draftWindows)}
+                >
+                  이대로 저장하기
+                </button>
+              </div>
+            </div>
+          ) : hasChosenResponseBaseline ? (
+            <button
+              className="primary-button response-submit"
+              type="button"
+              onClick={() => {
+                if (remainingCount > 0) {
+                  setIsSaveConfirmationOpen(true)
+                  return
+                }
+                onSubmit(draftWindows)
+              }}
+            >
+              {state === 'PARTICIPANT_EDITING' ? '수정한 응답 저장하기' : '응답 저장하기'}
+            </button>
+          ) : null}
         </section>
       </main>
     </div>
@@ -3495,10 +4967,14 @@ function ParticipantDoneScreen({
   meeting,
   participant,
   onEdit,
+  onExit,
+  showPrototypeReturn,
 }: {
   meeting: Meeting
   participant: Participant
   onEdit: () => void
+  onExit: () => void
+  showPrototypeReturn: boolean
 }) {
   const participantResponses = meeting.responses.filter(
     (response) => response.participantId === participant.id,
@@ -3512,8 +4988,13 @@ function ParticipantDoneScreen({
       <header className="respond-header">
         <div className="respond-brand">
           <span className="brand-dot" />
-          <strong>Meeting Cue</strong>
+          <strong>MeetCue</strong>
         </div>
+        {import.meta.env.DEV ? (
+          <button className="respond-host-link" type="button" onClick={onExit}>
+            시연 · 결과 보드
+          </button>
+        ) : null}
       </header>
       <main className="respond-main">
         <section className="soft-panel participant-done">
@@ -3525,12 +5006,69 @@ function ParticipantDoneScreen({
           </h1>
           <p>
             {hasAttendableCandidate
-              ? `${meeting.title} 일정은 주최자가 응답을 확인한 뒤 확정해요. 마감 전까지 같은 링크에서 응답을 수정할 수 있어요.`
-              : '주최자가 조율 가능 시간대를 넓히면 같은 링크에서 새로 열린 시간만 확인할 수 있어요.'}
+              ? `${meeting.title} 일정은 주최자가 응답을 확인한 뒤 확정해요. 같은 링크에서 응답을 다시 수정할 수 있어요.`
+              : '현재 가능한 시간이 없다고 전달했어요. 같은 링크에서 응답을 다시 수정할 수 있어요.'}
           </p>
-          <button className="secondary-button" type="button" onClick={onEdit}>
-            응답 수정하기
+          <div className="button-row">
+            {showPrototypeReturn ? (
+              <button className="primary-button" type="button" onClick={onExit}>
+                달라진 결과 확인하기
+              </button>
+            ) : null}
+            <button className="secondary-button" type="button" onClick={onEdit}>
+              응답 수정하기
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function ParticipantConfirmedScreen({
+  meeting,
+  participant,
+  onExit,
+}: {
+  meeting: Meeting
+  participant: Participant
+  onExit: () => void
+}) {
+  const confirmedCandidate = meeting.candidates.find(
+    (candidate) => candidate.id === meeting.confirmedCandidateId,
+  )
+  const response = meeting.responses.find(
+    (item) =>
+      item.participantId === participant.id && item.candidateId === meeting.confirmedCandidateId,
+  )
+
+  return (
+    <div className="respond-app">
+      <header className="respond-header">
+        <div className="respond-brand">
+          <span className="brand-dot" />
+          <strong>MeetCue</strong>
+        </div>
+        {import.meta.env.DEV ? (
+          <button className="respond-host-link" type="button" onClick={onExit}>
+            시연 · 결과 보드
           </button>
+        ) : null}
+      </header>
+      <main className="respond-main">
+        <section className="soft-panel participant-done">
+          <span className="status-label status-label--success">회의 시간 확정</span>
+          <h1>{meeting.title}</h1>
+          <p>
+            {confirmedCandidate == null
+              ? '주최자가 회의 시간을 확정했어요.'
+              : `${formatCandidateTime(confirmedCandidate)}에 진행해요.`}
+          </p>
+          {response?.value === 'adjustable' ? (
+            <div className="participant-confirmed-notice">
+              조정해서 참석할 수 있다고 표시한 시간으로 확정됐어요.
+            </div>
+          ) : null}
         </section>
       </main>
     </div>
@@ -3541,12 +5079,12 @@ function MessageScreen({
   meeting,
   evaluation,
   onBack,
-  onCopy,
+  onNotify,
 }: {
   meeting: Meeting
   evaluation: CandidateEvaluation
-  onBack: () => void
-  onCopy: (message: string) => void
+  onBack?: () => void
+  onNotify: () => void
 }) {
   const message = generateConfirmationMessage(meeting, evaluation)
 
@@ -3555,15 +5093,17 @@ function MessageScreen({
       <section className="soft-panel message-panel">
         <span className="status-label status-label--success">확정 완료</span>
         <h2>{formatCandidateTime(evaluation.candidate)}</h2>
-        <p>아래 문구를 복사해서 참석자에게 공유하세요. 자동으로 전송되지는 않아요.</p>
+        <p>참석자에게 보낼 확정 알림 내용을 확인하세요.</p>
         <pre>{message}</pre>
         <div className="button-row">
-          <button className="primary-button" type="button" onClick={() => onCopy(message)}>
-            확정 문구 복사하기
+          <button className="primary-button" type="button" onClick={onNotify}>
+            확정 알림 보내기
           </button>
-          <button className="secondary-button" type="button" onClick={onBack}>
-            회의 상태로 돌아가기
-          </button>
+          {onBack ? (
+            <button className="secondary-button" type="button" onClick={onBack}>
+              회의 상태로 돌아가기
+            </button>
+          ) : null}
         </div>
       </section>
     </div>
@@ -3579,50 +5119,89 @@ function PanelTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   )
 }
 
-function CandidateMiniRow({
+function ReviewAvailabilityScope({
+  meeting,
+  windows,
+}: {
+  meeting: Meeting
+  windows: AvailabilityWindow[]
+}) {
+  const defaultWindows = createDefaultHostAvailabilityWindows({
+    meetingId: meeting.id,
+    hostId: meeting.hostId,
+    startDate: meeting.schedulingWindow.startDate,
+    endDate: meeting.schedulingWindow.endDate,
+  })
+  const defaultSlots = deriveAvailabilitySlots(defaultWindows, meeting.hostId)
+  const selectedSlots = deriveAvailabilitySlots(windows, meeting.hostId)
+  const defaultSlotStarts = new Set(defaultSlots.map((slot) => slot.startAt))
+  const selectedSlotStarts = new Set(selectedSlots.map((slot) => slot.startAt))
+  const excludedWindows = mergeReviewSlots(
+    defaultSlots.filter((slot) => !selectedSlotStarts.has(slot.startAt)),
+    meeting,
+    'excluded',
+  )
+  const addedWindows = mergeReviewSlots(
+    selectedSlots.filter((slot) => !defaultSlotStarts.has(slot.startAt)),
+    meeting,
+    'added',
+  )
+  const durationLabel = formatMeetingDuration(meeting.durationMinutes)
+
+  return (
+    <div className="review-availability-scope">
+      <ReviewFactRow label="기간" value={formatSchedulingWindow(meeting.schedulingWindow)} />
+      <ReviewFactRow label="회의 길이" value={durationLabel} />
+      <ReviewFactRow label="기본 범위" value="평일 09:00–18:00" />
+      <ReviewFactRow label="제외한 시간" value={formatReviewExceptionWindows(excludedWindows)} />
+      {addedWindows.length > 0 ? (
+        <ReviewFactRow label="추가한 시간" value={formatReviewExceptionWindows(addedWindows)} />
+      ) : null}
+    </div>
+  )
+}
+
+function mergeReviewSlots(slots: AvailabilitySlot[], meeting: Meeting, kind: 'excluded' | 'added') {
+  return mergeAvailabilityWindows(
+    slots.map((slot) => ({
+      id: `review-${kind}-${slot.startAt}`,
+      meetingId: meeting.id,
+      ownerId: meeting.hostId,
+      startAt: slot.startAt,
+      endAt: slot.endAt,
+      state: 'available' as const,
+    })),
+  )
+}
+
+function formatReviewExceptionWindows(windows: AvailabilityWindow[]) {
+  if (windows.length === 0) return '없음'
+
+  return windows
+    .map((window) => {
+      const dateKey = getCandidateDateKey(window.startAt)
+      return `${formatCandidateFullDate(dateKey)} ${formatCandidateStartTime(window.startAt)}–${formatCandidateStartTime(window.endAt)}`
+    })
+    .join(', ')
+}
+
+function ReviewFactRow({
   label,
-  index,
-  durationMinutes,
+  value,
+  detail,
 }: {
   label: string
-  index: number
-  durationMinutes: MeetingDuration | null
+  value: string
+  detail?: string
 }) {
   return (
-    <div className="mini-row">
-      <span>{index}</span>
-      <strong>{label}</strong>
-      <small>{formatMeetingDuration(durationMinutes)}</small>
+    <div className="review-fact-row">
+      <span>{label}</span>
+      <div>
+        <strong>{value}</strong>
+        {detail ? <small>{detail}</small> : null}
+      </div>
     </div>
-  )
-}
-
-function AvailabilityWindowMiniRow({
-  window,
-  index,
-}: {
-  window: AvailabilityWindow
-  index: number
-}) {
-  const minutes = Math.round(
-    (new Date(window.endAt).getTime() - new Date(window.startAt).getTime()) / 60_000,
-  )
-
-  return (
-    <div className="mini-row">
-      <span>{index}</span>
-      <strong>{formatAvailabilityWindow(window)}</strong>
-      <small>{formatMeetingDuration(minutes)} 범위</small>
-    </div>
-  )
-}
-
-function MetricInline({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="metric-inline">
-      <small>{label}</small>
-      <strong>{value}</strong>
-    </span>
   )
 }
 
@@ -3658,53 +5237,28 @@ function ResponseBadge({
   )
 }
 
-function ConditionRow({ label, value, ok }: { label: string; value: string; ok: boolean }) {
-  return (
-    <div className="condition-row">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <span className={`condition-mark${ok ? ' is-ok' : ''}`}>{ok ? '충족' : '확인'}</span>
-    </div>
-  )
-}
-
-function getHostCoordinationState(
-  meeting: Meeting,
-  evaluations: CandidateEvaluation[],
-  route: AppRoute,
-): HostCoordinationState {
+function getHostCoordinationState(meeting: Meeting, route: AppRoute): HostCoordinationState {
   if (route === 'create') return 'HOST_DRAFT'
   if (route === 'share') return 'HOST_SHARE_READY'
-  if (route === 'message' || meeting.status === 'confirmed') return 'HOST_CONFIRMED'
-  if (route === 'recover') return 'HOST_RECOVERY_REQUIRED'
+  if (meeting.status === 'confirmed') return 'HOST_CONFIRMED'
 
   const completedCount = meeting.participants.filter(
     (participant) =>
-      participant.id !== meeting.hostId && participant.responseStatus === 'completed',
+      participant.id !== meeting.hostId && participant.responseStatus === 'submitted',
   ).length
 
   if (completedCount === 0) return 'HOST_WAITING_EMPTY'
-  if (evaluations.some((evaluation) => evaluation.status === 'confirmable')) {
-    return 'HOST_DECISION_READY'
-  }
-  if (evaluations.some((evaluation) => evaluation.status === 'needs_adjustment')) {
-    return 'HOST_REVIEW_NEEDED'
-  }
-  if (evaluations.some((evaluation) => evaluation.status === 'waiting_required')) {
-    return 'HOST_WAITING_PARTIAL'
-  }
-
-  return 'HOST_RECOVERY_REQUIRED'
+  return 'HOST_DECISION'
 }
 
 function getParticipantState(
+  meeting: Meeting,
   route: AppRoute,
   participant: Participant,
-  latestAddedCandidateId?: string,
 ): ParticipantCoordinationState {
+  if (meeting.status === 'confirmed') return 'PARTICIPANT_CONFIRMED'
   if (route === 'invite-done') return 'PARTICIPANT_DONE'
-  if (route === 'invite-added' || latestAddedCandidateId != null) return 'PARTICIPANT_ADDED_ONLY'
-  if (route === 'invite-edit' || participant.responseStatus === 'completed') {
+  if (route === 'invite-edit' || participant.responseStatus === 'submitted') {
     return 'PARTICIPANT_EDITING'
   }
   return 'PARTICIPANT_NEW'
@@ -3718,36 +5272,32 @@ function getSelectedEvaluation(
   return (
     evaluations.find((evaluation) => evaluation.candidate.id === confirmedCandidateId) ??
     evaluations.find((evaluation) => evaluation.candidate.id === selectedCandidateId) ??
-    evaluations.find((evaluation) => evaluation.status === 'confirmable') ??
-    evaluations.find((evaluation) => evaluation.status === 'needs_adjustment') ??
+    evaluations.find((evaluation) => evaluation.status === 'ready') ??
+    evaluations.find((evaluation) => evaluation.status === 'pending') ??
     evaluations[0]
   )
 }
 
 function isWaitingState(state: HostCoordinationState) {
-  return state === 'HOST_WAITING_EMPTY' || state === 'HOST_WAITING_PARTIAL'
+  return state === 'HOST_WAITING_EMPTY'
 }
 
-function isDecisionState(state: HostCoordinationState) {
-  return state === 'HOST_DECISION_READY' || state === 'HOST_REVIEW_NEEDED'
-}
-
-function getHostNavigationItems(route: AppRoute, state: HostCoordinationState) {
+function getHostNavigationItems(route: AppRoute) {
   if (route === 'create') {
     return []
   }
 
   if (route === 'share') {
     return [
-      { route: 'create' as const, label: '요청 내용 수정' },
+      { route: 'criteria' as const, label: '회의 기준 보기' },
       { route: 'host' as const, label: '응답 모였는지 보기' },
     ]
   }
 
-  if (route === 'recover') {
+  if (route === 'criteria') {
     return [
-      { route: 'host' as const, label: '응답 상태로 돌아가기' },
-      { route: 'share' as const, label: '응답 링크 보기' },
+      { route: 'host' as const, label: '결과로 돌아가기' },
+      { route: 'share' as const, label: '요청 현황 보기' },
     ]
   }
 
@@ -3756,47 +5306,118 @@ function getHostNavigationItems(route: AppRoute, state: HostCoordinationState) {
   }
 
   const items: Array<{ route: AppRoute; label: string }> = [
-    { route: 'share', label: '응답 링크 보기' },
+    { route: 'share', label: '요청 현황 보기' },
   ]
-
-  if (state === 'HOST_REVIEW_NEEDED' || state === 'HOST_RECOVERY_REQUIRED') {
-    items.push({ route: 'recover', label: '새 시간 물어보기' })
-  }
 
   return items
 }
 
 function getHostStateLabel(state: HostCoordinationState) {
   if (state === 'HOST_DRAFT') return '요청 작성'
-  if (state === 'HOST_SHARE_READY') return '공유 가능'
+  if (state === 'HOST_SHARE_READY') return '요청 완료'
   if (state === 'HOST_WAITING_EMPTY') return '응답 전'
-  if (state === 'HOST_WAITING_PARTIAL') return '응답 대기'
-  if (state === 'HOST_DECISION_READY') return '확정 가능'
-  if (state === 'HOST_REVIEW_NEEDED') return '확인 필요'
+  if (state === 'HOST_DECISION') return '결과 확인'
   if (state === 'HOST_CONFIRMED') return '확정 완료'
-  return '조율 회복'
+  return '결과 확인'
 }
 
 function getHostStateTone(state: HostCoordinationState) {
-  if (state === 'HOST_DECISION_READY' || state === 'HOST_CONFIRMED') return 'success'
-  if (state === 'HOST_REVIEW_NEEDED') return 'warning'
-  if (state === 'HOST_RECOVERY_REQUIRED') return 'danger'
+  if (state === 'HOST_DECISION' || state === 'HOST_CONFIRMED') return 'success'
   return 'info'
 }
 
 function getStatusTone(status: CandidateStatus) {
-  if (status === 'confirmable') return 'success'
-  if (status === 'needs_adjustment') return 'warning'
-  if (status === 'waiting_required') return 'info'
+  if (status === 'ready') return 'success'
+  if (status === 'pending') return 'info'
   return 'danger'
+}
+
+function getCandidateDateKey(value: string) {
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Asia/Seoul',
+  }).format(new Date(value))
+}
+
+function getCandidateMinuteOfDay(value: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'Asia/Seoul',
+  }).formatToParts(new Date(value))
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
+  return hour * 60 + minute
+}
+
+function formatCandidateMinutes(minutes: number) {
+  const hour = Math.floor(minutes / 60)
+  const minute = minutes % 60
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+}
+
+function hasSameDecisionBand(
+  adjacent: CandidateEvaluation | undefined,
+  current: CandidateEvaluation,
+) {
+  return (
+    adjacent != null &&
+    adjacent.status === current.status &&
+    adjacent.reasons[0] === current.reasons[0]
+  )
+}
+
+function candidateDateFromKey(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00+09:00`)
+}
+
+function formatCandidateWeekday(dateKey: string) {
+  return new Intl.DateTimeFormat('ko-KR', { weekday: 'short', timeZone: 'Asia/Seoul' }).format(
+    candidateDateFromKey(dateKey),
+  )
+}
+
+function formatCandidateDay(dateKey: string) {
+  return new Intl.DateTimeFormat('ko-KR', { day: 'numeric', timeZone: 'Asia/Seoul' }).format(
+    candidateDateFromKey(dateKey),
+  )
+}
+
+function formatCandidateFullDate(dateKey: string) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    timeZone: 'Asia/Seoul',
+  }).format(candidateDateFromKey(dateKey))
+}
+
+function formatDateStatusSummary(evaluations: CandidateEvaluation[]) {
+  const counts = candidateStatusOrder
+    .map((status) => ({
+      status,
+      count: evaluations.filter((evaluation) => evaluation.status === status).length,
+    }))
+    .filter(({ count }) => count > 0)
+
+  return counts.map(({ status, count }) => `${candidateStatusLabels[status]} ${count}개`).join(', ')
+}
+
+function formatCandidateStartTime(value: string) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Seoul',
+  }).format(new Date(value))
 }
 
 function getParticipantTitle(state: ParticipantCoordinationState, participant: Participant) {
   if (state === 'PARTICIPANT_EDITING') {
     return `${participant.name}님, 이전 응답을 수정할 수 있어요`
-  }
-  if (state === 'PARTICIPANT_ADDED_ONLY') {
-    return `${participant.name}님, 새로 추가된 시간만 확인해 주세요`
   }
   return `${participant.name}님, 참석 가능 여부를 알려주세요`
 }

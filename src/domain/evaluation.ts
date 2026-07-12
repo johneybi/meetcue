@@ -1,297 +1,323 @@
 import {
+  compareDecisionEvaluations,
+  decisionSignature,
+  evaluateDecisionCandidate,
+  type CandidateAttendeeState,
+  type DecisionCandidateEvaluation,
+  type DecisionCandidateInput,
+  type DecisionMeetingInput,
+} from './decision-v2.ts'
+import {
   type Candidate,
-  type CandidateSetStatus,
   type CandidateStatus,
   type Meeting,
   type Participant,
   type Response,
-  formatMeetingDuration,
-  isAttendableResponse,
-} from './meeting'
+} from './meeting.ts'
 
 export interface CandidateEvaluation {
   candidate: Candidate
   status: CandidateStatus
   reasons: string[]
-  actionLabel?: string
+  firmAvailableCount: number
   availableCount: number
   adjustableCount: number
   preferenceTagCount: number
   unavailableCount: number
-  optionalUnavailableCount: number
-  respondedCount: number
-  responseTargetCount: number
-  missingRequired: Participant[]
-  missingOptional: Participant[]
   requiredUnavailable: Participant[]
-  requiredAdjustable: Participant[]
+  requiredPending: Participant[]
+  optionalPendingPool: Participant[]
+  positiveResponsesNeededAfterRequiredYes: number
+  adjustmentCommitParticipants: Participant[]
+  deadlinePassed: boolean
   responseDetails: CandidateResponseDetail[]
 }
 
 export interface CandidateResponseDetail {
   participant: Participant
   response?: Response
+  state: CandidateAttendeeState
   isImplicitHostAvailable?: boolean
 }
 
+export interface CandidateEvaluationGroup {
+  id: string
+  status: CandidateStatus
+  evaluations: CandidateEvaluation[]
+}
+
 export function evaluateCandidates(meeting: Meeting, now = new Date()) {
+  const decisionMeeting = toDecisionMeeting(meeting)
+
   return meeting.candidates
-    .map((candidate) => evaluateCandidate(meeting, candidate, now))
-    .sort(compareEvaluations)
-}
-
-export function evaluateCandidate(
-  meeting: Meeting,
-  candidate: Candidate,
-  now = new Date(),
-): CandidateEvaluation {
-  const responses = meeting.responses.filter((response) => response.candidateId === candidate.id)
-  const responseByParticipantId = new Map(
-    responses.map((response) => [response.participantId, response]),
-  )
-  const host = meeting.participants.find((participant) => participant.id === meeting.hostId)
-  const respondingParticipants = meeting.participants.filter(
-    (participant) => participant.id !== meeting.hostId,
-  )
-  const requiredParticipants = respondingParticipants.filter(
-    (participant) => participant.role === 'required',
-  )
-  const optionalParticipants = respondingParticipants.filter(
-    (participant) => participant.role === 'optional',
-  )
-  const missingRequired = requiredParticipants.filter(
-    (participant) => responseByParticipantId.get(participant.id) == null,
-  )
-  const missingOptional = optionalParticipants.filter(
-    (participant) => responseByParticipantId.get(participant.id) == null,
-  )
-  const requiredUnavailable = participantsWithResponse(
-    requiredParticipants,
-    responseByParticipantId,
-    (response) => response.value === 'unavailable',
-  )
-  const requiredAdjustable = participantsWithResponse(
-    requiredParticipants,
-    responseByParticipantId,
-    (response) => response.value === 'adjustable',
-  )
-  const availableCount =
-    (host == null ? 0 : 1) +
-    respondingParticipants.filter((participant) => {
-      const response = responseByParticipantId.get(participant.id)
-      return response != null && isAttendableResponse(response.value)
-    }).length
-  const adjustableCount = respondingParticipants.filter((participant) => {
-    const response = responseByParticipantId.get(participant.id)
-    return response?.value === 'adjustable'
-  }).length
-  const preferenceTagCount = responses.reduce(
-    (count, response) => count + (response.preferenceTags?.length ?? 0),
-    0,
-  )
-  const unavailableCount = respondingParticipants.filter((participant) => {
-    const response = responseByParticipantId.get(participant.id)
-    return response?.value === 'unavailable'
-  }).length
-  const optionalUnavailableCount = optionalParticipants.filter((participant) => {
-    const response = responseByParticipantId.get(participant.id)
-    return response?.value === 'unavailable'
-  }).length
-  const respondedCount = respondingParticipants.filter((participant) =>
-    responseByParticipantId.has(participant.id),
-  ).length
-  const responseTargetCount = respondingParticipants.length
-  const deadlinePassed = new Date(meeting.responseDeadline).getTime() <= now.getTime()
-  const durationMinutes =
-    (new Date(candidate.endAt).getTime() - new Date(candidate.startAt).getTime()) / 60_000
-  const responseDetails = meeting.participants.map((participant) => ({
-    participant,
-    response: responseByParticipantId.get(participant.id),
-    isImplicitHostAvailable: participant.id === meeting.hostId,
-  }))
-  const reasons: string[] = []
-
-  let status: CandidateStatus = 'confirmable'
-  let actionLabel: string | undefined = '이 시간으로 정하기'
-
-  if (durationMinutes !== meeting.durationMinutes) {
-    status = 'excluded'
-    reasons.push(`${formatMeetingDuration(meeting.durationMinutes)} 회의 길이와 맞지 않아요.`)
-    actionLabel = undefined
-  } else if (new Date(candidate.startAt).getTime() <= now.getTime()) {
-    status = 'excluded'
-    reasons.push('이미 지난 시간이에요.')
-    actionLabel = undefined
-  } else if (requiredUnavailable.length > 0) {
-    status = 'excluded'
-    reasons.push(`${names(requiredUnavailable)}님이 참석하기 어려워 이 시간은 정하기 어렵습니다.`)
-    actionLabel = undefined
-  } else if (missingRequired.length > 0) {
-    status = 'waiting_required'
-    reasons.push(`${names(missingRequired)}님의 답변을 받으면 정할 수 있어요.`)
-    actionLabel = '요청 문구 복사하기'
-  } else if (deadlinePassed && availableCount < meeting.minAttendeeCount) {
-    status = 'excluded'
-    reasons.push(
-      `응답 마감이 지났고, 참석 가능한 사람이 ${availableCount}명이라 필요한 ${meeting.minAttendeeCount}명보다 적어요.`,
+    .map((candidate) => {
+      const decisionCandidate = toDecisionCandidate(meeting, candidate)
+      const decision = evaluateDecisionCandidate(decisionMeeting, decisionCandidate, now)
+      return toCandidateEvaluation(meeting, candidate, decision)
+    })
+    .sort((left, right) =>
+      compareDecisionEvaluations(
+        toComparableDecisionEvaluation(left),
+        toComparableDecisionEvaluation(right),
+      ),
     )
-    actionLabel = undefined
-  } else {
-    reasons.push(`꼭 와야 하는 ${requiredParticipants.length}명이 모두 가능해요.`)
-    reasons.push(`현재 ${availableCount}명이 참석할 수 있어요.`)
-
-    if (availableCount >= meeting.minAttendeeCount) {
-      reasons.push(`필요한 ${meeting.minAttendeeCount}명이 모였어요.`)
-    } else if (!deadlinePassed) {
-      status = 'needs_adjustment'
-      reasons.push('아직 답하지 않은 사람이 있어 참석 인원이 달라질 수 있어요.')
-      actionLabel = '확인하고 정하기'
-    }
-
-    if (status === 'confirmable' && requiredAdjustable.length > 0) {
-      status = 'needs_adjustment'
-      reasons.push(`${names(requiredAdjustable)}님은 일정을 조정하면 참석할 수 있어요.`)
-      actionLabel = '확인하고 정하기'
-    } else if (status === 'confirmable' && adjustableCount >= 2) {
-      status = 'needs_adjustment'
-      reasons.push(`일정 조정이 필요한 사람이 ${adjustableCount}명 있어요.`)
-      actionLabel = '확인하고 정하기'
-    } else if (status === 'confirmable' && missingOptional.length > 0 && !deadlinePassed) {
-      reasons.push('아직 답하지 않은 사람이 있지만 현재 답변만으로도 필요한 인원이 모였어요.')
-    } else if (status === 'confirmable' && missingOptional.length > 0 && deadlinePassed) {
-      reasons.push('마감이 지나, 아직 답하지 않은 사람은 제외하고 봅니다.')
-    } else if (status === 'confirmable' && adjustableCount === 1) {
-      reasons.push('일정 조정이 필요한 사람이 1명 있어요.')
-    }
-
-    if (preferenceTagCount > 0) {
-      reasons.push(`참석은 가능하지만 피하고 싶은 조건이 ${preferenceTagCount}개 있어요.`)
-    }
-  }
-
-  return {
-    candidate,
-    status,
-    reasons,
-    actionLabel,
-    availableCount,
-    adjustableCount,
-    preferenceTagCount,
-    unavailableCount,
-    optionalUnavailableCount,
-    respondedCount,
-    responseTargetCount,
-    missingRequired,
-    missingOptional,
-    requiredUnavailable,
-    requiredAdjustable,
-    responseDetails,
-  }
 }
 
-export function getCandidateSetStatus(evaluations: CandidateEvaluation[]): CandidateSetStatus {
-  if (evaluations.some((evaluation) => evaluation.status === 'confirmable')) {
-    return 'has_confirmable'
+export function groupCandidateEvaluations(
+  evaluations: CandidateEvaluation[],
+): CandidateEvaluationGroup[] {
+  const chronological = [...evaluations].sort(
+    (left, right) =>
+      new Date(left.candidate.startAt).getTime() - new Date(right.candidate.startAt).getTime(),
+  )
+  const groups: CandidateEvaluationGroup[] = []
+
+  for (const evaluation of chronological) {
+    const previousGroup = groups.at(-1)
+    const previousEvaluation = previousGroup?.evaluations.at(-1)
+    const adjacent =
+      previousEvaluation != null &&
+      new Date(evaluation.candidate.startAt).getTime() -
+        new Date(previousEvaluation.candidate.startAt).getTime() ===
+        30 * 60 * 1000
+
+    if (
+      previousGroup != null &&
+      previousEvaluation != null &&
+      adjacent &&
+      decisionSignature(toComparableDecisionEvaluation(previousEvaluation)) ===
+        decisionSignature(toComparableDecisionEvaluation(evaluation))
+    ) {
+      previousGroup.evaluations.push(evaluation)
+      continue
+    }
+
+    groups.push({
+      id: `group-${evaluation.candidate.id}`,
+      status: evaluation.status,
+      evaluations: [evaluation],
+    })
   }
 
-  if (
-    evaluations.length > 0 &&
-    evaluations.every((evaluation) => evaluation.status === 'needs_adjustment')
-  ) {
-    return 'exploration_recommended'
-  }
-
-  return 'exploration_required'
+  return groups.sort((left, right) =>
+    compareDecisionEvaluations(
+      toComparableDecisionEvaluation(left.evaluations[0]),
+      toComparableDecisionEvaluation(right.evaluations[0]),
+    ),
+  )
 }
 
 export function generateConfirmationMessage(meeting: Meeting, evaluation: CandidateEvaluation) {
-  const time = new Intl.DateTimeFormat('ko-KR', {
-    weekday: 'long',
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(evaluation.candidate.startAt))
-  const end = new Intl.DateTimeFormat('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(evaluation.candidate.endAt))
-  if (evaluation.adjustableCount > 0) {
-    return `${meeting.title}은 ${time}-${end}에 진행할게요.\n앞뒤 일정 조정이 필요한 분은 회의 전 일정 확인 부탁드립니다.`
-  }
+  const time = formatShortTime(evaluation.candidate)
+  const adjustmentNotice =
+    evaluation.adjustmentCommitParticipants.length > 0
+      ? `\n${names(evaluation.adjustmentCommitParticipants)}님은 조정해서 참석 가능하다고 표시한 시간이에요.`
+      : ''
 
-  if (evaluation.missingOptional.length > 0) {
-    return `${meeting.title}은 ${time}-${end}에 진행할게요.\n아직 응답하지 않은 분도 이 시간으로 일정 확인 부탁드립니다.`
-  }
-
-  return `${meeting.title}은 ${time}-${end}에 진행할게요.\n일정 확인 부탁드립니다.`
+  return `${meeting.title}은 ${time}에 진행할게요.${adjustmentNotice}`
 }
 
-export function generateReminderMessage(meeting: Meeting, evaluation: CandidateEvaluation) {
-  if (evaluation.missingRequired.length === 0) {
-    return '답변을 꼭 받아야 하는 분은 모두 응답했어요.'
-  }
-
-  return `${names(evaluation.missingRequired)}님, ${meeting.title} 시간을 정하려고 해요.\n${formatShortTime(evaluation.candidate)} 가능 여부가 있어야 시간을 정할 수 있어요.\n기존 링크에서 이 시간만 확인해 주세요.`
-}
-
-export function generateRecoveryRequestMessage(meeting: Meeting, evaluation: CandidateEvaluation) {
-  if (evaluation.status === 'waiting_required') {
-    return generateReminderMessage(meeting, evaluation)
-  }
-
-  if (evaluation.status === 'needs_adjustment') {
-    return `${meeting.title}은 ${formatShortTime(evaluation.candidate)}가 가장 유력해요.\n이 시간에 앞뒤 일정 조정이 가능한지 한 번만 확인해 주세요.\n기존 응답은 유지되고, 필요한 후보만 수정하면 됩니다.`
-  }
-
-  return `${meeting.title} 후보 시간을 다시 확인하려고 해요.\n기존 응답은 유지됩니다.\n아래 링크에서 바뀐 시간만 확인해 주세요.`
-}
-
-function compareEvaluations(a: CandidateEvaluation, b: CandidateEvaluation) {
-  return compareRank(rankEvaluation(a), rankEvaluation(b))
-}
-
-function rankEvaluation(evaluation: CandidateEvaluation) {
-  const statusRank: Record<CandidateStatus, number> = {
-    confirmable: 0,
-    needs_adjustment: 1,
-    waiting_required: 2,
-    excluded: 3,
-  }
-
-  return [
-    statusRank[evaluation.status],
-    evaluation.requiredAdjustable.length,
-    evaluation.adjustableCount,
-    evaluation.preferenceTagCount,
-    -evaluation.availableCount,
-    evaluation.optionalUnavailableCount,
-    new Date(evaluation.candidate.startAt).getTime(),
-    -evaluation.respondedCount,
-  ]
-}
-
-function compareRank(a: number[], b: number[]) {
-  for (let index = 0; index < a.length; index += 1) {
-    if (a[index] !== b[index]) {
-      return a[index] - b[index]
-    }
-  }
-
-  return 0
-}
-
-function participantsWithResponse(
-  participants: Participant[],
-  responseByParticipantId: Map<string, Response>,
-  predicate: (response: Response) => boolean,
+export function generateResponseRequestMessage(
+  meeting: Meeting,
+  evaluation: CandidateEvaluation,
+  recipientIds?: string[],
 ) {
-  return participants.filter((participant) => {
-    const response = responseByParticipantId.get(participant.id)
-    return response != null && predicate(response)
-  })
+  if (evaluation.status === 'pending') {
+    const selectableParticipants = [
+      ...evaluation.requiredPending,
+      ...evaluation.optionalPendingPool,
+    ]
+    const recipients =
+      recipientIds == null
+        ? selectableParticipants
+        : selectableParticipants.filter((participant) => recipientIds.includes(participant.id))
+    const recipientCopy = recipients.length > 0 ? `${names(recipients)}님, ` : ''
+
+    return `${recipientCopy}${meeting.title} 시간을 정하려고 해요.\n${formatShortTime(evaluation.candidate)}\n이 시간에 참석할 수 있는지 기존 링크에서 알려주세요.`
+  }
+
+  if (evaluation.status === 'impossible') {
+    return `${meeting.title}은 현재 조건으로 ${formatShortTime(evaluation.candidate)}에 정하기 어려워요.\n다른 시간을 검토해 주세요.`
+  }
+
+  return `${meeting.title}은 ${formatShortTime(evaluation.candidate)}에 지금 정할 수 있어요.`
+}
+
+function toDecisionMeeting(meeting: Meeting): DecisionMeetingInput {
+  return {
+    participants: meeting.participants.map((participant) => ({
+      id: participant.id,
+      name: participant.name,
+      required: participant.role === 'required',
+      isHost: participant.id === meeting.hostId,
+      submissionStatus: participant.responseStatus,
+    })),
+    minimumAttendeeCount: meeting.minAttendeeCount,
+    responseDeadline: meeting.responseDeadline,
+  }
+}
+
+function toDecisionCandidate(meeting: Meeting, candidate: Candidate): DecisionCandidateInput {
+  const responses = meeting.responses.filter((response) => response.candidateId === candidate.id)
+
+  return {
+    id: candidate.id,
+    startAt: candidate.startAt,
+    endAt: candidate.endAt,
+    attendees: responses.map((response) => ({
+      participantId: response.participantId,
+      state: toDecisionState(response.value),
+      avoidPreferred: (response.preferenceTags?.length ?? 0) > 0,
+    })),
+  }
+}
+
+function toCandidateEvaluation(
+  meeting: Meeting,
+  candidate: Candidate,
+  decision: DecisionCandidateEvaluation,
+): CandidateEvaluation {
+  const participantById = new Map(
+    meeting.participants.map((participant) => [participant.id, participant]),
+  )
+  const responseByParticipantId = new Map(
+    meeting.responses
+      .filter((response) => response.candidateId === candidate.id)
+      .map((response) => [response.participantId, response]),
+  )
+  const participants = (ids: string[]) =>
+    ids.map((id) => participantById.get(id)).filter(isParticipant)
+  const requiredPending = participants(decision.requiredPendingIds)
+  const optionalPendingPool = participants(decision.optionalPendingPoolIds)
+  const requiredUnavailable = participants(decision.requiredUnavailableIds)
+  const adjustmentCommitParticipants = participants(decision.adjustmentCommitIds)
+  const availableAsIsCount = Object.values(decision.attendeeStateById).filter(
+    (state) => state === 'available',
+  ).length
+  const reasons = buildReasons(meeting, decision, participantById)
+
+  return {
+    candidate,
+    status: decision.status,
+    reasons,
+    firmAvailableCount: availableAsIsCount,
+    availableCount: decision.committedIds.length,
+    adjustableCount: decision.adjustmentCommitIds.length,
+    preferenceTagCount: decision.avoidPreferredIds.length,
+    unavailableCount: decision.unavailableIds.length,
+    requiredUnavailable,
+    requiredPending,
+    optionalPendingPool,
+    positiveResponsesNeededAfterRequiredYes: decision.positiveResponsesNeededAfterRequiredYes,
+    adjustmentCommitParticipants,
+    deadlinePassed: decision.deadlinePassed,
+    responseDetails: meeting.participants.map((participant) => ({
+      participant,
+      response: responseByParticipantId.get(participant.id),
+      state: decision.attendeeStateById[participant.id],
+      isImplicitHostAvailable: participant.id === meeting.hostId,
+    })),
+  }
+}
+
+function buildReasons(
+  meeting: Meeting,
+  decision: DecisionCandidateEvaluation,
+  participantById: Map<string, Participant>,
+) {
+  const participantNames = (ids: string[]) =>
+    ids
+      .map((id) => participantById.get(id)?.name)
+      .filter(isString)
+      .join(', ')
+
+  if (decision.status === 'ready') {
+    const reasons = [`설정한 필수 참석자와 최소 ${meeting.minAttendeeCount}명 기준을 충족해요.`]
+    if (decision.adjustmentCommitIds.length > 0) {
+      reasons.push(`${decision.adjustmentCommitIds.length}명은 다른 일정을 조정해 참석해요.`)
+    }
+    if (decision.unknownIds.length > 0) {
+      reasons.push('미응답자가 있지만 현재 응답만으로 기준을 충족해요.')
+    }
+    return reasons
+  }
+
+  if (decision.status === 'impossible') {
+    if (decision.requiredUnavailableIds.length > 0) {
+      return [
+        `필수 참석자인 ${participantNames(decision.requiredUnavailableIds)}님이 참석하기 어려워요.`,
+      ]
+    }
+    return [`남은 사람이 모두 가능해도 최소 ${meeting.minAttendeeCount}명을 채울 수 없어요.`]
+  }
+
+  const reasons: string[] = []
+  if (decision.requiredPendingIds.length > 0) {
+    reasons.push(
+      `${participantNames(decision.requiredPendingIds)}님의 가능 응답이 반드시 필요해요.`,
+    )
+  }
+  if (decision.positiveResponsesNeededAfterRequiredYes > 0) {
+    reasons.push(
+      `${participantNames(decision.optionalPendingPoolIds)}님 중 ${decision.positiveResponsesNeededAfterRequiredYes}명 이상도 가능해야 해요.`,
+    )
+  }
+  if (decision.deadlinePassed) {
+    reasons.push('응답 마감이 지났지만 미응답은 어려움으로 처리하지 않아요.')
+  }
+  return reasons
+}
+
+function toDecisionState(value: Response['value']): CandidateAttendeeState {
+  if (value === 'adjustable') return 'adjustment_commit'
+  return value
+}
+
+function toComparableDecisionEvaluation(
+  evaluation: CandidateEvaluation,
+): DecisionCandidateEvaluation {
+  return {
+    candidate: {
+      id: evaluation.candidate.id,
+      startAt: evaluation.candidate.startAt,
+      endAt: evaluation.candidate.endAt,
+      attendees: [],
+    },
+    status: evaluation.status,
+    primaryReason:
+      evaluation.status === 'ready'
+        ? 'criteria_satisfied'
+        : evaluation.status === 'impossible'
+          ? evaluation.requiredUnavailable.length > 0
+            ? 'required_unavailable'
+            : 'maximum_below_minimum'
+          : evaluation.requiredPending.length > 0
+            ? 'required_pending'
+            : 'optional_positive_needed',
+    attendeeStateById: Object.fromEntries(
+      evaluation.responseDetails.map((detail) => [detail.participant.id, detail.state]),
+    ),
+    committedIds: evaluation.responseDetails
+      .filter((detail) => detail.state === 'available' || detail.state === 'adjustment_commit')
+      .map((detail) => detail.participant.id),
+    unknownIds: [...evaluation.requiredPending, ...evaluation.optionalPendingPool].map(
+      (participant) => participant.id,
+    ),
+    unavailableIds: evaluation.responseDetails
+      .filter((detail) => detail.state === 'unavailable')
+      .map((detail) => detail.participant.id),
+    adjustmentCommitIds: evaluation.adjustmentCommitParticipants.map(
+      (participant) => participant.id,
+    ),
+    avoidPreferredIds: evaluation.responseDetails
+      .filter((detail) => (detail.response?.preferenceTags?.length ?? 0) > 0)
+      .map((detail) => detail.participant.id),
+    requiredUnavailableIds: evaluation.requiredUnavailable.map((participant) => participant.id),
+    requiredPendingIds: evaluation.requiredPending.map((participant) => participant.id),
+    optionalPendingPoolIds: evaluation.optionalPendingPool.map((participant) => participant.id),
+    positiveResponsesNeededAfterRequiredYes: evaluation.positiveResponsesNeededAfterRequiredYes,
+    deadlinePassed: evaluation.deadlinePassed,
+  }
 }
 
 function names(participants: Participant[]) {
@@ -301,21 +327,29 @@ function names(participants: Participant[]) {
 function formatShortTime(candidate: Candidate) {
   const start = new Date(candidate.startAt)
   const end = new Date(candidate.endAt)
-  const day = new Intl.DateTimeFormat('ko-KR', {
+  const date = new Intl.DateTimeFormat('ko-KR', {
     weekday: 'long',
     month: 'numeric',
     day: 'numeric',
-  }).format(start)
-  const startTime = new Intl.DateTimeFormat('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: 'Asia/Seoul',
   }).format(start)
   const endTime = new Intl.DateTimeFormat('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: 'Asia/Seoul',
   }).format(end)
 
-  return `${day} ${startTime}-${endTime}`
+  return `${date}-${endTime}`
+}
+
+function isParticipant(participant: Participant | undefined): participant is Participant {
+  return participant != null
+}
+
+function isString(value: string | undefined): value is string {
+  return value != null
 }

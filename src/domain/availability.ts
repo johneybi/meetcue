@@ -5,21 +5,79 @@ import type {
   Response,
   ResponseUpdateSource,
   ResponseValue,
-} from './meeting'
+} from './meeting.ts'
 
 const TIME_QUANTUM_MINUTES = 30
+const DECISION_TIME_ZONE = 'Asia/Seoul'
+const kstDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: DECISION_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
 
 export interface AvailabilitySlot {
   startAt: string
   endAt: string
 }
 
+export function createDefaultHostAvailabilityWindows({
+  meetingId,
+  hostId,
+  startDate,
+  endDate,
+  startMinutes = 9 * 60,
+  endMinutes = 18 * 60,
+}: {
+  meetingId: string
+  hostId: string
+  startDate: string
+  endDate: string
+  startMinutes?: number
+  endMinutes?: number
+}) {
+  if (startDate === '' || endDate === '' || startDate > endDate || startMinutes >= endMinutes) {
+    return []
+  }
+
+  const cursor = new Date(`${startDate}T00:00:00.000Z`)
+  const lastDate = new Date(`${endDate}T00:00:00.000Z`)
+  const windows: AvailabilityWindow[] = []
+
+  while (cursor <= lastDate) {
+    const day = cursor.getUTCDay()
+    const date = cursor.toISOString().slice(0, 10)
+
+    if (day >= 1 && day <= 5) {
+      const startAt = decisionDateTime(date, startMinutes)
+      const endAt = decisionDateTime(date, endMinutes)
+      windows.push({
+        id: `aw-${hostId}-default-${startAt.getTime()}`,
+        meetingId,
+        ownerId: hostId,
+        startAt: startAt.toISOString(),
+        endAt: endAt.toISOString(),
+        state: 'available',
+      })
+    }
+
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+
+  return windows
+}
+
 export function deriveCandidatesFromAvailabilityWindows(
   meetingId: string,
+  hostId: string,
   windows: AvailabilityWindow[],
   durationMinutes: MeetingDuration | null,
 ): Candidate[] {
-  if (durationMinutes == null) {
+  if (
+    durationMinutes == null ||
+    durationMinutes <= 0 ||
+    durationMinutes % TIME_QUANTUM_MINUTES !== 0
+  ) {
     return []
   }
 
@@ -28,17 +86,21 @@ export function deriveCandidatesFromAvailabilityWindows(
   const candidates = new Map<number, Candidate>()
 
   windows
-    .filter((window) => window.state === 'available')
+    .filter((window) => window.ownerId === hostId && window.state === 'available')
     .forEach((window) => {
       const windowStart = new Date(window.startAt).getTime()
       const windowEnd = new Date(window.endAt).getTime()
+      const firstAlignedStart = Math.ceil(windowStart / quantumMs) * quantumMs
 
-      for (let start = windowStart; start + durationMs <= windowEnd; start += quantumMs) {
+      for (let start = firstAlignedStart; start + durationMs <= windowEnd; start += quantumMs) {
+        const end = start + durationMs
+        if (!isSameDecisionDate(new Date(start), new Date(end - 1))) continue
+
         candidates.set(start, {
-          id: `c-derived-${start}-${durationMinutes}`,
+          id: `c-${meetingId}-${start}-${end}`,
           meetingId,
           startAt: new Date(start).toISOString(),
-          endAt: new Date(start + durationMs).toISOString(),
+          endAt: new Date(end).toISOString(),
         })
       }
     })
@@ -61,7 +123,8 @@ export function mergeAvailabilityWindows(windows: AvailabilityWindow[]) {
       previous != null &&
       previous.ownerId === window.ownerId &&
       previous.state === window.state &&
-      isSameLocalDate(previous.startAt, window.startAt) &&
+      Boolean(previous.avoidPreferred) === Boolean(window.avoidPreferred) &&
+      isSameDecisionDate(new Date(previous.startAt), new Date(window.startAt)) &&
       new Date(window.startAt).getTime() <= new Date(previous.endAt).getTime()
     ) {
       previous.endAt = new Date(
@@ -74,6 +137,118 @@ export function mergeAvailabilityWindows(windows: AvailabilityWindow[]) {
   })
 
   return merged
+}
+
+export function replaceAvailabilitySlot(
+  windows: AvailabilityWindow[],
+  ownerId: string,
+  slot: AvailabilitySlot,
+  state: ResponseValue,
+  avoidPreferred = false,
+  fallbackMeetingId = '',
+) {
+  const slotStart = new Date(slot.startAt).getTime()
+  const slotEnd = new Date(slot.endAt).getTime()
+  const meetingId =
+    windows.find((window) => window.ownerId === ownerId)?.meetingId ??
+    windows[0]?.meetingId ??
+    fallbackMeetingId
+  const retained: AvailabilityWindow[] = []
+
+  for (const window of windows) {
+    const windowStart = new Date(window.startAt).getTime()
+    const windowEnd = new Date(window.endAt).getTime()
+    const overlaps = window.ownerId === ownerId && windowStart < slotEnd && windowEnd > slotStart
+
+    if (!overlaps) {
+      retained.push(window)
+      continue
+    }
+
+    if (windowStart < slotStart) {
+      retained.push({
+        ...window,
+        id: `${window.id}-before-${slotStart}`,
+        endAt: slot.startAt,
+      })
+    }
+
+    if (windowEnd > slotEnd) {
+      retained.push({
+        ...window,
+        id: `${window.id}-after-${slotEnd}`,
+        startAt: slot.endAt,
+      })
+    }
+  }
+
+  return mergeAvailabilityWindows([
+    ...retained,
+    {
+      id: `aw-${ownerId}-${slotStart}`,
+      meetingId,
+      ownerId,
+      startAt: slot.startAt,
+      endAt: slot.endAt,
+      state,
+      avoidPreferred: avoidPreferred || undefined,
+    },
+  ])
+}
+
+export function removeAvailabilityRange(
+  windows: AvailabilityWindow[],
+  ownerId: string,
+  range: AvailabilitySlot,
+) {
+  const rangeStart = new Date(range.startAt).getTime()
+  const rangeEnd = new Date(range.endAt).getTime()
+
+  if (rangeStart >= rangeEnd) return windows
+
+  const retained: AvailabilityWindow[] = []
+
+  for (const window of windows) {
+    const windowStart = new Date(window.startAt).getTime()
+    const windowEnd = new Date(window.endAt).getTime()
+    const overlaps = window.ownerId === ownerId && windowStart < rangeEnd && windowEnd > rangeStart
+
+    if (!overlaps) {
+      retained.push(window)
+      continue
+    }
+
+    if (windowStart < rangeStart) {
+      retained.push({
+        ...window,
+        id: `${window.id}-before-${rangeStart}`,
+        endAt: range.startAt,
+      })
+    }
+
+    if (windowEnd > rangeEnd) {
+      retained.push({
+        ...window,
+        id: `${window.id}-after-${rangeEnd}`,
+        startAt: range.endAt,
+      })
+    }
+  }
+
+  return mergeAvailabilityWindows(retained)
+}
+
+export function fillAvailabilitySlots(
+  windows: AvailabilityWindow[],
+  ownerId: string,
+  slots: AvailabilitySlot[],
+  state: ResponseValue,
+  meetingId: string,
+) {
+  return slots.reduce(
+    (current, slot) => replaceAvailabilitySlot(current, ownerId, slot, state, false, meetingId),
+    windows,
+  )
 }
 
 export function deriveAvailabilitySlots(
@@ -107,6 +282,14 @@ export function getAvailabilityStateForSlot(
   ownerId: string,
   slot: AvailabilitySlot,
 ): ResponseValue | undefined {
+  return getAvailabilityWindowForSlot(windows, ownerId, slot)?.state
+}
+
+export function getAvailabilityWindowForSlot(
+  windows: AvailabilityWindow[],
+  ownerId: string,
+  slot: AvailabilitySlot,
+) {
   const slotStart = new Date(slot.startAt).getTime()
   const slotEnd = new Date(slot.endAt).getTime()
 
@@ -116,7 +299,7 @@ export function getAvailabilityStateForSlot(
     return (
       new Date(window.startAt).getTime() <= slotStart && new Date(window.endAt).getTime() >= slotEnd
     )
-  })?.state
+  })
 }
 
 export function deriveParticipantResponses(
@@ -130,16 +313,18 @@ export function deriveParticipantResponses(
 
   return candidates.flatMap((candidate) => {
     const states: Array<ResponseValue | undefined> = []
+    let avoidPreferred = false
     const candidateStart = new Date(candidate.startAt).getTime()
     const candidateEnd = new Date(candidate.endAt).getTime()
 
     for (let slotStart = candidateStart; slotStart < candidateEnd; slotStart += quantumMs) {
-      states.push(
-        getAvailabilityStateForSlot(windows, participantId, {
-          startAt: new Date(slotStart).toISOString(),
-          endAt: new Date(Math.min(slotStart + quantumMs, candidateEnd)).toISOString(),
-        }),
-      )
+      const slot = {
+        startAt: new Date(slotStart).toISOString(),
+        endAt: new Date(Math.min(slotStart + quantumMs, candidateEnd)).toISOString(),
+      }
+      const window = getAvailabilityWindowForSlot(windows, participantId, slot)
+      states.push(window?.state)
+      avoidPreferred ||= Boolean(window?.avoidPreferred)
     }
 
     if (states.length === 0 || states.some((state) => state == null)) {
@@ -158,6 +343,7 @@ export function deriveParticipantResponses(
         participantId,
         candidateId: candidate.id,
         value,
+        preferenceTags: avoidPreferred ? ['avoid_if_possible'] : undefined,
         updatedAt,
         updateSource,
       },
@@ -165,13 +351,12 @@ export function deriveParticipantResponses(
   })
 }
 
-function isSameLocalDate(left: string, right: string) {
-  const leftDate = new Date(left)
-  const rightDate = new Date(right)
+function isSameDecisionDate(left: Date, right: Date) {
+  return kstDateFormatter.format(left) === kstDateFormatter.format(right)
+}
 
-  return (
-    leftDate.getFullYear() === rightDate.getFullYear() &&
-    leftDate.getMonth() === rightDate.getMonth() &&
-    leftDate.getDate() === rightDate.getDate()
-  )
+function decisionDateTime(date: string, minutes: number) {
+  const hours = String(Math.floor(minutes / 60)).padStart(2, '0')
+  const minute = String(minutes % 60).padStart(2, '0')
+  return new Date(`${date}T${hours}:${minute}:00+09:00`)
 }
