@@ -225,6 +225,24 @@
   color: #6b7684;
 }
 
+.participant-time-cell.is-manually-edited .participant-time-cell__paint {
+  box-shadow: inset 0 0 0 2px var(--tds-blue);
+}
+
+.participant-time-cell.is-manually-edited::after {
+  content: '';
+  position: absolute;
+  z-index: 5;
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tds-blue);
+  box-shadow: 0 0 0 2px #fff;
+  pointer-events: none;
+}
+
 .participant-time-cell__avoid {
   position: absolute;
   z-index: 2;
