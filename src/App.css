@@ -15747,6 +15747,16 @@ body > .request-recipient-modal .request-recipient-panel {
   isolation: isolate;
 }
 
+/* The meeting brief form should use the full inner width of its card. */
+.host-shell--create .create-workflow--meeting .meeting-brief-fields,
+.host-shell--create .create-workflow--meeting .create-title-field,
+.host-shell--create .create-workflow--meeting .create-purpose-field,
+.host-shell--create .create-workflow--meeting .create-reference-field,
+.host-shell--create .create-workflow--meeting .reference-source-panel {
+  width: 100%;
+  max-width: none;
+}
+
 @media (max-width: 760px) {
   body > .request-recipient-modal {
     place-items: end center;
