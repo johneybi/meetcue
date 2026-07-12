@@ -217,17 +217,43 @@ const participantResponseLabels: Record<ResponseValue, string> = {
   unavailable: '참석하기 어려워요',
 }
 const candidateStatusOrder: CandidateStatus[] = ['ready', 'pending', 'impossible']
-function isSimulatedCalendarBusy(slot: AvailabilitySlot) {
+
+function getSimulatedCalendarEvent(slot: AvailabilitySlot) {
   const date = new Date(slot.startAt)
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Seoul',
     day: 'numeric',
     hour: '2-digit',
+    minute: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(date)
   const day = Number(parts.find((part) => part.type === 'day')?.value ?? 0)
   const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
-  return hour === 12 || (day % 2 === 0 && hour === 15)
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
+
+  if (hour === 12) {
+    return {
+      id: `${day}-lunch`,
+      title: day === 15 ? '팀 점심 약속' : '점심 약속',
+      timeLabel: '오후 12:00-오후 1:00',
+      segment: minute === 0 ? ('start' as const) : ('end' as const),
+    }
+  }
+
+  if (day % 2 === 0 && hour === 15) {
+    return {
+      id: `${day}-afternoon`,
+      title: day === 14 ? '디자인 리뷰' : '파트너사 미팅',
+      timeLabel: '오후 3:00-오후 4:00',
+      segment: minute === 0 ? ('start' as const) : ('end' as const),
+    }
+  }
+
+  return null
+}
+
+function isSimulatedCalendarBusy(slot: AvailabilitySlot) {
+  return getSimulatedCalendarEvent(slot) != null
 }
 
 const createSteps: Array<{
@@ -4949,6 +4975,9 @@ function ParticipantShell({
     (slot) => getAvailabilityStateForSlot(draftWindows, participant.id, slot) != null,
   ).length
   const remainingCount = slots.length - answeredCount
+  const simulatedCalendarEventCount = new Set(
+    slots.map(getSimulatedCalendarEvent).filter((event) => event != null).map((event) => event.id),
+  ).size
   const referenceMaterial = meeting.referenceMaterial?.trim()
   const deadlinePassed = new Date(meeting.responseDeadline).getTime() <= now.getTime()
 
@@ -5156,10 +5185,10 @@ function ParticipantShell({
                 <div className="calendar-import-summary" role="status">
                   <CalendarDays size={20} aria-hidden="true" />
                   <div>
-                    <strong>Google Calendar에서 일정을 불러왔어요</strong>
+                    <strong>Google Calendar 일정 {simulatedCalendarEventCount}개를 불러왔어요</strong>
                     <span>
-                      비어 있는 {slots.filter((slot) => !isSimulatedCalendarBusy(slot)).length}칸 ·
-                      일정 있는 {slots.filter(isSimulatedCalendarBusy).length}칸
+                      비어 있는 {slots.filter((slot) => !isSimulatedCalendarBusy(slot)).length}개
+                      시간을 ‘가능해요’로 자동 입력했어요
                     </span>
                   </div>
                 </div>
@@ -5209,6 +5238,9 @@ function ParticipantShell({
                 Boolean(
                   getAvailabilityWindowForSlot(draftWindows, participant.id, slot)?.avoidPreferred,
                 )
+              }
+              getCalendarEvent={
+                participantInputSource === 'calendar' ? getSimulatedCalendarEvent : undefined
               }
               onPaintSlot={paintResponseSlot}
               onPaintDay={paintResponseDay}
