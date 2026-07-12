@@ -4951,6 +4951,9 @@ function ParticipantShell({
       participant.responseStatus !== 'not_started' || draftWindows.length > 0 ? 'existing' : null,
     )
   const [responseBrush, setResponseBrush] = useState<ResponseValue>('available')
+  const [manuallyEditedSlotStarts, setManuallyEditedSlotStarts] = useState<Set<string>>(
+    () => new Set(),
+  )
 
   if (state === 'PARTICIPANT_DONE') {
     return (
@@ -5017,6 +5020,7 @@ function ParticipantShell({
     setHasChosenResponseBaseline(true)
     setIsManualSetupOpen(false)
     setParticipantInputSource('calendar')
+    setManuallyEditedSlotStarts(new Set())
     setEditorStatus('draft')
     setIsSaveConfirmationOpen(false)
   }
@@ -5025,6 +5029,9 @@ function ParticipantShell({
     const currentWindow = getAvailabilityWindowForSlot(draftWindows, participant.id, slot)
     setIsSaveConfirmationOpen(false)
     setEditorStatus('draft')
+    if (participantInputSource === 'calendar') {
+      setManuallyEditedSlotStarts((current) => new Set(current).add(slot.startAt))
+    }
     setDraftWindows((currentWindows) =>
       replaceAvailabilitySlot(
         currentWindows,
@@ -5042,6 +5049,13 @@ function ParticipantShell({
       fillAvailabilitySlots(currentWindows, participant.id, daySlots, responseBrush, meeting.id),
     )
     setEditorStatus('draft')
+    if (participantInputSource === 'calendar') {
+      setManuallyEditedSlotStarts((current) => {
+        const next = new Set(current)
+        daySlots.forEach((slot) => next.add(slot.startAt))
+        return next
+      })
+    }
     setIsSaveConfirmationOpen(false)
   }
 
@@ -5191,6 +5205,11 @@ function ParticipantShell({
                       시간을 ‘가능해요’로 자동 입력했어요
                     </span>
                   </div>
+                  <div className="calendar-import-legend" aria-label="시간표 표시 기준">
+                    <span><i className="is-calendar" />Google Calendar 일정</span>
+                    <span><i className="is-automatic" />자동 입력</span>
+                    <span><i className="is-edited" />직접 수정</span>
+                  </div>
                 </div>
               ) : null}
               <div className="response-brush-toolbar">
@@ -5216,6 +5235,7 @@ function ParticipantShell({
                       setHasChosenResponseBaseline(false)
                       setIsManualSetupOpen(false)
                       setParticipantInputSource(null)
+                      setManuallyEditedSlotStarts(new Set())
                       setEditorStatus('not_started')
                       setIsSaveConfirmationOpen(false)
                     }}
@@ -5242,6 +5262,7 @@ function ParticipantShell({
               getCalendarEvent={
                 participantInputSource === 'calendar' ? getSimulatedCalendarEvent : undefined
               }
+              getIsManuallyEdited={(slot) => manuallyEditedSlotStarts.has(slot.startAt)}
               onPaintSlot={paintResponseSlot}
               onPaintDay={paintResponseDay}
               onToggleAvoidPreferred={toggleAvoidPreferred}
