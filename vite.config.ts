@@ -1,6 +1,7 @@
 import { copyFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
 function tossDemoEntry(): Plugin {
@@ -19,5 +20,10 @@ function tossDemoEntry(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   base: '/meetcue/',
-  plugins: [react(), tossDemoEntry()],
+  plugins: [react(), tailwindcss(), tossDemoEntry()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
 })

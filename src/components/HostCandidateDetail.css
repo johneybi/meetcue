@@ -1,0 +1,384 @@
+.host-shell--decision .decision-reference-detail {
+  grid-area: detail;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--mc-space-3);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.host-shell--decision .decision-focus-head {
+  min-height: var(--mc-space-12);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mc-space-4-5);
+  padding: 0 var(--mc-space-0-5);
+}
+
+.host-shell--decision .decision-focus-head > div {
+  display: grid;
+  gap: var(--mc-space-1);
+}
+
+.host-shell--decision .decision-focus-head span {
+  color: var(--tds-text-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.host-shell--decision .decision-focus-head h2 {
+  margin: 0;
+  color: var(--tds-text);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 30px;
+  letter-spacing: -0.02em;
+}
+
+.host-shell--decision .decision-focus-head > strong {
+  padding: var(--mc-space-1-25) var(--mc-space-2-25);
+  border: 1px solid var(--mc-candidate-detail-recommend-border);
+  border-radius: var(--mc-radius-candidate-detail-recommendation);
+  background: var(--mc-candidate-detail-recommend-surface);
+  color: var(--mc-candidate-detail-pending-text);
+  font-size: 12px;
+}
+
+.host-shell--decision .decision-state-panel {
+  --mc-candidate-detail-ring-size: calc(var(--mc-space-0-75) * 2.5);
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  gap: var(--mc-space-2);
+  padding: var(--mc-space-5);
+  border: var(--mc-candidate-detail-ring-size) solid transparent;
+  border-radius: var(--mc-radius-candidate-detail-panel);
+  background: var(--mc-candidate-detail-ready-surface) border-box;
+  box-shadow:
+    0 0 0 1px var(--mc-candidate-detail-ready-border),
+    var(--mc-shadow-candidate-detail);
+}
+
+.host-shell--decision .decision-state-panel::before {
+  position: absolute;
+  z-index: 0;
+  inset: 2px;
+  border-radius: calc(
+    var(--mc-radius-candidate-detail-panel) - var(--mc-candidate-detail-ring-size)
+  );
+  background: var(--mc-color-surface);
+  filter: blur(6px);
+  content: "";
+  pointer-events: none;
+}
+
+.host-shell--decision .decision-state-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.host-shell--decision .decision-reference-detail.is-info .decision-state-panel {
+  border-color: transparent;
+  background: var(--mc-candidate-detail-pending-surface) border-box;
+  box-shadow:
+    0 0 0 1px var(--mc-candidate-detail-pending-border),
+    var(--mc-shadow-candidate-detail);
+}
+
+.host-shell--decision .decision-reference-detail.is-danger .decision-state-panel {
+  border-color: transparent;
+  background: var(--mc-candidate-detail-danger-surface) border-box;
+  box-shadow:
+    0 0 0 1px var(--mc-candidate-detail-danger-border),
+    var(--mc-shadow-candidate-detail);
+}
+
+.host-shell--decision .decision-state-panel__label {
+  width: fit-content;
+  color: var(--mc-candidate-detail-positive);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.host-shell--decision .decision-reference-detail.is-info .decision-state-panel__label {
+  color: var(--mc-candidate-detail-pending-text);
+}
+
+.host-shell--decision .decision-reference-detail.is-danger .decision-state-panel__label {
+  color: var(--mc-candidate-detail-danger);
+}
+
+.host-shell--decision .decision-state-panel h3 {
+  margin: 0;
+  color: var(--tds-text);
+  font-size: 19px;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+}
+
+.host-shell--decision .decision-state-panel p {
+  margin: -4px 0 0;
+  color: var(--tds-text-3);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.host-shell--decision .decision-burden-summary {
+  display: grid;
+  gap: var(--mc-space-1-5);
+  padding: var(--mc-space-2-5) 0;
+  border-block: 1px solid var(--mc-candidate-detail-divider);
+}
+
+.host-shell--decision .decision-burden-summary > div {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mc-space-2);
+  color: var(--tds-text-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.host-shell--decision .decision-burden-summary svg {
+  flex: 0 0 auto;
+  margin-top: var(--mc-space-0-5);
+}
+
+.host-shell--decision .decision-burden-summary .is-clear svg {
+  color: var(--mc-candidate-detail-positive);
+}
+
+.host-shell--decision .decision-burden-summary .has-burden svg {
+  color: var(--mc-candidate-detail-burden);
+}
+
+.host-shell--decision .decision-state-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mc-space-2);
+  margin-top: var(--mc-space-1);
+}
+
+.host-shell--decision .decision-state-counts span {
+  display: inline-flex;
+  gap: var(--mc-space-1);
+  padding: var(--mc-space-1-25) var(--mc-space-2-25);
+  border-radius: var(--mc-radius-candidate-detail-chip);
+  font-size: 12px;
+}
+
+.host-shell--decision .decision-state-counts .is-positive {
+  background: var(--mc-candidate-detail-positive-surface);
+  color: var(--mc-candidate-detail-positive);
+}
+
+.host-shell--decision .decision-state-counts .is-negative {
+  background: var(--mc-candidate-detail-negative-surface);
+  color: var(--mc-candidate-detail-danger);
+}
+
+.host-shell--decision .decision-state-counts .is-unknown {
+  background: var(--mc-candidate-detail-unknown-surface);
+  color: var(--mc-candidate-detail-unknown);
+}
+
+.host-shell--decision .decision-state-panel > .primary-button {
+  min-height: var(--mc-space-12);
+  margin-top: var(--mc-space-1-5);
+  border-radius: var(--mc-radius-candidate-detail-group);
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-pending-groups {
+  display: grid;
+  gap: var(--mc-space-2-5);
+}
+
+.host-shell--decision .decision-pending-group,
+.host-shell--decision .decision-impossible-guide {
+  overflow: hidden;
+  border: 1px solid var(--mc-candidate-detail-group-border);
+  border-radius: var(--mc-radius-candidate-detail-group);
+  background: var(--mc-color-surface);
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-pending-group > header {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mc-space-3);
+  padding: var(--mc-space-2-25) var(--mc-space-3-5);
+  border-bottom: 1px solid var(--mc-candidate-detail-group-divider);
+}
+
+.host-shell--decision .decision-pending-group > header strong {
+  font-size: 13px;
+}
+
+.host-shell--decision .decision-pending-group > header span {
+  padding: var(--mc-space-0-75) var(--mc-space-1-75);
+  border-radius: var(--mc-radius-candidate-detail-label);
+  background: var(--mc-candidate-detail-complete-surface);
+  color: var(--mc-candidate-detail-positive);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.host-shell--decision .decision-pending-group > header button {
+  min-height: 34px;
+  padding: 0 var(--mc-space-2-75);
+  border: 1px solid var(--mc-candidate-detail-control-border);
+  border-radius: var(--mc-radius-candidate-detail-control);
+  background: var(--mc-color-surface);
+  color: var(--tds-blue-pressed);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.host-shell--decision .decision-pending-person {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mc-space-3-5);
+  padding: var(--mc-space-2-5) var(--mc-space-3-5);
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-pending-person > div {
+  display: grid;
+  gap: var(--mc-space-0-5);
+}
+
+.host-shell--decision .decision-pending-person strong {
+  font-size: 14px;
+}
+
+.host-shell--decision .decision-pending-person small {
+  color: var(--tds-text-3);
+  font-size: 12px;
+}
+
+.host-shell--decision .decision-pending-person button,
+.host-shell--decision .decision-impossible-guide button {
+  min-height: var(--mc-space-9-5);
+  padding: 0 var(--mc-space-3-25);
+  border: 1px solid var(--mc-candidate-detail-control-border);
+  border-radius: var(--mc-radius-candidate-detail-control);
+  background: var(--mc-color-surface);
+  color: var(--tds-blue-pressed);
+  font-weight: 800;
+}
+
+.host-shell--decision .decision-optional-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mc-space-1-5);
+  padding: var(--mc-space-3) var(--mc-space-3-5) var(--mc-space-1);
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-optional-people span {
+  padding: var(--mc-space-1) var(--mc-space-2);
+  border-radius: var(--mc-radius-candidate-detail-label);
+  background: var(--mc-candidate-detail-person-surface);
+  color: var(--tds-text-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.host-shell--decision .decision-pending-group > p,
+.host-shell--decision .decision-impossible-guide p {
+  margin: 0;
+  padding: var(--mc-space-2) var(--mc-space-3-5) var(--mc-space-3-25);
+  color: var(--tds-text-3);
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.host-shell--decision .decision-impossible-guide {
+  display: grid;
+  gap: var(--mc-space-0-75);
+  padding: var(--mc-space-4);
+}
+
+.host-shell--decision .decision-impossible-guide p {
+  padding: 0;
+}
+
+.host-shell--decision .decision-impossible-guide button {
+  width: fit-content;
+  margin-top: var(--mc-space-2-25);
+}
+
+.host-shell--decision .decision-criteria-inline {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--mc-space-3);
+  padding: var(--mc-space-2-5) var(--mc-space-0-5);
+  border-top: 1px solid var(--mc-candidate-detail-criteria-divider);
+}
+
+.host-shell--decision .decision-criteria-inline span {
+  color: var(--tds-text-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.host-shell--decision .decision-criteria-inline strong {
+  color: var(--tds-text-2);
+  font-size: 13px;
+}
+
+.host-shell--decision .decision-criteria-inline button {
+  border: 0;
+  background: transparent;
+  color: var(--tds-blue-pressed);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .host-shell--decision .decision-focus-head {
+    min-height: 0;
+  }
+
+  .host-shell--decision .decision-focus-head h2 {
+    font-size: 19px;
+    line-height: 28px;
+  }
+
+  .host-shell--decision .decision-state-panel {
+    padding: var(--mc-space-4-25) var(--mc-space-4);
+  }
+
+  .host-shell--decision .decision-state-panel h3 {
+    font-size: 17px;
+    line-height: 26px;
+  }
+
+  .host-shell--decision .decision-pending-person {
+    align-items: flex-start;
+  }
+
+  .host-shell--decision .decision-criteria-inline {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .host-shell--decision .decision-criteria-inline span {
+    grid-column: 1 / -1;
+  }
+}

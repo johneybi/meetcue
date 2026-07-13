@@ -1,0 +1,173 @@
+.decision-matrix-disclosure {
+  overflow: hidden;
+  border: 1px solid var(--mc-decision-matrix-border);
+  border-radius: var(--mc-radius-decision-matrix-base);
+  background: var(--mc-color-surface);
+}
+
+.decision-matrix-disclosure > summary {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mc-space-4);
+  padding: var(--mc-space-2-5) var(--mc-space-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.decision-matrix-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.decision-matrix-disclosure > summary > div {
+  display: grid;
+  gap: var(--mc-space-0-5);
+}
+
+.decision-matrix-disclosure > summary span,
+.decision-matrix-disclosure > summary small {
+  color: var(--mc-color-text-tertiary);
+  font-size: 11px;
+}
+
+.decision-matrix-disclosure > summary strong {
+  font-size: 15px;
+}
+
+.decision-matrix-scroll {
+  overflow-x: auto;
+  border-top: 1px solid var(--mc-decision-matrix-divider);
+}
+
+.decision-matrix {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.decision-matrix th,
+.decision-matrix td {
+  height: 48px;
+  padding: var(--mc-space-2) var(--mc-space-2-5);
+  border-bottom: 1px solid var(--mc-decision-matrix-cell-divider);
+  text-align: center;
+  font-size: 12px;
+}
+
+.decision-matrix thead th {
+  color: var(--mc-color-text-tertiary);
+  font-weight: 800;
+  line-height: 17px;
+}
+
+.decision-matrix th:first-child {
+  min-width: 128px;
+  text-align: left;
+}
+
+.decision-matrix tbody th {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-1-5);
+}
+
+.decision-matrix tbody th strong {
+  color: var(--mc-color-text-primary);
+  font-size: 13px;
+}
+
+.decision-matrix tbody th small {
+  padding: var(--mc-space-0-5) var(--mc-space-1-25);
+  border-radius: var(--mc-space-1-25);
+  background: var(--mc-decision-matrix-required);
+  color: var(--mc-color-accent-pressed);
+  font-size: 10px;
+}
+
+.decision-matrix .is-selected {
+  background: var(--mc-decision-matrix-selected);
+}
+
+.decision-matrix td svg {
+  margin: auto;
+}
+
+.decision-matrix td.is-available,
+.decision-matrix td.is-adjustment_commit {
+  color: var(--mc-decision-matrix-positive);
+}
+
+.decision-matrix td.is-unavailable {
+  color: var(--mc-decision-matrix-negative);
+}
+
+.decision-matrix td.is-unknown {
+  color: var(--mc-decision-matrix-unknown);
+}
+
+.decision-matrix-disclosure > footer {
+  display: flex;
+  gap: var(--mc-space-4);
+  padding: var(--mc-space-2-5) var(--mc-space-4);
+  color: var(--mc-color-text-tertiary);
+  font-size: 11px;
+}
+
+.decision-matrix-disclosure > footer .is-positive::before {
+  content: '✓ ';
+  color: var(--mc-decision-matrix-positive);
+}
+
+.decision-matrix-disclosure > footer .is-negative::before {
+  content: '× ';
+  color: var(--mc-decision-matrix-negative);
+}
+
+.decision-matrix-disclosure > footer .is-unknown::before {
+  content: '○ ';
+  color: var(--mc-decision-matrix-unknown);
+}
+
+.host-shell--decision .decision-matrix-disclosure {
+  border-radius: var(--mc-radius-decision-matrix);
+  background: var(--mc-decision-matrix-surface);
+  box-shadow: var(--meetcue-elevation-tile);
+}
+
+.decision-matrix-disclosure__affordance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-space-1-75);
+  color: var(--mc-color-text-tertiary);
+}
+
+.decision-matrix-disclosure__affordance .is-open-label {
+  display: none;
+}
+
+.decision-matrix-disclosure__affordance svg {
+  transition: transform 180ms ease;
+}
+
+.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance .is-closed-label {
+  display: none;
+}
+
+.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance .is-open-label {
+  display: inline;
+}
+
+.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance svg {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 760px) {
+  .decision-matrix-disclosure > summary small {
+    display: none;
+  }
+
+  .host-shell--decision .decision-matrix-disclosure > summary {
+    min-height: 52px;
+  }
+}

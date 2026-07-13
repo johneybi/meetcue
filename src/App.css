@@ -7281,61 +7281,6 @@ button:disabled {
   color: var(--tds-muted);
 }
 
-.request-recipient-modal {
-  position: fixed;
-  z-index: 1100;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 24px;
-  background: rgb(25 31 40 / 32%);
-  backdrop-filter: blur(2px);
-}
-
-.request-recipient-modal .request-recipient-panel {
-  width: min(720px, 100%);
-  max-height: min(760px, calc(100dvh - 48px));
-  overflow-y: auto;
-}
-
-.request-recipient-panel {
-  display: grid;
-  gap: 20px;
-  padding: 28px 30px;
-  border: 1px solid var(--tds-border);
-  border-radius: 16px;
-  background: var(--tds-surface);
-  box-shadow: var(--tds-shadow-soft);
-}
-
-.request-recipient-panel > header,
-.request-recipient-panel > footer {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.request-recipient-panel > header > div {
-  display: grid;
-  gap: 4px;
-}
-
-.request-recipient-panel > header span {
-  color: var(--tds-muted);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.request-recipient-panel h2 {
-  margin: 0;
-  color: var(--tds-text);
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 30px;
-}
-
 .icon-button {
   width: 44px;
   height: 44px;
@@ -7352,97 +7297,6 @@ button:disabled {
 .icon-button:hover {
   background: var(--tds-subtle);
   color: var(--tds-text);
-}
-
-.request-recipient-group {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.request-recipient-group legend {
-  grid-column: 1 / -1;
-  margin-bottom: 2px;
-  color: var(--tds-text-2);
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.request-recipient-option {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-  min-height: 64px;
-  padding: 10px 14px;
-  border: 1px solid var(--tds-border);
-  border-radius: 12px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.request-recipient-option:has(input:checked) {
-  border-color: var(--tds-blue);
-  background: var(--tds-blue-soft);
-  box-shadow: inset 0 0 0 1px var(--tds-blue);
-}
-
-.request-recipient-option input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--tds-blue);
-}
-
-.request-recipient-option > span:nth-of-type(2) {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.request-recipient-option strong,
-.request-recipient-option small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.request-recipient-option strong {
-  color: var(--tds-text);
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.request-recipient-option small {
-  color: var(--tds-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.request-recipient-option > svg {
-  opacity: 0;
-  color: var(--tds-blue);
-}
-
-.request-recipient-option:has(input:checked) > svg {
-  opacity: 1;
-}
-
-.request-recipient-panel > footer p {
-  max-width: 620px;
-  margin: 0;
-  color: var(--tds-text-3);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.request-recipient-panel > footer .primary-button {
-  min-width: 220px;
 }
 
 .criteria-review-workspace {
@@ -9753,23 +9607,6 @@ button:disabled {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .request-recipient-panel {
-    padding: 22px 18px;
-  }
-
-  .request-recipient-panel > footer {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .request-recipient-panel > footer .primary-button {
-    width: 100%;
-  }
-
-  .request-recipient-group {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .criteria-review-panel {
     gap: 26px;
     padding-inline: 2px;
@@ -10598,457 +10435,6 @@ button:disabled {
   gap: 14px 20px;
 }
 
-.host-shell--decision .decision-reference-candidates {
-  align-content: start;
-  gap: 7px;
-}
-
-.host-shell--decision .decision-reference-card__select {
-  min-height: 82px;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  padding: 12px;
-}
-
-.host-shell--decision .decision-reference-card__rank {
-  width: 28px;
-  min-height: 28px;
-  background: #f1f5f9;
-  color: var(--tds-text-3);
-}
-
-.host-shell--decision .decision-reference-card.is-selected {
-  border-color: var(--tds-blue);
-  background: #f1f7ff;
-}
-
-.host-shell--decision .decision-reference-card.is-selected .decision-reference-card__rank {
-  background: var(--tds-blue);
-}
-
-.host-shell--decision .decision-reference-card__copy em {
-  margin-top: 2px;
-  font-weight: 700;
-}
-
-.host-shell--decision .decision-reference-detail {
-  min-height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-  gap: 16px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.decision-focus-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 2px 2px 0;
-}
-
-.decision-focus-head > div {
-  display: grid;
-  gap: 4px;
-}
-
-.decision-focus-head span {
-  color: var(--tds-text-3);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.decision-focus-head h2 {
-  margin: 0;
-  color: var(--tds-text);
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 34px;
-  letter-spacing: -0.02em;
-}
-
-.decision-focus-head > strong {
-  padding: 5px 9px;
-  border: 1px solid #f0d99c;
-  border-radius: 7px;
-  background: #fff9e8;
-  color: #8a5b00;
-  font-size: 12px;
-}
-
-.decision-state-panel {
-  display: grid;
-  gap: 10px;
-  padding: 22px;
-  border: 1px solid #dce8e5;
-  border-radius: 12px;
-  background: linear-gradient(120deg, #effcf8, #f6fffc);
-}
-
-.decision-reference-detail.is-info .decision-state-panel {
-  border-color: #eadfb9;
-  background: linear-gradient(120deg, #fff9e9, #fffdf5);
-}
-
-.decision-reference-detail.is-danger .decision-state-panel {
-  border-color: #f0d7d9;
-  background: linear-gradient(120deg, #fff3f3, #fffafa);
-}
-
-.decision-state-panel__label {
-  width: fit-content;
-  color: #087a5b;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.decision-reference-detail.is-info .decision-state-panel__label {
-  color: #8a5b00;
-}
-.decision-reference-detail.is-danger .decision-state-panel__label {
-  color: #b4232f;
-}
-
-.decision-state-panel h3 {
-  margin: 0;
-  color: var(--tds-text);
-  font-size: 20px;
-  line-height: 29px;
-  letter-spacing: -0.01em;
-}
-
-.decision-state-panel p {
-  margin: -4px 0 0;
-  color: var(--tds-text-3);
-  font-size: 13px;
-  line-height: 21px;
-}
-
-.decision-burden-summary {
-  display: grid;
-  gap: 6px;
-  padding: 10px 0;
-  border-block: 1px solid rgb(207 216 229 / 58%);
-}
-
-.decision-burden-summary > div {
-  min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--tds-text-2);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.decision-burden-summary svg {
-  flex: 0 0 auto;
-  margin-top: 2px;
-}
-
-.decision-burden-summary .is-clear svg {
-  color: #087a5b;
-}
-
-.decision-burden-summary .has-burden svg {
-  color: #9a6700;
-}
-
-.decision-state-counts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.decision-state-counts span {
-  display: inline-flex;
-  gap: 4px;
-  padding: 5px 9px;
-  border-radius: 7px;
-  font-size: 12px;
-}
-
-.decision-state-counts .is-positive {
-  background: #e7f8f3;
-  color: #087a5b;
-}
-.decision-state-counts .is-negative {
-  background: #fff0f1;
-  color: #b4232f;
-}
-.decision-state-counts .is-unknown {
-  background: #f0f3f7;
-  color: #536170;
-}
-.decision-state-panel > .primary-button {
-  margin-top: 6px;
-  min-height: 48px;
-  border-radius: 9px;
-  box-shadow: none;
-}
-
-.decision-pending-groups {
-  display: grid;
-  gap: 10px;
-}
-
-.decision-pending-group,
-.decision-impossible-guide {
-  overflow: hidden;
-  border: 1px solid #e1e7ee;
-  border-radius: 11px;
-  background: #fff;
-}
-
-.decision-pending-group > header {
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 14px;
-  border-bottom: 1px solid #edf1f5;
-}
-
-.decision-pending-group > header strong {
-  font-size: 13px;
-}
-.decision-pending-group > header span {
-  padding: 3px 7px;
-  border-radius: 6px;
-  background: #e9f8f3;
-  color: #087a5b;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.decision-pending-group > header button {
-  min-height: 34px;
-  padding: 0 11px;
-  border: 1px solid #cdd8e5;
-  border-radius: 8px;
-  background: #fff;
-  color: var(--tds-blue-pressed);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.decision-pending-person {
-  min-height: 62px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 10px 14px;
-}
-
-.decision-pending-person > div {
-  display: grid;
-  gap: 2px;
-}
-.decision-pending-person strong {
-  font-size: 14px;
-}
-.decision-pending-person small {
-  color: var(--tds-text-3);
-  font-size: 12px;
-}
-.decision-pending-person button,
-.decision-impossible-guide button {
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid #cdd8e5;
-  border-radius: 8px;
-  background: #fff;
-  color: var(--tds-blue-pressed);
-  font-weight: 800;
-}
-
-.decision-optional-people {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 14px 4px;
-}
-
-.decision-optional-people span {
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: #f3f6f9;
-  color: var(--tds-text-2);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.decision-pending-group > p,
-.decision-impossible-guide p {
-  margin: 0;
-  padding: 8px 14px 13px;
-  color: var(--tds-text-3);
-  font-size: 12px;
-  line-height: 19px;
-}
-
-.decision-impossible-guide {
-  display: grid;
-  gap: 3px;
-  padding: 16px;
-}
-
-.decision-impossible-guide p {
-  padding: 0;
-}
-.decision-impossible-guide button {
-  width: fit-content;
-  margin-top: 9px;
-}
-
-.decision-criteria-inline {
-  min-height: 50px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 14px;
-  border-top: 1px solid #e7edf3;
-}
-
-.decision-criteria-inline span {
-  color: var(--tds-text-3);
-  font-size: 12px;
-  font-weight: 800;
-}
-.decision-criteria-inline strong {
-  color: var(--tds-text-2);
-  font-size: 13px;
-}
-.decision-criteria-inline button {
-  border: 0;
-  background: transparent;
-  color: var(--tds-blue-pressed);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.decision-matrix-disclosure {
-  overflow: hidden;
-  border: 1px solid #e1e7ee;
-  border-radius: 11px;
-  background: #fff;
-}
-
-.decision-matrix-disclosure > summary {
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 10px 16px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.decision-matrix-disclosure > summary::-webkit-details-marker {
-  display: none;
-}
-.decision-matrix-disclosure > summary > div {
-  display: grid;
-  gap: 2px;
-}
-.decision-matrix-disclosure > summary span,
-.decision-matrix-disclosure > summary small {
-  color: var(--tds-text-3);
-  font-size: 11px;
-}
-.decision-matrix-disclosure > summary strong {
-  font-size: 15px;
-}
-.decision-matrix-scroll {
-  overflow-x: auto;
-  border-top: 1px solid #e7edf3;
-}
-
-.decision-matrix {
-  width: 100%;
-  min-width: 760px;
-  border-collapse: collapse;
-}
-
-.decision-matrix th,
-.decision-matrix td {
-  height: 48px;
-  padding: 8px 10px;
-  border-bottom: 1px solid #edf1f5;
-  text-align: center;
-  font-size: 12px;
-}
-
-.decision-matrix thead th {
-  color: var(--tds-text-3);
-  font-weight: 800;
-  line-height: 17px;
-}
-
-.decision-matrix th:first-child {
-  min-width: 128px;
-  text-align: left;
-}
-.decision-matrix tbody th {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.decision-matrix tbody th strong {
-  color: var(--tds-text);
-  font-size: 13px;
-}
-.decision-matrix tbody th small {
-  padding: 2px 5px;
-  border-radius: 5px;
-  background: #edf5ff;
-  color: var(--tds-blue-pressed);
-  font-size: 10px;
-}
-.decision-matrix .is-selected {
-  background: #f2f7ff;
-}
-.decision-matrix td svg {
-  margin: auto;
-}
-.decision-matrix td.is-available,
-.decision-matrix td.is-adjustment_commit {
-  color: #0a8f6b;
-}
-.decision-matrix td.is-unavailable {
-  color: #c93440;
-}
-.decision-matrix td.is-unknown {
-  color: #9aa6b2;
-}
-.decision-matrix-disclosure > footer {
-  display: flex;
-  gap: 16px;
-  padding: 10px 16px;
-  color: var(--tds-text-3);
-  font-size: 11px;
-}
-.decision-matrix-disclosure > footer .is-positive::before {
-  content: '✓ ';
-  color: #0a8f6b;
-}
-.decision-matrix-disclosure > footer .is-negative::before {
-  content: '× ';
-  color: #c93440;
-}
-.decision-matrix-disclosure > footer .is-unknown::before {
-  content: '○ ';
-  color: #9aa6b2;
-}
-
 .host-shell--decision .candidate-calendar-disclosure {
   display: none;
 }
@@ -11057,53 +10443,6 @@ button:disabled {
   .host-shell--decision .decision-candidate-workspace {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'head' 'candidates' 'status' 'detail';
-  }
-}
-
-@media (max-width: 760px) {
-  .host-shell--decision .decision-reference-candidates {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 4px;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-  }
-
-  .host-shell--decision .decision-reference-candidates::-webkit-scrollbar {
-    display: none;
-  }
-
-  .host-shell--decision .decision-reference-card {
-    flex: 0 0 min(82%, 300px);
-    scroll-snap-align: start;
-  }
-
-  .decision-focus-head {
-    display: grid;
-  }
-  .decision-focus-head h2 {
-    font-size: 21px;
-    line-height: 30px;
-  }
-  .decision-state-panel {
-    padding: 18px 16px;
-  }
-  .decision-state-panel h3 {
-    font-size: 18px;
-    line-height: 27px;
-  }
-  .decision-pending-person {
-    align-items: flex-start;
-  }
-  .decision-criteria-inline {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .decision-criteria-inline span {
-    grid-column: 1 / -1;
-  }
-  .decision-matrix-disclosure > summary small {
-    display: none;
   }
 }
 
@@ -11510,8 +10849,7 @@ button:disabled {
 .participant-week-grid,
 .participant-day-table,
 .waiting-card,
-.share-card,
-.request-recipient-panel {
+.share-card {
   border: 1px solid rgb(231 236 243 / 78%);
   background: var(--tds-glass);
   box-shadow: var(--tds-shadow-soft), var(--soft-shadow-inset);
@@ -13540,137 +12878,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   line-height: 34px;
 }
 
-.decision-reference-candidates {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.decision-reference-card {
-  min-width: 0;
-  min-height: 142px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: stretch;
-  padding: 6px;
-  border: 1px solid rgb(207 216 229 / 78%);
-  border-radius: 16px;
-  background: rgb(255 255 255 / 74%);
-}
-
-.decision-reference-card.is-selected {
-  border-color: var(--tds-blue);
-  box-shadow: inset 0 0 0 1px rgb(49 130 246 / 20%);
-}
-
-.decision-reference-card__select {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px 12px;
-  align-items: center;
-  padding: 10px 12px;
-  border: 0;
-  background: transparent;
-  color: var(--tds-text);
-  text-align: left;
-}
-
-.decision-reference-card__rank {
-  width: fit-content;
-  min-height: 24px;
-  grid-column: 1 / -1;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 8px;
-  border-radius: 6px;
-  background: #eef4ff;
-  color: var(--tds-blue-pressed);
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 18px;
-}
-
-.decision-reference-card.is-selected .decision-reference-card__rank {
-  background: var(--tds-blue);
-  color: #fff;
-}
-
-.decision-reference-card__status-icon {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid currentColor;
-  border-radius: 999px;
-  color: var(--decision-green);
-}
-
-.decision-reference-card.is-info .decision-reference-card__status-icon {
-  color: var(--decision-amber);
-}
-
-.decision-reference-card.is-danger .decision-reference-card__status-icon {
-  color: var(--decision-red);
-}
-
-.decision-reference-card__copy {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.decision-reference-card__copy strong {
-  color: var(--tds-text);
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 24px;
-  word-break: keep-all;
-}
-
-.decision-reference-card__copy small {
-  width: fit-content;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--decision-green-soft);
-  color: var(--decision-green);
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 18px;
-}
-
-.decision-reference-card.is-info .decision-reference-card__copy small {
-  background: var(--decision-amber-soft);
-  color: var(--decision-amber);
-}
-
-.decision-reference-card.is-danger .decision-reference-card__copy small {
-  background: var(--decision-red-soft);
-  color: var(--decision-red);
-}
-
-.decision-reference-card__copy em {
-  color: var(--tds-muted);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 800;
-  line-height: 18px;
-}
-
-.decision-reference-card__select > svg {
-  color: var(--tds-text-3);
-}
-
-.decision-reference-card > .primary-button {
-  min-height: 44px;
-  margin: 0 8px 8px auto;
-  padding-inline: 20px;
-  border-radius: 8px;
-  box-shadow: none;
-}
-
 .decision-reference-status {
   min-height: 64px;
   display: grid;
@@ -13729,110 +12936,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   line-height: 24px;
 }
 
-.decision-reference-detail {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.34fr) minmax(0, 1fr);
-  gap: 18px;
-  padding: 18px;
-  border: 1px solid rgb(207 216 229 / 70%);
-  border-radius: 14px;
-  background: rgb(255 255 255 / 58%);
-}
-
-.decision-reference-summary {
-  min-width: 0;
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  padding: 4px 4px 4px 2px;
-}
-
-.decision-reference-summary__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.decision-reference-summary__head span,
-.decision-reference-criteria span {
-  color: var(--tds-text-3);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.decision-reference-summary__head strong {
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--decision-green-soft);
-  color: var(--decision-green);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.decision-reference-summary h2 {
-  margin: 0;
-  color: var(--tds-text);
-  font-size: 23px;
-  font-weight: 900;
-  line-height: 32px;
-  word-break: keep-all;
-}
-
-.decision-reference-summary > p {
-  margin: -6px 0 0;
-  color: var(--tds-text-3);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.decision-reference-criteria {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  border-top: 1px solid rgb(207 216 229 / 58%);
-  border-bottom: 1px solid rgb(207 216 229 / 58%);
-}
-
-.decision-reference-criteria > div {
-  display: grid;
-  gap: 3px;
-}
-
-.decision-reference-criteria strong {
-  color: var(--tds-text-2);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.decision-reference-criteria button {
-  min-width: 44px;
-  min-height: 40px;
-  border: 1px solid rgb(207 216 229 / 68%);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--tds-blue-pressed);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.decision-reference-detail > .decision-response-disclosure {
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: none;
-}
-
-.decision-reference-detail > .decision-response-disclosure > summary {
-  display: none;
-}
-
-.decision-reference-detail .decision-response-table {
-  height: 100%;
-}
-
 .candidate-calendar-disclosure {
   border-radius: 14px;
   background: rgb(255 255 255 / 58%);
@@ -13844,20 +12947,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 
 .candidate-calendar-disclosure[open] > summary strong {
   font-size: 16px;
-}
-
-@media (max-width: 1000px) {
-  .decision-reference-candidates {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .decision-reference-card {
-    min-height: 0;
-  }
-
-  .decision-reference-detail {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @media (min-width: 761px) {
@@ -13885,16 +12974,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     line-height: 30px;
   }
 
-  .decision-reference-card__select {
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-    padding: 10px;
-  }
-
-  .decision-reference-card > .primary-button {
-    width: calc(100% - 16px);
-    margin-inline: 8px;
-  }
-
   .decision-reference-status {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -13914,18 +12993,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     display: none;
   }
 
-  .decision-reference-detail {
-    padding: 16px;
-    border-radius: 12px;
-  }
-
-  .decision-reference-detail > .decision-response-disclosure > summary {
-    display: flex;
-  }
-
-  .decision-reference-detail > .decision-response-disclosure:not([open]) .decision-response-table {
-    display: none;
-  }
 }
 
 /* Korean typography tracking roles. The MeetCue logo keeps its wordmark spacing. */
@@ -14157,60 +13224,9 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 .decision-candidate-head {
   grid-area: head;
 }
-.decision-reference-candidates {
-  grid-area: candidates;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-}
 .decision-reference-status {
   grid-area: status;
 }
-.decision-reference-detail {
-  grid-area: detail;
-}
-
-.decision-reference-card {
-  min-height: 0;
-  padding: 0;
-  border-radius: 10px;
-  background: #fff;
-}
-
-.decision-reference-card.is-selected {
-  background: #f5f9ff;
-}
-
-.decision-reference-card__select {
-  grid-template-columns: 36px minmax(0, 1fr) auto;
-  grid-template-rows: auto;
-  gap: 10px;
-  padding: 14px;
-}
-
-.decision-reference-card__rank {
-  width: 30px;
-  min-height: 30px;
-  grid-column: auto;
-  justify-content: center;
-  padding: 0;
-  border-radius: 8px;
-}
-
-.decision-reference-card__status-icon {
-  display: none;
-}
-.decision-reference-card__copy strong {
-  font-size: 15px;
-  line-height: 22px;
-}
-.decision-reference-card__copy small {
-  margin-top: 3px;
-}
-.decision-reference-card > .primary-button {
-  display: none;
-}
-
 .decision-reference-status {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   min-height: 58px;
@@ -14235,39 +13251,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   font-size: 15px;
 }
 
-.decision-reference-detail {
-  grid-template-columns: minmax(0, 0.44fr) minmax(320px, 1fr);
-  min-height: 100%;
-  padding: 22px;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.decision-reference-summary {
-  padding: 0 4px 0 0;
-}
-.decision-reference-summary h2 {
-  font-size: 25px;
-  line-height: 34px;
-  letter-spacing: -0.02em;
-}
-
-.decision-reference-actions {
-  margin-top: 2px;
-}
-.decision-reference-actions .primary-button {
-  width: 100%;
-  min-height: 48px;
-  border-radius: 9px;
-  box-shadow: none;
-}
-
-.decision-reference-detail > .decision-response-disclosure {
-  overflow: hidden;
-  border: 1px solid #e1e8f0;
-  border-radius: 10px;
-}
-
 .candidate-calendar-disclosure {
   border: 1px solid #e1e8f0;
   box-shadow: none;
@@ -14288,9 +13271,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   .decision-candidate-workspace {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'head' 'candidates' 'status' 'detail';
-  }
-  .decision-reference-detail {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -14341,13 +13321,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     padding: 16px;
     border-radius: 14px;
   }
-  .decision-reference-detail {
-    padding: 16px;
-  }
-  .decision-reference-summary h2 {
-    font-size: 22px;
-    line-height: 30px;
-  }
 }
 
 :where(button, label, input, textarea, select, [role='button']) {
@@ -14360,7 +13333,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 
 :where(
   .decision-reference-card__copy strong,
-  .decision-reference-summary h2,
   .candidate-decision-map__date strong,
   .candidate-decision-map__slot span
 ) {
@@ -14832,181 +13804,8 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   line-height: 18px;
 }
 
-.host-shell--decision .decision-reference-candidates {
-  grid-area: candidates;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-  gap: 6px;
-  padding: 0;
-}
-
-.host-shell--decision .decision-reference-candidates > header {
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2px;
-}
-
-.host-shell--decision .decision-reference-candidates > header strong {
-  color: var(--tds-text);
-  font-size: 13px;
-}
-
-.host-shell--decision .decision-reference-candidates > header > div {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-.host-shell--decision .decision-reference-candidates > header small {
-  color: var(--tds-text-3);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 15px;
-}
-
-.host-shell--decision .decision-reference-candidates > header span {
-  color: var(--tds-text-3);
-  font-size: 11px;
-}
-
-.host-shell--decision .decision-reference-card {
-  min-height: 0;
-  display: block;
-  padding: 0;
-  border: 1px solid #e0e6ed;
-  border-radius: 9px;
-  background: rgb(255 255 255 / 76%);
-  box-shadow: none;
-}
-
-.host-shell--decision .decision-reference-card.is-selected {
-  border-color: var(--tds-blue);
-  background: #f2f7ff;
-  box-shadow: inset 3px 0 0 var(--tds-blue);
-}
-
-.host-shell--decision .decision-reference-card__select {
-  width: 100%;
-  min-height: 68px;
-  display: block;
-  padding: 11px 12px 10px 15px;
-}
-
-.host-shell--decision .decision-reference-card__copy {
-  display: grid;
-  gap: 3px;
-}
-
-.host-shell--decision .decision-reference-card__copy > strong {
-  overflow: hidden;
-  color: var(--tds-text);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 21px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.host-shell--decision .decision-reference-card__copy > span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.host-shell--decision .decision-reference-card__copy small {
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--tds-text-3);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 17px;
-}
-
-.host-shell--decision .decision-reference-card.is-success .decision-reference-card__copy small {
-  color: #087a5b;
-}
-.host-shell--decision .decision-reference-card.is-info .decision-reference-card__copy small {
-  color: #8a5b00;
-}
-.host-shell--decision .decision-reference-card.is-danger .decision-reference-card__copy small {
-  color: #b4232f;
-}
-
-.host-shell--decision .decision-reference-card__copy i {
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: #fff5d8;
-  color: #8a5b00;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 800;
-  line-height: 16px;
-}
-
-.host-shell--decision .decision-reference-card__copy em {
-  color: var(--tds-text-3);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 17px;
-}
-
-.host-shell--decision .decision-reference-card > .primary-button,
 .host-shell--decision .decision-reference-status {
   display: none;
-}
-
-.host-shell--decision .decision-reference-detail {
-  grid-area: detail;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-  gap: 12px;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.host-shell--decision .decision-focus-head {
-  min-height: 48px;
-  padding: 0 2px;
-}
-
-.host-shell--decision .decision-focus-head h2 {
-  font-size: 21px;
-  line-height: 30px;
-}
-
-.host-shell--decision .decision-state-panel {
-  gap: 8px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: none;
-}
-
-.host-shell--decision .decision-state-panel h3 {
-  font-size: 19px;
-  line-height: 28px;
-}
-
-.host-shell--decision .decision-pending-group,
-.host-shell--decision .decision-impossible-guide,
-.host-shell--decision .decision-matrix-disclosure {
-  border-radius: 9px;
-  box-shadow: none;
-}
-
-.host-shell--decision .decision-criteria-inline {
-  padding-inline: 2px;
-}
-
-.host-shell--decision .decision-matrix-disclosure {
-  background: rgb(255 255 255 / 76%);
 }
 
 .host-shell--decision .prototype-flow-action--decision,
@@ -15044,103 +13843,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
     display: none;
   }
 
-  .host-shell--decision .decision-focus-head {
-    min-height: 0;
-    display: flex;
-    align-items: flex-start;
-  }
-
-  .host-shell--decision .decision-focus-head h2 {
-    font-size: 19px;
-    line-height: 28px;
-  }
-
-  .host-shell--decision .decision-state-panel {
-    padding: 17px 16px;
-  }
-
-  .host-shell--decision .decision-state-panel h3 {
-    font-size: 17px;
-    line-height: 26px;
-  }
-
-  .host-shell--decision .decision-reference-candidates {
-    display: flex;
-    overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 3px;
-    scroll-snap-type: x proximity;
-  }
-
-  .host-shell--decision .decision-reference-candidates > header {
-    display: none;
-  }
-
-  .host-shell--decision .decision-reference-card {
-    flex: 0 0 214px;
-    scroll-snap-align: start;
-  }
-
-  .host-shell--decision .decision-reference-card__select {
-    min-height: 72px;
-  }
-
-  .host-shell--decision .decision-matrix-disclosure > summary {
-    min-height: 52px;
-  }
-}
-
-.host-shell--decision .decision-reference-card__select {
-  position: relative;
-  padding-right: 38px;
-}
-
-.host-shell--decision .decision-reference-card.is-selected {
-  border-color: #7baef7;
-  background: linear-gradient(120deg, #f2f7ff, #f3fbf9);
-  box-shadow: 0 0 0 2px rgb(49 130 246 / 12%);
-}
-
-.host-shell--decision .decision-reference-card__recommendation {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #eed99b;
-  border-radius: 7px;
-  background: #fff9e8;
-  color: #c48700;
-}
-
-.decision-matrix-disclosure__affordance {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--tds-text-3);
-}
-
-.decision-matrix-disclosure__affordance .is-open-label {
-  display: none;
-}
-
-.decision-matrix-disclosure__affordance svg {
-  transition: transform 180ms ease;
-}
-
-.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance .is-closed-label {
-  display: none;
-}
-
-.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance .is-open-label {
-  display: inline;
-}
-
-.decision-matrix-disclosure[open] .decision-matrix-disclosure__affordance svg {
-  transform: rotate(180deg);
 }
 
 .host-shell--create .create-progress {
@@ -15426,7 +14128,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 #root
   :where(
     .decision-reference-card__copy small,
-    .decision-reference-candidates > header span,
     .decision-matrix th,
     .decision-matrix th small,
     .decision-matrix-disclosure footer span,
@@ -15640,56 +14341,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   }
 }
 
-/* Custom recipient checkbox; the native input remains the semantic control. */
-.request-recipient-option {
-  position: relative;
-  grid-template-columns: 20px minmax(0, 1fr);
-}
-
-.request-recipient-option input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.request-recipient-check {
-  width: 20px;
-  height: 20px;
-  display: inline-grid;
-  place-items: center;
-  border: 1.5px solid #c7d1dc;
-  border-radius: 6px;
-  background: #fff;
-  color: transparent;
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.request-recipient-option:hover .request-recipient-check {
-  border-color: #8fa9c6;
-}
-
-.request-recipient-option:has(input:checked) .request-recipient-check {
-  border-color: var(--tds-blue);
-  background: var(--tds-blue);
-  color: #fff;
-  box-shadow: 0 0 0 3px rgb(49 130 246 / 10%);
-}
-
-.request-recipient-option:has(input:focus-visible) {
-  outline: 3px solid rgb(49 130 246 / 22%);
-  outline-offset: 2px;
-}
-
 /* Elevation scale for host coordination surfaces. */
 .host-shell--waiting,
 .host-shell--decision {
@@ -15697,26 +14348,16 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
 }
 
 .host-shell--waiting .waiting-card,
-.host-shell--decision .decision-board,
-.host-shell--decision .request-recipient-panel {
+.host-shell--decision .decision-board {
   box-shadow: var(--meetcue-elevation-primary);
 }
 
 .host-shell--waiting :where(.waiting-overview, .waiting-response-row, .waiting-demo-card),
 .host-shell--decision
   :where(
-    .decision-reference-card,
-    .decision-reference-detail,
-    .decision-state-panel,
-    .decision-response-disclosure,
-    .candidate-calendar-disclosure,
-    .request-recipient-option
+    .candidate-calendar-disclosure
   ) {
   box-shadow: none;
-}
-
-.host-shell--decision .request-recipient-option:has(input:checked) {
-  box-shadow: inset 0 0 0 1px var(--tds-blue);
 }
 
 @media (max-width: 760px) {
@@ -16277,36 +14918,6 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   }
 }
 
-/* Portaled request dialog must live above every host-page stacking context. */
-body > .request-recipient-modal {
-  position: fixed;
-  z-index: 10000;
-  inset: 0;
-  width: 100vw;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 24px;
-  background: rgb(17 24 39 / 48%);
-  backdrop-filter: none;
-  isolation: isolate;
-}
-
-body > .request-recipient-modal .request-recipient-panel {
-  position: relative;
-  z-index: 1;
-  width: min(680px, 100%);
-  max-height: calc(100dvh - 48px);
-  overflow-y: auto;
-  border: 1px solid #e5e8eb;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 24px 72px rgb(15 23 42 / 24%);
-  backdrop-filter: none;
-  isolation: isolate;
-}
-
 /* The meeting brief form should use the full inner width of its card. */
 .host-shell--create .create-workflow--meeting .meeting-brief-fields,
 .host-shell--create .create-workflow--meeting .create-title-field,
@@ -16315,34 +14926,6 @@ body > .request-recipient-modal .request-recipient-panel {
 .host-shell--create .create-workflow--meeting .reference-source-panel {
   width: 100%;
   max-width: none;
-}
-
-@media (max-width: 760px) {
-  body > .request-recipient-modal {
-    place-items: end center;
-    padding: 16px 0 0;
-  }
-
-  body > .request-recipient-modal .request-recipient-panel {
-    width: 100%;
-    max-height: min(88dvh, 760px);
-    padding-bottom: calc(22px + env(safe-area-inset-bottom));
-    border-radius: 20px 20px 0 0;
-  }
-}
-
-@media (max-width: 760px) {
-  .request-recipient-modal {
-    align-items: end;
-    padding: 16px 0 0;
-  }
-
-  .request-recipient-modal .request-recipient-panel {
-    width: 100%;
-    max-height: min(88dvh, 760px);
-    padding-bottom: calc(22px + env(safe-area-inset-bottom));
-    border-radius: 20px 20px 0 0;
-  }
 }
 
 .participant-block-editor {
@@ -16652,34 +15235,9 @@ body > .request-recipient-modal .request-recipient-panel {
 
 /* Host bento depth belongs to information tiles, not the workspace canvas. */
 .host-shell--decision {
-  --meetcue-elevation-tile: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);
+  --meetcue-elevation-tile: var(--mc-shadow-decision-tile);
 }
 
 .host-shell--decision .decision-board {
   box-shadow: none;
-}
-
-.host-shell--decision .decision-reference-card,
-.host-shell--decision .decision-state-panel,
-.host-shell--decision .decision-matrix-disclosure,
-.host-shell--decision .request-recipient-panel {
-  box-shadow: var(--meetcue-elevation-tile);
-}
-
-.host-shell--decision .decision-reference-card.is-selected {
-  box-shadow:
-    0 6px 18px rgb(49 130 246 / 7%),
-    0 0 0 1px rgb(49 130 246 / 16%);
-}
-
-.host-shell--decision .decision-reference-detail,
-.host-shell--decision .decision-pending-group,
-.host-shell--decision .decision-pending-person,
-.host-shell--decision .decision-optional-people,
-.host-shell--decision .request-recipient-option {
-  box-shadow: none;
-}
-
-.host-shell--decision .request-recipient-option:has(input:checked) {
-  box-shadow: inset 0 0 0 1px var(--tds-blue);
 }

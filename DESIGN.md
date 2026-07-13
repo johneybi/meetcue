@@ -1,28 +1,46 @@
-# Design System
+# MeetCue Design System
 
-상태: **시각 언어 실행 기준**  
-방향: TDS에서 영감을 받은 한국형 제품 UI  
-구현 기반: React + ASTRYX reset/theme/runtime
+상태: **현행 시각 언어의 단일 실행 기준 (v2)**
+
+방향: 빠르고 차분한 한국형 의사결정 제품 UI
+
+적용 범위: 구현 프레임워크와 무관한 시각·상호작용 계약
 
 ## 1. 문서 경계
 
 이 문서는 제품 기능, 화면 목록, 사용자 흐름, 정보 구조를 결정하지 않는다.
 
-- 제품 범위와 요구사항: `.local-docs/prd-v1.5.md`
+- 제출 범위: `.local-docs/p0-submission-scope-lock-v2.10.md`
+- 제품 범위와 요구사항: `.local-docs/prd-v2.2.1.md`
 - UX 구조와 반응형 동작: `UX-ARCHITECTURE.md`
 - 시각 언어와 컴포넌트 표현: `DESIGN.md`
+- 과거 디자인 방향의 채택·폐기 기록: `DESIGN-DECISIONS.md`
+- 리팩터링 중 보존·정상화 기준: `DESIGN-REFACTOR-BASELINE.md`
 
 PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그것을 어떤 위계, 밀도, 색상, 타이포그래피, 간격, 상태 표현으로 보여줄지 결정한다.
 
 ## 2. 구현 원칙
 
-- ASTRYX는 reset, theme runtime, 접근성 있는 기본 구현에 사용할 수 있다.
-- 시각 기준은 이 문서의 TDS-inspired 토큰과 규칙이다.
-- ASTRYX 기본 외형이 이 문서와 충돌하면 이 문서의 시각 규칙을 따른다.
+- 이 문서는 ASTRYX, Tailwind, shadcn/ui, OMD 또는 특정 생성 도구에 종속되지 않는다.
+- 라이브러리는 접근성 있는 동작과 구현 효율을 제공하며, MeetCue의 외형을 결정하지 않는다.
+- 시각 기준은 이 문서의 MeetCue 토큰과 규칙이다.
+- 라이브러리 기본 외형이 이 문서와 충돌하면 이 문서의 시각 규칙을 따른다.
 - 공식 Toss 로고, 브랜드 마크, 독점 에셋은 사용하지 않는다.
 - 공식 TDS 패키지를 설치하거나 비공개 구현을 가정하지 않는다.
 - 새 색상과 간격을 컴포넌트 안에 직접 추가하지 않는다. 먼저 공통 토큰으로 정의한다.
 - 구조 문제를 padding, shadow, 임의의 max-width로 숨기지 않는다.
+- 기존 화면은 참고 자료이지 명세가 아니다. 의도적인 UX와 시각 결정만 보존하고 CSS 충돌로 생긴 결과는 정상화한다.
+
+디자인 근거의 우선순위:
+
+1. 사용자가 승인한 현재 제품 결정
+2. 이 문서
+3. `UX-ARCHITECTURE.md`의 정보 위계와 반응형 계약
+4. `DESIGN-REFACTOR-BASELINE.md`에서 보존 대상으로 판정한 현재 화면
+5. TDS에서 확인한 일반 원칙
+6. OMD, Creative Production 무드보드, Figma, 과거 QA 산출물
+
+하위 근거는 상위 근거를 덮어쓸 수 없다.
 
 ## 3. 스타일 방향
 
@@ -57,46 +75,48 @@ PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그
 
 ## 4. 색상 토큰
 
+토큰 이름은 MeetCue가 소유한다. 리팩터링 중에는 기존 `--tds-*` 변수를 아래 토큰의 호환 alias로만 유지하고, 새 컴포넌트에서는 사용하지 않는다.
+
 ### Foundation
 
 ```css
---tds-bg: #f8f9fa;
---tds-surface: #ffffff;
---tds-subtle: #f2f4f6;
---tds-pressed: #e5e8eb;
---tds-border: #e5e8eb;
---tds-border-strong: #d1d6db;
+--mc-color-canvas: #f6f8fb;
+--mc-color-surface: #ffffff;
+--mc-color-surface-subtle: #f4f7fb;
+--mc-color-surface-pressed: #e8edf4;
+--mc-color-border: #e7ecf3;
+--mc-color-border-strong: #cfd8e5;
 ```
 
 ### Text
 
 ```css
---tds-text: #191f28;
---tds-text-2: #333d4b;
---tds-text-3: #4e5968;
---tds-muted: #6b7684;
---tds-placeholder: #8b95a1;
---tds-disabled: #b0b8c1;
+--mc-color-text-primary: #151b24;
+--mc-color-text-secondary: #2f3744;
+--mc-color-text-tertiary: #46515f;
+--mc-color-text-muted: #596574;
+--mc-color-text-placeholder: #626d7c;
+--mc-color-disabled: #b0b8c1;
 ```
 
 ### Primary
 
 ```css
---tds-blue-soft: #e8f3ff;
---tds-blue-soft-strong: #c9e2ff;
---tds-blue: #3182f6;
---tds-blue-pressed: #1b64da;
+--mc-color-accent-soft: #e8f3ff;
+--mc-color-accent-soft-strong: #c9e2ff;
+--mc-color-accent: #1f6feb;
+--mc-color-accent-pressed: #1558c9;
 ```
 
 ### Semantic
 
 ```css
---tds-success: #00b894;
---tds-success-soft: #e6f8f3;
---tds-warning: #ffb020;
---tds-warning-soft: #fff4d6;
---tds-danger: #f04452;
---tds-danger-soft: #ffecef;
+--mc-color-success: #007f65;
+--mc-color-success-soft: #e6f8f3;
+--mc-color-warning: #9a5700;
+--mc-color-warning-soft: #fff4d6;
+--mc-color-danger: #c23542;
+--mc-color-danger-soft: #ffecef;
 ```
 
 색상 규칙:
@@ -192,6 +212,7 @@ Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
 - 관련 없는 컨트롤을 한 행에 억지로 배치하지 않는다.
 - 같은 의미 수준은 같은 간격을 사용한다.
 - 필드마다 서로 다른 max-width를 부여해 가시적인 다중 컨테이너를 만들지 않는다.
+- 리팩터링 중 기존 픽셀을 보존하기 위한 `--mc-space-*` 호환 alias는 4px 스케일 밖의 값을 가질 수 있다. 이는 새 컴포넌트가 사용할 간격 스케일이 아니며, 시각 정상화 단계에서 별도로 검토한다.
 
 ## 7. Radius
 
@@ -212,6 +233,7 @@ Badge / pill: 999px
 - 모든 요소를 pill로 만들지 않는다.
 - 큰 표면에서 radius를 제거하지 않는다.
 - 같은 계층의 컴포넌트는 같은 radius를 사용한다.
+- 기존 외형 보존용 컴포넌트 alias는 9px·11px 같은 과도기 값을 유지할 수 있다. 구조 이전과 분리된 시각 정상화가 승인되기 전에는 이를 8px·12px로 반올림하지 않는다.
 
 ## 8. 경계와 높이
 
@@ -241,19 +263,19 @@ Badge / pill: 999px
 
 ### Primary Button
 
-- 배경: `--tds-blue`
+- 배경: `--mc-color-accent`
 - 텍스트: 흰색
 - 텍스트 크기: 15px / 22px, 600
 - 높이: PC 48px, 모바일 52~56px
 - radius: 8px
 - shadow 없음
-- hover / pressed: `--tds-blue-pressed`
-- disabled: `--tds-disabled`
+- hover / pressed: `--mc-color-accent-pressed`
+- disabled: `--mc-color-disabled`
 
 ### Secondary Button
 
-- 배경: `--tds-subtle`
-- 텍스트: `--tds-text-2`
+- 배경: `--mc-color-surface-subtle`
+- 텍스트: `--mc-color-text-secondary`
 - 텍스트 크기: 15px / 22px, 600
 - Primary와 같은 높이와 radius
 - 테두리는 필요한 경우에만 사용
@@ -277,10 +299,10 @@ Badge / pill: 999px
 
 - 높이: 48~56px
 - radius: 8px
-- 배경: 흰색 또는 `--tds-bg`
-- border: `--tds-border-strong`
+- 배경: 흰색 또는 `--mc-color-canvas`
+- border: `--mc-color-border-strong`
 - focus: 파란 border와 부드러운 focus ring
-- placeholder: `--tds-placeholder`
+- placeholder: `--mc-color-text-placeholder`
 - 라벨은 항상 시각적으로 유지한다.
 - placeholder와 도움말이 같은 내용을 반복하지 않는다.
 
@@ -296,7 +318,7 @@ Badge / pill: 999px
 - 독립적으로 비교되는 반복 객체에만 사용한다.
 - 배경: 흰색
 - radius: 12px
-- border: `--tds-border`
+- border: `--mc-color-border`
 - padding: 16~24px
 - 기본 shadow 없음
 - 카드 내부에 페이지 섹션용 카드를 다시 넣지 않는다.

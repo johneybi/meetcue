@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-07-13 - 디자인 시스템 리팩터링 기반 정리
+
+- 디자인 권위를 `DESIGN.md`로 단일화하고 TDS, ASTRYX, OMD, Creative Production 산출물의 채택·폐기 범위를 분리했다.
+- Tailwind CSS와 shadcn 호환 primitive 기반을 추가하고 MeetCue 소유의 `--mc-*` 토큰을 정의했다.
+- ASTRYX와 레거시 전역 CSS가 남아 있는 동안 Tailwind Preflight를 제외해 기존 화면의 reset 소유권을 유지했다.
+- 첫 결과 화면 이전은 시각 동등성을 지키지 못해 되돌렸고, 구조 추출 → 토큰 alias → 컴포넌트별 스타일 이전 순서의 보존 게이트를 추가했다.
+- 전체 후보 비교 표를 DOM과 class name 변경 없이 `HostDecisionMatrix`로 분리해 첫 구조 보존 단위를 만들었다.
+- 현재 화면의 실제 색을 MeetCue foundation 토큰 기준값으로 반영하고, 비교 표의 색상·간격·radius·elevation을 값이 동일한 `--mc-*` alias로 치환했다.
+- 비교 표 전용 selector와 반응형 규칙을 `HostDecisionMatrix.css`로 이동하고 `App.css`에는 공유 타이포그래피 규칙만 남겼다.
+- 추천 후보 목록을 `HostCandidateShortlist`로 분리하고 카드·상태·추천 표식·모바일 가로 목록 스타일을 전용 CSS와 동일 값 토큰으로 이전했다.
+- 현재 DOM에서 사용되지 않던 추천 카드의 과거 rank·status icon cascade를 제거했다.
+- 선택 후보의 판정 문장·일정 부담·응답 현황·다음 행동을 `HostCandidateDetail`로 구조 분리하고 기존 상태 분기와 class 계약을 유지했다.
+- 선택 후보 상세의 상태색·간격·radius를 동일 값 토큰으로 치환하고 전용 `HostCandidateDetail.css`로 스타일 소유권을 이전했다.
+- 현재 DOM에서 사라진 과거 상세 요약·응답 disclosure cascade를 제거했다.
+- 응답 요청 포털을 `HostResponseRequestDialog`로 분리하고 선택·닫기·포커스 복원 계약을 유지했다.
+- 응답 요청 dialog와 커스텀 체크박스의 최종 계산값을 `--mc-request-*` 토큰과 전용 CSS로 통합하고 중간 glass·host override를 제거했다.
+- 전체 후보 날짜·시간 지도를 `HostCandidateCalendar`로 분리하고 날짜 선택, 후보 선택, 추천·상태 연결 계산을 컴포넌트 경계로 옮겼다.
+- 후보 날짜 포맷과 media query를 작은 공용 유틸리티로 분리하고 외부 후보 변경 시 지도 날짜가 함께 동기화되도록 상태 계약을 정리했다.
+- 추천 후보 헤더의 반복 설명과 `추천 개수 · 전체 개수`를 제거하고, 추천 근거는 접근 가능한 정보 툴팁으로 전환해 좁은 후보 열의 정보 밀도를 낮췄다.
+
 ## 2026-07-12 - 확정 전 일정 부담 표시
 
 - READY 후보 상세에서 일정 조정 약속과 기피 표시를 사람 이름으로 확인할 수 있게 했다.

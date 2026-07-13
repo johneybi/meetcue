@@ -1,0 +1,215 @@
+.host-shell--decision .decision-reference-candidates {
+  grid-area: candidates;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--mc-space-1-5);
+  padding: 0;
+}
+
+.host-shell--decision .decision-reference-candidates > header {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--mc-space-0-5);
+}
+
+.host-shell--decision .decision-reference-candidates > header strong {
+  color: var(--mc-color-text-primary);
+  font-size: 13px;
+}
+
+.host-shell--decision .decision-reference-candidates > header > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-1-25);
+}
+
+.host-shell--decision .candidate-ranking-help {
+  position: relative;
+  display: inline-flex;
+}
+
+.host-shell--decision .candidate-ranking-help > button {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mc-radius-candidate-recommendation);
+  background: transparent;
+  color: var(--mc-color-text-muted);
+}
+
+.host-shell--decision .candidate-ranking-help > button:hover {
+  background: var(--mc-color-surface-pressed);
+  color: var(--mc-color-text-secondary);
+}
+
+.host-shell--decision .candidate-ranking-help > button:focus-visible {
+  outline: 2px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 1px;
+}
+
+.host-shell--decision .candidate-ranking-help > [role='tooltip'] {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--mc-space-1-25));
+  left: 0;
+  width: 248px;
+  padding: var(--mc-space-2) var(--mc-space-2-5);
+  border: 1px solid var(--mc-color-border);
+  border-radius: var(--mc-radius-candidate-card);
+  background: var(--mc-color-text-primary);
+  color: var(--mc-color-surface);
+  box-shadow: var(--mc-shadow-floating);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.host-shell--decision .candidate-ranking-help:hover > [role='tooltip'],
+.host-shell--decision .candidate-ranking-help:focus-within > [role='tooltip'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.host-shell--decision .decision-reference-card {
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  padding: 0;
+  border: 1px solid var(--mc-candidate-card-border);
+  border-radius: var(--mc-radius-candidate-card);
+  background: var(--mc-candidate-card-surface);
+  box-shadow: var(--mc-shadow-decision-tile);
+}
+
+.host-shell--decision .decision-reference-card.is-selected {
+  border-color: var(--mc-candidate-card-selected-border);
+  background: var(--mc-candidate-card-selected-surface);
+  box-shadow: var(--mc-shadow-candidate-card-selected);
+}
+
+.host-shell--decision .decision-reference-card__select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 68px;
+  display: block;
+  padding: var(--mc-space-2-75) var(--mc-space-9-5) var(--mc-space-2-5)
+    var(--mc-space-3-75);
+  border: 0;
+  background: transparent;
+  color: var(--mc-color-text-primary);
+  text-align: left;
+}
+
+.host-shell--decision .decision-reference-card__copy {
+  min-width: 0;
+  display: grid;
+  gap: var(--mc-space-0-75);
+}
+
+.host-shell--decision .decision-reference-card__copy > strong {
+  overflow: hidden;
+  color: var(--mc-color-text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-shell--decision .decision-reference-card__copy > span {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-1-25);
+}
+
+.host-shell--decision .decision-reference-card__copy small {
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--mc-color-text-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 17px;
+}
+
+.host-shell--decision .decision-reference-card.is-success .decision-reference-card__copy small {
+  color: var(--mc-candidate-card-positive);
+}
+
+.host-shell--decision .decision-reference-card.is-info .decision-reference-card__copy small {
+  color: var(--mc-candidate-card-pending);
+}
+
+.host-shell--decision .decision-reference-card.is-danger .decision-reference-card__copy small {
+  color: var(--mc-candidate-card-negative);
+}
+
+.host-shell--decision .decision-reference-card__copy em {
+  margin-top: var(--mc-space-0-5);
+  color: var(--mc-color-text-tertiary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 17px;
+}
+
+.host-shell--decision .decision-reference-card > .primary-button {
+  display: none;
+}
+
+.host-shell--decision .decision-reference-card__recommendation {
+  position: absolute;
+  top: var(--mc-space-2-5);
+  right: var(--mc-space-2-5);
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--mc-candidate-card-recommend-border);
+  border-radius: var(--mc-radius-candidate-recommendation);
+  background: var(--mc-candidate-card-recommend-surface);
+  color: var(--mc-candidate-card-recommend-text);
+}
+
+@media (max-width: 760px) {
+  .host-shell--decision .decision-reference-candidates {
+    display: flex;
+    overflow-x: auto;
+    gap: var(--mc-space-2);
+    padding-bottom: var(--mc-space-0-75);
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .host-shell--decision .decision-reference-candidates::-webkit-scrollbar {
+    display: none;
+  }
+
+  .host-shell--decision .decision-reference-candidates > header {
+    display: none;
+  }
+
+  .host-shell--decision .decision-reference-card {
+    flex: 0 0 214px;
+    scroll-snap-align: start;
+  }
+
+  .host-shell--decision .decision-reference-card__select {
+    min-height: 72px;
+  }
+}

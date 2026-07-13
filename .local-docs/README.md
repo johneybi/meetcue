@@ -25,6 +25,8 @@ to different points in the product's history.
 - `../UX-ARCHITECTURE.md`: current IA, state transitions, layout, navigation, and responsive behavior.
 - `../DESIGN.md`: visual design principles. Its PRD reference records the context in which the design
   language was developed; it is not the source of current product requirements.
+- `../DESIGN-DECISIONS.md`: adopted and rejected decisions from TDS, ASTRYX, OMD, moodboards, and prior visual artifacts.
+- `../DESIGN-REFACTOR-BASELINE.md`: preservation, normalization, migration, and screen-order contract for the post-submission refactor.
 
 ## Previous working history
 
@@ -62,7 +64,8 @@ For implementation work, read:
 10. `time-quantum-decision-v2.2.md`
 11. `../UX-ARCHITECTURE.md`
 12. `../DESIGN.md`
-13. the current code
+13. `../DESIGN-DECISIONS.md` and `../DESIGN-REFACTOR-BASELINE.md` when changing visual implementation
+14. the current code
 
 Read v2.8 and v2.9 only when working on post-P0 account and delivery exploration.
 

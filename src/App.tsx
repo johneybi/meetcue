@@ -1,5 +1,4 @@
 import {
-  Fragment,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -27,7 +26,6 @@ import {
   PanelsTopLeft,
   Plus,
   RotateCcw,
-  Star,
   X,
 } from 'lucide-react'
 import {
@@ -51,14 +49,12 @@ import {
 } from './domain/evaluation'
 import { createDraftMeeting, createPrototypeMeeting } from './domain/mockMeeting'
 import {
-  candidateStatusLabels,
   formatCandidateTime,
   formatDeadline,
   formatMeetingDuration,
   formatSchedulingWindow,
   participantRoleLabels,
   type AvailabilityWindow,
-  type CandidateStatus,
   type ChangeLog,
   type Meeting,
   type MeetingDuration,
@@ -69,6 +65,17 @@ import {
   type SchedulingWindow,
 } from './domain/meeting'
 import { ParticipantTimeGrid } from './components/ParticipantTimeGrid'
+import { HostCandidateShortlist } from './components/HostCandidateShortlist'
+import { HostCandidateDetail } from './components/HostCandidateDetail'
+import { HostDecisionMatrix } from './components/HostDecisionMatrix'
+import { HostResponseRequestDialog } from './components/HostResponseRequestDialog'
+import { HostCandidateCalendar } from './components/HostCandidateCalendar'
+import { useMediaQuery } from './hooks/useMediaQuery'
+import {
+  formatCandidateFullDate,
+  formatCandidateStartTime,
+  getCandidateDateKey,
+} from './lib/candidateTime'
 import './App.css'
 
 const meetCueEmblemUrl = `${import.meta.env.BASE_URL}brand/meetcue-emblem-64.png`
@@ -260,7 +267,6 @@ const participantResponseLabels: Record<ResponseValue, string> = {
   adjustable: '조정하면 가능해요',
   unavailable: '참석하기 어려워요',
 }
-const candidateStatusOrder: CandidateStatus[] = ['ready', 'pending', 'impossible']
 
 function getSimulatedCalendarEvent(slot: AvailabilitySlot) {
   const date = new Date(slot.startAt)
@@ -2394,81 +2400,16 @@ function HostDecideScreen({
   const [requestCandidateId, setRequestCandidateId] = useState<string | null>(null)
   const recommendedEvaluation = selectedEvaluation
   const systemRecommendedEvaluation = evaluations[0] ?? selectedEvaluation
-  const recommendedDateKey = getCandidateDateKey(recommendedEvaluation.candidate.startAt)
-  const isMobileDecisionMap = useMediaQuery('(max-width: 760px)')
-  const [selectedDateKey, setSelectedDateKey] = useState(recommendedDateKey)
-  const candidateMapRef = useRef<HTMLElement>(null)
   const readyCount = evaluations.filter((evaluation) => evaluation.status === 'ready').length
-  const pendingCount = evaluations.filter((evaluation) => evaluation.status === 'pending').length
-  const impossibleCount = evaluations.filter(
-    (evaluation) => evaluation.status === 'impossible',
-  ).length
-  const dateGroups = Array.from(
-    evaluations.reduce((groups, evaluation) => {
-      const dateKey = getCandidateDateKey(evaluation.candidate.startAt)
-      const current = groups.get(dateKey) ?? []
-      current.push(evaluation)
-      groups.set(dateKey, current)
-      return groups
-    }, new Map<string, CandidateEvaluation[]>()),
-  ).sort(([left], [right]) => left.localeCompare(right))
-  const visibleDateGroups = isMobileDecisionMap
-    ? dateGroups.filter(([dateKey]) => dateKey === selectedDateKey)
-    : dateGroups
-  const candidateMinuteValues = evaluations.map((evaluation) =>
-    getCandidateMinuteOfDay(evaluation.candidate.startAt),
-  )
-  const firstCandidateMinute = Math.min(...candidateMinuteValues)
-  const lastCandidateMinute = Math.max(...candidateMinuteValues)
-  const candidateMapMinutes = Array.from(
-    { length: Math.floor((lastCandidateMinute - firstCandidateMinute) / 30) + 1 },
-    (_, index) => firstCandidateMinute + index * 30,
-  )
   const shortlistEvaluations = selectCandidateShortlist(evaluations, 6)
   const isSystemRecommendation =
     systemRecommendedEvaluation.status === 'ready' &&
     hasSameRecommendationPriority(recommendedEvaluation, systemRecommendedEvaluation)
-  const canConfirm = recommendedEvaluation.status === 'ready'
   const fallbackEvaluation = evaluations.find(
     (evaluation) =>
       evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
       evaluation.status === 'ready',
   )
-  const requiredCount = meeting.participants.filter(
-    (participant) => participant.role === 'required',
-  ).length
-  const criteriaSummary =
-    meeting.preset === 'all_hands'
-      ? `주최자 포함 ${meeting.participants.length}명 모두 참석`
-      : `꼭 참석해야 하는 사람 ${requiredCount}명 · 최소 ${meeting.minAttendeeCount}명 참석`
-  const selectedResponseRows = recommendedEvaluation.responseDetails
-  const selectedPendingCount = selectedResponseRows.filter(
-    (detail) => detail.state === 'unknown',
-  ).length
-  const adjustmentParticipants = recommendedEvaluation.adjustmentCommitParticipants
-  const avoidPreferredParticipants = selectedResponseRows
-    .filter(
-      (detail) =>
-        (detail.state === 'available' || detail.state === 'adjustment_commit') &&
-        (detail.response?.preferenceTags?.length ?? 0) > 0,
-    )
-    .map((detail) => detail.participant)
-  const statusTitle =
-    recommendedEvaluation.status === 'ready'
-      ? `${recommendedEvaluation.availableCount}명 참석 가능, 지금 확정할 수 있어요`
-      : recommendedEvaluation.status === 'pending'
-        ? recommendedEvaluation.requiredPending.length > 0
-          ? `${recommendedEvaluation.requiredPending.map((participant) => participant.name).join(', ')}님의 가능 응답이 필요해요`
-          : `아직 응답하지 않은 사람 중 ${recommendedEvaluation.positiveResponsesNeededAfterRequiredYes}명의 ‘가능해요’ 응답이 필요해요`
-        : recommendedEvaluation.requiredUnavailable.length > 0
-          ? `꼭 참석해야 하는 사람의 시간이 맞지 않아요`
-          : `최소 ${meeting.minAttendeeCount}명을 채울 수 없어요`
-  const statusDescription =
-    recommendedEvaluation.status === 'ready'
-      ? `필수 참석자 조건과 최소 ${meeting.minAttendeeCount}명 기준을 충족했어요.`
-      : recommendedEvaluation.status === 'pending'
-        ? recommendedEvaluation.reasons.join(' ')
-        : recommendedEvaluation.reasons.join(' ')
   const candidateStatusSummary = `추천 ${shortlistEvaluations.length}개 · 가능한 시간 ${readyCount}개`
 
   return (
@@ -2482,321 +2423,44 @@ function HostDecideScreen({
           <p>{candidateStatusSummary}</p>
         </header>
 
-        <div className="decision-reference-candidates" aria-label="후보 시간 목록">
-          <header>
-            <div>
-              <strong>추천 후보</strong>
-              <small>참석 기준을 충족한 뒤 일정 조정과 기피 표시가 적은 순이에요.</small>
-            </div>
-            <span>
-              {shortlistEvaluations.length}개 · 전체 {evaluations.length}개
-            </span>
-          </header>
-          {shortlistEvaluations.map((evaluation) => {
-            const isSelected = evaluation.candidate.id === recommendedEvaluation.candidate.id
+        <HostCandidateShortlist
+          meeting={meeting}
+          evaluations={shortlistEvaluations}
+          selectedEvaluation={recommendedEvaluation}
+          systemRecommendedEvaluation={systemRecommendedEvaluation}
+          onSelect={(evaluation) => {
+            onSelectCandidate(evaluation.candidate.id)
+            setRequestCandidateId(null)
+          }}
+          onConfirm={onConfirm}
+          onRequest={setRequestCandidateId}
+          onShowAlternative={() =>
+            fallbackEvaluation != null
+              ? onSelectCandidate(fallbackEvaluation.candidate.id)
+              : onReviewCriteria()
+          }
+        />
 
-            return (
-              <article
-                className={`decision-reference-card is-${getStatusTone(evaluation.status)}${isSelected ? ' is-selected' : ''}`}
-                key={evaluation.candidate.id}
-              >
-                <button
-                  className="decision-reference-card__select"
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    onSelectCandidate(evaluation.candidate.id)
-                    setSelectedDateKey(getCandidateDateKey(evaluation.candidate.startAt))
-                    setRequestCandidateId(null)
-                  }}
-                >
-                  <span className="decision-reference-card__copy">
-                    <strong>{formatCandidateTime(evaluation.candidate)}</strong>
-                    <span>
-                      <small>{candidateStatusLabels[evaluation.status]}</small>
-                    </span>
-                    <em>
-                      {evaluation.availableCount}/{meeting.participants.length}명 가능
-                    </em>
-                  </span>
-                  {systemRecommendedEvaluation.status === 'ready' &&
-                  hasSameRecommendationPriority(evaluation, systemRecommendedEvaluation) ? (
-                    <span
-                      className="decision-reference-card__recommendation"
-                      aria-label="같은 우선순위의 추천 후보"
-                    >
-                      <Star aria-hidden="true" size={15} fill="currentColor" />
-                    </span>
-                  ) : null}
-                </button>
-                {isSelected ? (
-                  canConfirm ? (
-                    <button
-                      className="primary-button"
-                      type="button"
-                      onClick={() => onConfirm(evaluation.candidate.id)}
-                    >
-                      이 시간으로 정하기
-                    </button>
-                  ) : evaluation.status === 'pending' ? (
-                    <button
-                      className="primary-button"
-                      type="button"
-                      onClick={() => setRequestCandidateId(evaluation.candidate.id)}
-                    >
-                      응답 요청하기
-                    </button>
-                  ) : (
-                    <button
-                      className="primary-button"
-                      type="button"
-                      onClick={() =>
-                        fallbackEvaluation != null
-                          ? onSelectCandidate(fallbackEvaluation.candidate.id)
-                          : onReviewCriteria()
-                      }
-                    >
-                      다른 시간 보기
-                    </button>
-                  )
-                ) : null}
-              </article>
-            )
-          })}
-        </div>
-
-        <section
-          className={`decision-reference-detail is-${getStatusTone(recommendedEvaluation.status)}`}
-          aria-labelledby="selected-time-title"
-        >
-          <header className="decision-focus-head">
-            <div>
-              <span>선택한 후보</span>
-              <h2 id="selected-time-title">
-                {formatCandidateTime(recommendedEvaluation.candidate)}
-              </h2>
-            </div>
-            {isSystemRecommendation ? <strong>시스템 추천</strong> : null}
-          </header>
-
-          <div className="decision-state-panel">
-            <span className="decision-state-panel__label">
-              {candidateStatusLabels[recommendedEvaluation.status]}
-            </span>
-            <h3>{statusTitle}</h3>
-            <p>{statusDescription}</p>
-            {recommendedEvaluation.status === 'ready' ? (
-              <div className="decision-burden-summary" aria-label="확정 전 확인할 일정 부담">
-                <div className={adjustmentParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
-                  {adjustmentParticipants.length > 0 ? (
-                    <CalendarDays aria-hidden="true" size={16} />
-                  ) : (
-                    <Check aria-hidden="true" size={16} />
-                  )}
-                  <span>
-                    {adjustmentParticipants.length > 0
-                      ? `${formatParticipantSummary(adjustmentParticipants)} 기존 일정을 옮겨 참석해요.`
-                      : '일정 변경 없이 참석할 수 있어요.'}
-                  </span>
-                </div>
-                <div className={avoidPreferredParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
-                  {avoidPreferredParticipants.length > 0 ? (
-                    <Clock3 aria-hidden="true" size={16} />
-                  ) : (
-                    <Check aria-hidden="true" size={16} />
-                  )}
-                  <span>
-                    {avoidPreferredParticipants.length > 0
-                      ? `${formatParticipantSummary(avoidPreferredParticipants)} 가능하면 피하고 싶다고 표시했어요.`
-                      : '피하고 싶은 표시가 없어요.'}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-            <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
-              <span className="is-positive">
-                <strong>{recommendedEvaluation.availableCount}명</strong> 가능
-              </span>
-              <span className="is-negative">
-                <strong>{recommendedEvaluation.unavailableCount}명</strong> 참석 어려움
-              </span>
-              <span className="is-unknown">
-                <strong>{selectedPendingCount}명</strong> 응답 전
-              </span>
-            </div>
-            {canConfirm ? (
-              <button
-                className="primary-button"
-                type="button"
-                onClick={() => onConfirm(recommendedEvaluation.candidate.id)}
-              >
-                {formatCandidateTime(recommendedEvaluation.candidate)} 확정하기
-              </button>
-            ) : null}
-          </div>
-
-          {recommendedEvaluation.status === 'pending' ? (
-            <div className="decision-pending-groups">
-              {recommendedEvaluation.requiredPending.length > 0 ? (
-                <section className="decision-pending-group is-required">
-                  <header>
-                    <strong>
-                      응답이 꼭 필요한 사람 · {recommendedEvaluation.requiredPending.length}명
-                    </strong>
-                  </header>
-                  {recommendedEvaluation.requiredPending.map((participant) => (
-                    <div className="decision-pending-person" key={participant.id}>
-                      <div>
-                        <strong>{participant.name}</strong>
-                        <small>꼭 참석해야 하는 사람 · 응답 전</small>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setRequestCandidateId(recommendedEvaluation.candidate.id)}
-                      >
-                        다시 요청하기
-                      </button>
-                    </div>
-                  ))}
-                </section>
-              ) : null}
-              {recommendedEvaluation.optionalPendingPool.length > 0 ? (
-                <section className="decision-pending-group">
-                  <header>
-                    <strong>
-                      아직 응답하지 않은 사람 · {recommendedEvaluation.optionalPendingPool.length}명
-                    </strong>
-                    {recommendedEvaluation.positiveResponsesNeededAfterRequiredYes === 0 ? (
-                      <span>추가 필요 없음</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setRequestCandidateId(recommendedEvaluation.candidate.id)}
-                      >
-                        응답 요청하기
-                      </button>
-                    )}
-                  </header>
-                  <div className="decision-optional-people">
-                    {recommendedEvaluation.optionalPendingPool.map((participant) => (
-                      <span key={participant.id}>{participant.name}</span>
-                    ))}
-                  </div>
-                  <p>
-                    {recommendedEvaluation.positiveResponsesNeededAfterRequiredYes === 0
-                      ? '필수 참석자의 응답이 가능이면 이 그룹의 응답 없이도 확정할 수 있어요.'
-                      : `이 중 ${recommendedEvaluation.positiveResponsesNeededAfterRequiredYes}명에게 ‘가능해요’ 응답을 받아야 해요.`}
-                  </p>
-                </section>
-              ) : null}
-            </div>
-          ) : recommendedEvaluation.status === 'impossible' ? (
-            <div className="decision-impossible-guide">
-              <strong>다른 후보를 검토해 보세요</strong>
-              <p>왼쪽 후보 목록에서 다른 시간을 선택하면 같은 기준으로 바로 비교할 수 있어요.</p>
-              <button
-                type="button"
-                onClick={() =>
-                  fallbackEvaluation != null
-                    ? onSelectCandidate(fallbackEvaluation.candidate.id)
-                    : onReviewCriteria()
-                }
-              >
-                {fallbackEvaluation != null ? '지금 정할 수 있는 시간 보기' : '참석 기준 다시 보기'}
-              </button>
-            </div>
-          ) : null}
-
-          <div className="decision-criteria-inline">
-            <span>참석 기준</span>
-            <strong>{criteriaSummary}</strong>
-            <button type="button" onClick={onReviewCriteria}>
-              수정
-            </button>
-          </div>
-        </section>
+        <HostCandidateDetail
+          meeting={meeting}
+          evaluation={recommendedEvaluation}
+          isSystemRecommendation={isSystemRecommendation}
+          fallbackEvaluation={fallbackEvaluation}
+          onConfirm={onConfirm}
+          onRequest={setRequestCandidateId}
+          onSelectCandidate={onSelectCandidate}
+          onReviewCriteria={onReviewCriteria}
+        />
       </section>
 
-      <details className="decision-matrix-disclosure" open>
-        <summary>
-          <div>
-            <span>참석 가능 현황</span>
-            <strong>전체 후보 비교</strong>
-          </div>
-          <span className="decision-matrix-disclosure__affordance">
-            <small className="is-closed-label">펼쳐 보기</small>
-            <small className="is-open-label">접기</small>
-            <ChevronDown aria-hidden="true" size={18} />
-          </span>
-        </summary>
-        <div className="decision-matrix-scroll">
-          <table className="decision-matrix">
-            <thead>
-              <tr>
-                <th scope="col">참석자</th>
-                {evaluations.map((evaluation) => (
-                  <th
-                    className={
-                      evaluation.candidate.id === recommendedEvaluation.candidate.id
-                        ? 'is-selected'
-                        : ''
-                    }
-                    key={evaluation.candidate.id}
-                    scope="col"
-                  >
-                    {formatCandidateTime(evaluation.candidate)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {meeting.participants.map((participant) => (
-                <tr key={participant.id}>
-                  <th scope="row">
-                    <strong>{participant.name}</strong>
-                    {participant.role === 'required' ? <small>필수</small> : null}
-                  </th>
-                  {evaluations.map((evaluation) => {
-                    const detail = evaluation.responseDetails.find(
-                      (item) => item.participant.id === participant.id,
-                    )
-                    const state = detail?.state
-                    return (
-                      <td
-                        className={`${evaluation.candidate.id === recommendedEvaluation.candidate.id ? 'is-selected ' : ''}is-${state ?? 'unknown'}`}
-                        key={evaluation.candidate.id}
-                        aria-label={
-                          state === 'available' || state === 'adjustment_commit'
-                            ? '가능'
-                            : state === 'unavailable'
-                              ? '참석 어려움'
-                              : '응답 전'
-                        }
-                      >
-                        {state === 'available' || state === 'adjustment_commit' ? (
-                          <Check size={16} />
-                        ) : state === 'unavailable' ? (
-                          <X size={16} />
-                        ) : (
-                          <Clock3 size={15} />
-                        )}
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <footer>
-          <span className="is-positive">가능</span>
-          <span className="is-negative">참석 어려움</span>
-          <span className="is-unknown">응답 전</span>
-        </footer>
-      </details>
+      <HostDecisionMatrix
+        meeting={meeting}
+        evaluations={evaluations}
+        selectedCandidateId={recommendedEvaluation.candidate.id}
+      />
 
       {requestCandidateId === recommendedEvaluation.candidate.id ? (
-        <ResponseRequestSelector
+        <HostResponseRequestDialog
           key={recommendedEvaluation.candidate.id}
           evaluation={recommendedEvaluation}
           onCancel={() => setRequestCandidateId(null)}
@@ -2830,301 +2494,16 @@ function HostDecideScreen({
         </div>
       ) : null}
 
-      <details className="candidate-calendar-disclosure" open={!isMobileDecisionMap}>
-        <summary>
-          <div>
-            <span>전체 {evaluations.length}개</span>
-            <strong>모든 시간 보기</strong>
-          </div>
-          <small>
-            {readyCount}개 확정 가능 · {pendingCount}개 응답 대기 · {impossibleCount}개 제외
-          </small>
-        </summary>
-        <section
-          className="candidate-calendar"
-          aria-labelledby="candidate-calendar-title"
-          ref={candidateMapRef}
-        >
-          <div className="candidate-comparison__head">
-            <div>
-              <span>전체 후보</span>
-              <h2 id="candidate-calendar-title">회의를 시작할 수 있는 구간을 한눈에 보세요</h2>
-            </div>
-            <div className="candidate-map-head-meta">
-              <small>{evaluations.length}개 시작 시각</small>
-              <div className="candidate-map-legend" aria-label="시간 지도 범례">
-                <span>
-                  <Check aria-hidden="true" size={14} />
-                  지금 결정
-                </span>
-                <span>
-                  <Clock3 aria-hidden="true" size={14} />
-                  응답 필요
-                </span>
-                <span>
-                  <X aria-hidden="true" size={14} />
-                  제외 권장
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="candidate-date-strip" aria-label="후보가 있는 날짜">
-            {dateGroups.map(([dateKey, dateEvaluations]) => {
-              const statuses = new Set(dateEvaluations.map((evaluation) => evaluation.status))
-              const isSelected = dateKey === selectedDateKey
-
-              return (
-                <button
-                  key={dateKey}
-                  type="button"
-                  className={isSelected ? 'is-selected' : ''}
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    setSelectedDateKey(dateKey)
-                    setRequestCandidateId(null)
-                  }}
-                >
-                  <span>{formatCandidateWeekday(dateKey)}</span>
-                  <strong>{formatCandidateDay(dateKey)}</strong>
-                  <small>{dateEvaluations.length}개 시간</small>
-                  <span
-                    className="candidate-date-dots"
-                    aria-label={formatDateStatusSummary(dateEvaluations)}
-                  >
-                    {candidateStatusOrder.map((status) =>
-                      statuses.has(status) ? (
-                        <i key={status} className={`is-${getStatusTone(status)}`} />
-                      ) : null,
-                    )}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div
-            className="candidate-decision-map"
-            style={{
-              gridTemplateColumns: `64px repeat(${visibleDateGroups.length}, minmax(120px, 1fr))`,
-            }}
-            aria-label="후보 시작 시각 지도"
-          >
-            <div className="candidate-decision-map__corner">시작</div>
-            {visibleDateGroups.map(([dateKey]) => (
-              <div className="candidate-decision-map__date" key={`head-${dateKey}`}>
-                <span>{formatCandidateWeekday(dateKey)}</span>
-                <strong>{formatCandidateDay(dateKey)}</strong>
-              </div>
-            ))}
-
-            {candidateMapMinutes.map((minutes) => (
-              <Fragment key={minutes}>
-                <div className="candidate-decision-map__time">
-                  {formatCandidateMinutes(minutes)}
-                </div>
-                {visibleDateGroups.map(([dateKey, dateEvaluations]) => {
-                  const evaluation = dateEvaluations.find(
-                    (candidate) => getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes,
-                  )
-
-                  if (evaluation == null) {
-                    return (
-                      <div
-                        className="candidate-decision-map__empty"
-                        key={`${dateKey}-${minutes}`}
-                      />
-                    )
-                  }
-
-                  const previous = dateEvaluations.find(
-                    (candidate) =>
-                      getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes - 30,
-                  )
-                  const next = dateEvaluations.find(
-                    (candidate) =>
-                      getCandidateMinuteOfDay(candidate.candidate.startAt) === minutes + 30,
-                  )
-                  const connectsBefore = hasSameDecisionBand(previous, evaluation)
-                  const connectsAfter = hasSameDecisionBand(next, evaluation)
-                  const isRecommended =
-                    systemRecommendedEvaluation.status === 'ready' &&
-                    hasSameRecommendationPriority(evaluation, systemRecommendedEvaluation)
-                  const isSelected = evaluation.candidate.id === recommendedEvaluation.candidate.id
-
-                  return (
-                    <button
-                      key={evaluation.candidate.id}
-                      type="button"
-                      className={`candidate-decision-map__slot is-${getStatusTone(evaluation.status)}${
-                        connectsBefore ? ' is-connected-before' : ''
-                      }${connectsAfter ? ' is-connected-after' : ''}${
-                        isRecommended ? ' is-recommended' : ''
-                      }${isSelected ? ' is-selected' : ''}`}
-                      aria-label={`${formatCandidateFullDate(dateKey)} ${formatCandidateStartTime(
-                        evaluation.candidate.startAt,
-                      )}, ${candidateStatusLabels[evaluation.status]}${isRecommended ? ', 추천' : ''}`}
-                      aria-pressed={isSelected}
-                      onClick={() => {
-                        onSelectCandidate(evaluation.candidate.id)
-                        setSelectedDateKey(dateKey)
-                        setRequestCandidateId(null)
-                      }}
-                    >
-                      <span>{formatCandidateStartTime(evaluation.candidate.startAt)}</span>
-                      {isRecommended ? (
-                        <strong>추천</strong>
-                      ) : evaluation.status === 'ready' ? (
-                        <Check aria-hidden="true" size={13} />
-                      ) : evaluation.status === 'pending' ? (
-                        <Clock3 aria-hidden="true" size={13} />
-                      ) : (
-                        <X aria-hidden="true" size={13} />
-                      )}
-                    </button>
-                  )
-                })}
-              </Fragment>
-            ))}
-          </div>
-
-          <p className="candidate-map-hint">
-            캘린더는 후보의 근거를 확인하는 영역이에요. 시간을 누르면 위의 후보와 근거가 함께
-            바뀌어요.
-          </p>
-        </section>
-      </details>
+      <HostCandidateCalendar
+        evaluations={evaluations}
+        selectedEvaluation={recommendedEvaluation}
+        systemRecommendedEvaluation={systemRecommendedEvaluation}
+        onSelect={(candidateId) => {
+          onSelectCandidate(candidateId)
+          setRequestCandidateId(null)
+        }}
+      />
     </div>
-  )
-}
-
-function ResponseRequestSelector({
-  evaluation,
-  onCancel,
-  onSend,
-}: {
-  evaluation: CandidateEvaluation
-  onCancel: () => void
-  onSend: (recipientIds: string[]) => void
-}) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const selectedIdSet = new Set(selectedIds)
-  const dialogRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const previouslyFocusedElement = document.activeElement as HTMLElement | null
-    const previousOverflow = document.body.style.overflow
-
-    document.body.style.overflow = 'hidden'
-    dialogRef.current?.querySelector<HTMLButtonElement>('.icon-button')?.focus()
-
-    function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === 'Escape') onCancel()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', handleKeyDown)
-      previouslyFocusedElement?.focus()
-    }
-  }, [onCancel])
-
-  function toggleParticipant(participantId: string) {
-    setSelectedIds((currentIds) =>
-      currentIds.includes(participantId)
-        ? currentIds.filter((id) => id !== participantId)
-        : [...currentIds, participantId],
-    )
-  }
-
-  function renderParticipantOption(participant: Participant, context: string) {
-    return (
-      <label className="request-recipient-option" key={participant.id}>
-        <input
-          type="checkbox"
-          checked={selectedIdSet.has(participant.id)}
-          onChange={() => toggleParticipant(participant.id)}
-        />
-        <span className="request-recipient-check" aria-hidden="true">
-          <Check size={14} strokeWidth={3} />
-        </span>
-        <span>
-          <strong>{participant.name}</strong>
-          <small>{context}</small>
-        </span>
-      </label>
-    )
-  }
-
-  return createPortal(
-    <div
-      className="request-recipient-modal"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target) onCancel()
-      }}
-    >
-      <section
-        ref={dialogRef}
-        className="request-recipient-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="request-recipient-title"
-      >
-      <header>
-        <div>
-          <span>응답 요청</span>
-          <h2 id="request-recipient-title">누구에게 응답을 요청할까요?</h2>
-        </div>
-        <button
-          className="icon-button"
-          type="button"
-          aria-label="응답 요청 창 닫기"
-          onClick={onCancel}
-        >
-          <X size={20} />
-        </button>
-      </header>
-
-      {evaluation.requiredPending.length > 0 ? (
-        <fieldset className="request-recipient-group">
-          <legend>이 사람의 ‘가능해요’ 응답이 꼭 필요해요</legend>
-          {evaluation.requiredPending.map((participant) =>
-            renderParticipantOption(participant, '꼭 참석해야 하는 사람'),
-          )}
-        </fieldset>
-      ) : null}
-
-      {evaluation.positiveResponsesNeededAfterRequiredYes > 0 ? (
-        <fieldset className="request-recipient-group">
-          <legend>
-            이 중 {evaluation.positiveResponsesNeededAfterRequiredYes}명에게 ‘가능해요’ 응답을
-            받아야 해요
-          </legend>
-          {evaluation.optionalPendingPool.map((participant) =>
-            renderParticipantOption(participant, '아직 응답하지 않은 사람'),
-          )}
-        </fieldset>
-      ) : null}
-
-        <footer>
-        <p>응답이 필요한 사람 중에서 이번에 요청할 사람을 골라주세요.</p>
-        <button
-          className="primary-button"
-          type="button"
-          disabled={selectedIds.length === 0}
-          onClick={() => onSend(selectedIds)}
-        >
-          {selectedIds.length > 0
-            ? `${selectedIds.length}명에게 응답 요청하기`
-            : '요청할 사람을 선택해 주세요'}
-        </button>
-        </footer>
-      </section>
-    </div>,
-    document.body,
   )
 }
 
@@ -3155,24 +2534,6 @@ const koreanWeekdayFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
   weekday: 'short',
 })
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() =>
-    typeof window === 'undefined' ? false : window.matchMedia(query).matches,
-  )
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(query)
-    const updateMatch = () => setMatches(mediaQuery.matches)
-
-    updateMatch()
-    mediaQuery.addEventListener('change', updateMatch)
-
-    return () => mediaQuery.removeEventListener('change', updateMatch)
-  }, [query])
-
-  return matches
-}
 
 function toCalendarDate(date: Date) {
   return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -5864,102 +5225,6 @@ function getHostStateLabel(state: HostCoordinationState) {
 function getHostStateTone(state: HostCoordinationState) {
   if (state === 'HOST_DECISION' || state === 'HOST_CONFIRMED') return 'success'
   return 'info'
-}
-
-function getStatusTone(status: CandidateStatus) {
-  if (status === 'ready') return 'success'
-  if (status === 'pending') return 'info'
-  return 'danger'
-}
-
-function getCandidateDateKey(value: string) {
-  return new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'Asia/Seoul',
-  }).format(new Date(value))
-}
-
-function getCandidateMinuteOfDay(value: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-    timeZone: 'Asia/Seoul',
-  }).formatToParts(new Date(value))
-  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
-  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
-  return hour * 60 + minute
-}
-
-function formatCandidateMinutes(minutes: number) {
-  const hour = Math.floor(minutes / 60)
-  const minute = minutes % 60
-  const period = hour < 12 ? '오전' : '오후'
-  const displayHour = hour % 12 || 12
-  return `${period} ${displayHour}:${String(minute).padStart(2, '0')}`
-}
-
-function hasSameDecisionBand(
-  adjacent: CandidateEvaluation | undefined,
-  current: CandidateEvaluation,
-) {
-  return (
-    adjacent != null &&
-    adjacent.status === current.status &&
-    adjacent.reasons[0] === current.reasons[0]
-  )
-}
-
-function candidateDateFromKey(dateKey: string) {
-  return new Date(`${dateKey}T12:00:00+09:00`)
-}
-
-function formatCandidateWeekday(dateKey: string) {
-  return new Intl.DateTimeFormat('ko-KR', { weekday: 'short', timeZone: 'Asia/Seoul' }).format(
-    candidateDateFromKey(dateKey),
-  )
-}
-
-function formatCandidateDay(dateKey: string) {
-  return new Intl.DateTimeFormat('ko-KR', { day: 'numeric', timeZone: 'Asia/Seoul' }).format(
-    candidateDateFromKey(dateKey),
-  )
-}
-
-function formatCandidateFullDate(dateKey: string) {
-  return new Intl.DateTimeFormat('ko-KR', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-    timeZone: 'Asia/Seoul',
-  }).format(candidateDateFromKey(dateKey))
-}
-
-function formatParticipantSummary(participants: Participant[]) {
-  if (participants.length === 1) return `${participants[0].name} 님은`
-  return `${participants[0].name} 님 외 ${participants.length - 1}명이`
-}
-
-function formatDateStatusSummary(evaluations: CandidateEvaluation[]) {
-  const counts = candidateStatusOrder
-    .map((status) => ({
-      status,
-      count: evaluations.filter((evaluation) => evaluation.status === status).length,
-    }))
-    .filter(({ count }) => count > 0)
-
-  return counts.map(({ status, count }) => `${candidateStatusLabels[status]} ${count}개`).join(', ')
-}
-
-function formatCandidateStartTime(value: string) {
-  return new Intl.DateTimeFormat('ko-KR', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Seoul',
-  }).format(new Date(value))
 }
 
 function getParticipantTitle(state: ParticipantCoordinationState, participant: Participant) {
