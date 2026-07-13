@@ -1,0 +1,184 @@
+.criteria-review-workspace {
+  width: min(100%, 820px);
+  margin-inline: auto;
+}
+
+.criteria-review-panel {
+  display: grid;
+  gap: 32px;
+  padding: 12px 0 48px;
+}
+
+.criteria-review-panel > header {
+  display: grid;
+  gap: 8px;
+}
+
+.criteria-review-panel > header > span,
+.criteria-review-panel > footer span {
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--type-weight-bold);
+}
+
+.criteria-review-panel h1 {
+  max-width: 700px;
+  margin: 0;
+  color: var(--mc-color-text-primary);
+  font-size: 32px;
+  font-weight: var(--type-weight-bold);
+  line-height: 42px;
+}
+
+.criteria-review-panel > header p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--mc-color-text-tertiary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.criteria-choice-group,
+.criteria-required-group {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.criteria-choice-group {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.criteria-choice-group legend,
+.criteria-required-group legend {
+  grid-column: 1 / -1;
+  margin-bottom: 4px;
+  color: var(--mc-color-text-primary);
+  font-size: 17px;
+  font-weight: var(--type-weight-bold);
+  line-height: 25px;
+}
+
+.criteria-choice-group > .ui-selectable-card {
+  min-height: 54px;
+  padding: 12px 16px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--mc-color-text-secondary);
+  font-size: 14px;
+  font-weight: var(--type-weight-semibold);
+  text-align: left;
+}
+
+.criteria-choice-group > .ui-selectable-card[data-selected='true'],
+.criteria-required-group .ui-selectable-card[data-selected='true'] {
+  border-color: var(--mc-color-accent);
+  background: var(--mc-color-accent-soft);
+  color: var(--mc-color-accent-pressed);
+  box-shadow: inset 0 0 0 1px var(--mc-color-accent);
+}
+
+.criteria-required-group > p {
+  margin: -4px 0 4px;
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.criteria-required-group > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.criteria-required-group .ui-selectable-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 60px;
+  padding: 10px 14px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--mc-color-text-secondary);
+  text-align: left;
+}
+
+.criteria-required-group .ui-selectable-card strong,
+.criteria-required-group .ui-selectable-card small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.criteria-required-group .ui-selectable-card small {
+  color: var(--mc-color-text-muted);
+  font-size: 11px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.criteria-review-panel > footer {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid var(--mc-color-border);
+}
+
+.criteria-review-panel > footer > div {
+  display: grid;
+  gap: 4px;
+}
+
+.criteria-review-panel > footer strong {
+  color: var(--mc-color-text-primary);
+  font-size: 15px;
+  font-weight: var(--type-weight-bold);
+}
+
+@media (max-width: 760px) {
+  .criteria-review-panel {
+    gap: 26px;
+    padding-inline: 2px;
+  }
+
+  .criteria-review-panel h1 {
+    font-size: 26px;
+    line-height: 36px;
+  }
+
+  .criteria-choice-group,
+  .criteria-required-group > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .criteria-review-panel > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .criteria-review-panel > footer .ui-button[data-variant='primary'][data-size='action'] {
+    width: 100%;
+  }
+}
+
+.criteria-choice-group > .ui-selectable-card {
+  border-color: rgb(231 236 243 / 90%);
+  background: rgb(255 255 255 / 70%);
+  box-shadow: var(--mc-shadow-inset);
+}
+
+.criteria-choice-group > .ui-selectable-card[data-selected='true'] {
+  border-color: var(--mc-color-accent);
+  background: linear-gradient(180deg, #f7fbff 0%, #e8f3ff 100%);
+  box-shadow:
+    inset 0 0 0 1px rgb(49 130 246 / 48%),
+    0 12px 28px rgb(49 130 246 / 12%);
+}

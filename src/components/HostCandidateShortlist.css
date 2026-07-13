@@ -16,7 +16,8 @@
 
 .host-shell--decision .decision-reference-candidates > header strong {
   color: var(--mc-color-text-primary);
-  font-size: 13px;
+  font-size: var(--mc-type-caption-size);
+  line-height: var(--mc-type-caption-leading);
 }
 
 .host-shell--decision .decision-reference-candidates > header > div {
@@ -65,9 +66,9 @@
   background: var(--mc-color-text-primary);
   color: var(--mc-color-surface);
   box-shadow: var(--mc-shadow-floating);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
+  font-size: var(--mc-type-compact-size);
+  font-weight: var(--type-weight-semibold);
+  line-height: var(--mc-type-compact-leading);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-2px);
@@ -105,8 +106,7 @@
   min-width: 0;
   min-height: 68px;
   display: block;
-  padding: var(--mc-space-2-75) var(--mc-space-9-5) var(--mc-space-2-5)
-    var(--mc-space-3-75);
+  padding: var(--mc-space-2-75) var(--mc-space-9-5) var(--mc-space-2-5) var(--mc-space-3-75);
   border: 0;
   background: transparent;
   color: var(--mc-color-text-primary);
@@ -122,9 +122,10 @@
 .host-shell--decision .decision-reference-card__copy > strong {
   overflow: hidden;
   color: var(--mc-color-text-primary);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 21px;
+  font-size: var(--mc-type-body-size);
+  font-weight: var(--type-weight-semibold);
+  line-height: var(--mc-type-body-leading);
+  letter-spacing: var(--tracking-ko-title-compact);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -141,9 +142,9 @@
   padding: 0;
   background: transparent;
   color: var(--mc-color-text-tertiary);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 17px;
+  font-size: var(--mc-type-caption-size);
+  font-weight: var(--type-weight-semibold);
+  line-height: var(--mc-type-caption-leading);
 }
 
 .host-shell--decision .decision-reference-card.is-success .decision-reference-card__copy small {
@@ -161,13 +162,24 @@
 .host-shell--decision .decision-reference-card__copy em {
   margin-top: var(--mc-space-0-5);
   color: var(--mc-color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--mc-type-caption-size);
   font-style: normal;
-  font-weight: 600;
-  line-height: 17px;
+  font-weight: var(--type-weight-medium);
+  line-height: var(--mc-type-caption-leading);
 }
 
-.host-shell--decision .decision-reference-card > .primary-button {
+.host-shell--decision .decision-reference-card__copy small {
+  font-size: var(--mc-type-compact-size);
+  font-weight: var(--type-weight-semibold);
+  line-height: var(--mc-type-compact-leading);
+}
+
+.host-shell--decision .decision-reference-card__copy em {
+  font-size: var(--mc-type-caption-size);
+  line-height: var(--mc-type-caption-leading);
+}
+
+.host-shell--decision .decision-reference-card > .ui-button[data-variant='primary'][data-size='action'] {
   display: none;
 }
 

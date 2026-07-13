@@ -1,0 +1,34 @@
+.respond-main--identity {
+  max-width: 640px;
+}
+
+.invalid-invite {
+  display: grid;
+  gap: 12px;
+}
+
+.invalid-invite h1,
+.invalid-invite p {
+  margin: 0;
+}
+
+.invalid-invite {
+  padding: 28px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 18px;
+  background: var(--mc-color-surface);
+}
+
+.invalid-invite h1 {
+  color: var(--mc-color-text-primary);
+  font-size: 28px;
+  font-weight: var(--type-weight-bold);
+  line-height: 38px;
+}
+
+.invalid-invite p {
+  color: var(--mc-color-text-tertiary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 24px;
+}

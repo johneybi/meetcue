@@ -1,23 +1,21 @@
 @import url('https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.0/packages/wanted-sans/fonts/webfonts/variable/complete/WantedSansVariable.min.css');
+@import './styles/meetcue-theme.css';
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
-@import '@astryxdesign/core/reset.css';
-@import '@astryxdesign/core/astryx.css';
-@import '@astryxdesign/theme-neutral/theme.css';
-@import './styles/meetcue-theme.css';
+@import './components/ui/primitives.css';
 
 :root {
   --tracking-ko-body: 0;
   --tracking-ko-caption: 0;
   --tracking-ko-control: 0;
-  --tracking-ko-title: 0;
-  --tracking-ko-title-compact: 0;
+  --tracking-ko-title: -0.01em;
+  --tracking-ko-title-compact: -0.02em;
   --font-ui:
     'Wanted Sans Variable', 'Wanted Sans', Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
     'Segoe UI', sans-serif;
-  --font-brand: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
-  color: var(--color-text-primary);
+  --font-brand: 'futura-100', Futura, 'Century Gothic', sans-serif;
+  color: var(--mc-color-text-primary);
   background: #f6f8fb;
   font-family: var(--font-ui);
   letter-spacing: 0;

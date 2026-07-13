@@ -1,0 +1,96 @@
+/* Shared disclosure structure for the people and attendance-criteria substeps. */
+
+.attendee-disclosure {
+  width: 100%;
+  display: grid;
+  gap: var(--mc-space-6);
+}
+
+.attendee-substep--decision {
+  padding-top: var(--mc-space-6);
+  border-top: 1px solid var(--mc-color-border);
+}
+
+.attendee-substep {
+  min-width: 0;
+  display: grid;
+  gap: var(--mc-space-5);
+  padding-bottom: var(--mc-space-3);
+}
+
+.attendee-substep-heading-row {
+  display: flex;
+  gap: var(--mc-space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.attendee-substep-content {
+  display: grid;
+  gap: var(--mc-space-4);
+}
+
+.attendee-section-head {
+  display: grid;
+  gap: 6px;
+}
+
+.attendee-section-head > span {
+  color: var(--mc-color-accent-pressed);
+  font-size: 12px;
+  font-weight: var(--type-weight-bold);
+  line-height: 18px;
+}
+
+.attendee-section-head h3 {
+  margin: 0;
+  color: var(--mc-color-text-primary);
+  font-size: 18px;
+  font-weight: var(--type-weight-bold);
+  line-height: 26px;
+}
+
+.attendee-substep.is-open > .attendee-section-head h3,
+.attendee-substep.is-open > .attendee-substep-heading-row .attendee-section-head h3 {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+.attendee-section-head h3:focus-visible {
+  border-radius: var(--radius-control);
+  outline: 3px solid var(--mc-color-accent-soft);
+  outline-offset: 3px;
+}
+
+.attendee-section-head p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--mc-color-text-tertiary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+@keyframes attendee-substep-reveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attendee-substep-content {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .attendee-substep.is-open > .attendee-section-head h3,
+  .attendee-substep.is-open > .attendee-substep-heading-row .attendee-section-head h3 {
+    line-height: 28px;
+  }
+}

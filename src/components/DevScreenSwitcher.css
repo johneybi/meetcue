@@ -1,0 +1,119 @@
+.dev-screen-switcher {
+  position: fixed;
+  z-index: 1000;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: var(--font-ui);
+}
+
+.dev-screen-switcher__toggle {
+  min-width: 72px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid #d1d6db;
+  border-radius: 10px;
+  background: var(--mc-color-text-primary);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 16%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dev-screen-switcher__panel {
+  width: min(292px, calc(100vw - 28px));
+  max-height: calc(100vh - 76px);
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #d1d6db;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 18%);
+}
+
+.dev-screen-switcher__panel header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dev-screen-switcher__panel header span {
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--mc-color-text-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.dev-screen-switcher__panel header strong {
+  color: var(--mc-color-text-primary);
+  font-size: 16px;
+}
+
+.dev-screen-switcher__panel section + section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e8eb;
+}
+
+.dev-screen-switcher__panel section > p {
+  margin: 0 0 8px;
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dev-screen-switcher__panel section > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.dev-screen-switcher__panel section button {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #e5e8eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: var(--mc-color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.dev-screen-switcher__panel section button:hover {
+  border-color: #b0b8c1;
+  background: #f2f4f6;
+}
+
+.dev-screen-switcher__panel section button.is-current {
+  border-color: var(--mc-color-accent);
+  background: #e8f3ff;
+  color: var(--mc-color-accent-pressed);
+}
+
+@media (max-width: 680px) {
+  .dev-screen-switcher {
+    right: 8px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+
+  .dev-screen-switcher__toggle {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+  }
+
+  .dev-screen-switcher__toggle span {
+    display: none;
+  }
+}

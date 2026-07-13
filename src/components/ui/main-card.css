@@ -1,0 +1,12 @@
+.main-card {
+  min-width: 0;
+  border: 1px solid var(--mc-color-border);
+  border-radius: var(--mc-radius-card);
+  background: var(--mc-color-surface);
+}
+
+.main-card__header,
+.main-card__content,
+.main-card__footer {
+  min-width: 0;
+}

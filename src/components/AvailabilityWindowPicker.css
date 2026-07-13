@@ -1,0 +1,599 @@
+.time-picker {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.time-picker__status {
+  min-height: 36px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.time-picker__status > div {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.time-picker__status strong {
+  color: var(--mc-color-accent-pressed);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-picker__toolbar {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--mc-color-border);
+}
+
+.time-picker__week-navigation {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(130px, 184px) 44px;
+  gap: 4px;
+  align-items: center;
+}
+
+.time-picker__week-navigation > button {
+  min-width: 44px;
+  height: 44px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-secondary);
+}
+
+.time-picker__week-navigation > button:hover {
+  background: var(--mc-color-surface-pressed);
+}
+
+.time-picker__week-navigation > button:disabled {
+  color: var(--mc-color-disabled);
+  background: transparent;
+}
+
+.time-picker__week-navigation > button:focus-visible {
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 2px;
+}
+
+.time-picker__week-navigation > strong {
+  color: var(--mc-color-text-secondary);
+  font-size: 14px;
+  font-weight: var(--type-weight-bold);
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.availability-picker .time-picker__toolbar {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.availability-picker .time-picker__week-navigation {
+  justify-self: start;
+}
+
+.availability-brush-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.availability-brush-group {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--mc-color-surface-subtle);
+}
+
+.availability-brush-group button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.availability-brush-group button.is-selected {
+  background: #fff;
+  color: var(--mc-color-text-primary);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 10%);
+}
+
+.availability-reset-button {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.availability-reset-button:hover {
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-secondary);
+}
+
+.availability-scope-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.availability-scope-legend span {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.availability-scope-legend i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.availability-scope-legend i.is-included {
+  border-color: rgb(49 130 246 / 46%);
+  background: var(--mc-color-accent-soft);
+}
+
+.mobile-availability-list > button.is-selected {
+  box-shadow: none;
+}
+
+.time-picker__workspace {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 244px;
+  gap: 22px;
+  align-items: start;
+}
+
+.availability-paint-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.week-time-grid {
+  min-width: 0;
+  display: grid;
+  gap: 0;
+}
+
+.week-time-grid__header,
+.week-time-grid__row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 52px repeat(7, minmax(62px, 1fr));
+  gap: 0;
+}
+
+.week-time-grid__header {
+  align-items: stretch;
+}
+
+.week-time-grid__header > div {
+  position: relative;
+  min-width: 0;
+  min-height: 56px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  margin: 2px;
+  border-radius: 8px;
+  color: var(--mc-color-text-muted);
+}
+
+.week-time-grid__header > div.is-active {
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-accent-pressed);
+}
+
+.week-time-grid__header span {
+  font-size: 11px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 16px;
+}
+
+.week-time-grid__header strong {
+  font-size: 16px;
+  font-weight: var(--type-weight-bold);
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.week-time-grid__header small,
+.mobile-date-strip small {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--mc-color-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--type-weight-bold);
+  line-height: 1;
+}
+
+.week-time-grid__row {
+  align-items: center;
+}
+
+.week-time-grid__row > span {
+  padding-right: 6px;
+  color: var(--mc-color-text-muted);
+  font-size: 11px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 16px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.week-time-grid__row > div {
+  position: relative;
+  min-width: 0;
+}
+
+.week-time-grid__row--tail > span {
+  color: var(--mc-color-text-placeholder);
+}
+
+.week-time-grid__row--tail > div {
+  height: 48px;
+}
+
+.week-time-grid__row--tail > div::after {
+  position: absolute;
+  inset: 2px;
+  border-radius: 8px;
+  background: var(--mc-color-canvas);
+  content: '';
+}
+
+.week-time-grid__row > div > button {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--mc-color-accent-pressed);
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.week-time-grid__row > div > button::after {
+  position: absolute;
+  z-index: 0;
+  inset: 2px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 8px;
+  background: #fff;
+  content: '';
+  pointer-events: none;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.week-time-grid__row > div > button:hover:not(:disabled):not(.is-preview-slot)::after {
+  border-color: var(--mc-color-accent-soft-strong);
+  background: var(--mc-color-surface-subtle);
+}
+
+.week-time-grid__row > div > button.is-selected::after {
+  opacity: 0;
+}
+
+.week-time-grid__row > div > button.is-preview-slot::after {
+  z-index: 1;
+  inset: 0 2px;
+  border: 0;
+  border-right: 2px dashed var(--mc-color-accent);
+  border-bottom: 1px solid rgb(49 130 246 / 32%);
+  border-left: 2px dashed var(--mc-color-accent);
+  border-radius: 0;
+  background: var(--mc-color-accent-soft);
+  opacity: 1;
+  transition: none;
+}
+
+.week-time-grid__row > div > button.is-preview-slot.is-preview-start::after {
+  top: 2px;
+  border-top: 2px dashed var(--mc-color-accent);
+  border-radius: 8px 8px 0 0;
+}
+
+.week-time-grid__row > div > button.is-preview-slot.is-preview-end::after {
+  bottom: 2px;
+  border-bottom: 2px dashed var(--mc-color-accent);
+  border-radius: 0 0 8px 8px;
+}
+
+.week-time-grid__row > div > button.is-preview-slot.is-preview-start.is-preview-end::after {
+  border-radius: 8px;
+}
+
+.week-time-grid__row > div > button.is-preview-slot {
+  z-index: 3;
+  color: var(--mc-color-accent-pressed);
+}
+
+.availability-picker[data-brush-mode='exclude']
+  .week-time-grid__row
+  > div
+  > button.is-preview-slot::after {
+  border-color: var(--mc-color-danger);
+  background: var(--mc-color-danger-soft);
+}
+
+.availability-picker .week-time-grid__row > div > button.is-selected::after {
+  inset: 2px;
+  border: 1px solid rgb(49 130 246 / 42%);
+  border-radius: 5px;
+  background: var(--mc-color-accent-soft);
+  opacity: 1;
+}
+
+.availability-picker[data-brush-mode='exclude']
+  .week-time-grid__row
+  > div
+  > button.is-selected:hover::after,
+.availability-picker[data-brush-mode='exclude']
+  .week-time-grid__row
+  > div
+  > button.is-selected:focus-visible::after {
+  border-color: var(--mc-color-danger);
+  background: var(--mc-color-danger-soft);
+}
+
+.availability-picker[data-brush-mode='add']
+  .week-time-grid__row
+  > div
+  > button:not(.is-selected):hover::after {
+  border-color: var(--mc-color-accent);
+  background: var(--mc-color-accent-soft);
+}
+
+.week-time-grid__row > div > button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 1px;
+}
+
+.week-time-grid__row > div > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.week-time-grid__row > div > button:disabled::after {
+  border-color: transparent;
+  background: var(--mc-color-surface-subtle);
+}
+
+.mobile-time-picker {
+  display: grid;
+  gap: 24px;
+}
+
+.mobile-date-strip,
+.mobile-time-slots,
+.mobile-time-slot-list {
+  min-width: 0;
+}
+
+.mobile-date-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.mobile-date-strip > button {
+  position: relative;
+  min-width: 0;
+  min-height: 70px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mc-color-text-muted);
+}
+
+.mobile-date-strip > button.is-selected {
+  border-color: var(--mc-color-accent-soft-strong);
+  background: var(--mc-color-accent-soft);
+  color: var(--mc-color-accent-pressed);
+}
+
+.mobile-date-strip > button:focus-visible {
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 1px;
+}
+
+.mobile-date-strip > button:disabled {
+  opacity: 0.36;
+}
+
+.mobile-date-strip > button > span {
+  font-size: 11px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 16px;
+}
+
+.mobile-date-strip > button > strong {
+  font-size: 17px;
+  font-weight: var(--type-weight-bold);
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-time-slots {
+  display: grid;
+  gap: 12px;
+}
+
+.mobile-time-slots > h2 {
+  margin: 0;
+  color: var(--mc-color-text-secondary);
+  font-size: 15px;
+  font-weight: var(--type-weight-bold);
+  line-height: 24px;
+}
+
+.mobile-time-slot-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobile-time-slot-list > button {
+  min-width: 0;
+  min-height: 52px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-time-slot-list > button.is-selected {
+  border-color: var(--mc-color-accent);
+  background: var(--mc-color-accent-soft);
+  color: var(--mc-color-accent-pressed);
+  box-shadow: inset 0 0 0 1px var(--mc-color-accent);
+}
+
+.mobile-time-slot-list > button > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.mobile-time-slot-list > button > span small {
+  overflow: hidden;
+  color: var(--mc-color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-time-slot-list > button:focus-visible {
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 1px;
+}
+
+@media (max-width: 760px) {
+  .time-picker {
+    gap: 16px;
+  }
+
+  .time-picker__status {
+    min-height: 32px;
+  }
+
+  .availability-brush-toolbar {
+    display: grid;
+    gap: 8px;
+  }
+
+  .availability-brush-group {
+    width: 100%;
+    grid-auto-flow: initial;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .availability-reset-button {
+    justify-self: end;
+  }
+
+  .time-picker__toolbar {
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+
+  .time-picker__week-navigation {
+    grid-template-columns: 40px minmax(104px, 1fr) 40px;
+    gap: 2px;
+  }
+
+  .time-picker__week-navigation > button {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
+  .time-picker__week-navigation > strong {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-date-strip {
+    margin-inline: -4px;
+  }
+
+  .mobile-date-strip > button {
+    min-height: 66px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .week-time-grid__row > div > button {
+    animation: none;
+    transition: none;
+  }
+}

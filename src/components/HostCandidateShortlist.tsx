@@ -4,6 +4,7 @@ import {
   type CandidateEvaluation,
 } from '../domain/evaluation'
 import { candidateStatusLabels, formatCandidateTime, type Meeting } from '../domain/meeting'
+import { Button } from './ui/button'
 import './HostCandidateShortlist.css'
 
 type HostCandidateShortlistProps = {
@@ -83,25 +84,23 @@ export function HostCandidateShortlist({
             </button>
             {isSelected ? (
               canConfirm ? (
-                <button
-                  className="primary-button"
-                  type="button"
+                <Button
+                  size="action"
                   onClick={() => onConfirm(evaluation.candidate.id)}
                 >
                   이 시간으로 정하기
-                </button>
+                </Button>
               ) : evaluation.status === 'pending' ? (
-                <button
-                  className="primary-button"
-                  type="button"
+                <Button
+                  size="action"
                   onClick={() => onRequest(evaluation.candidate.id)}
                 >
                   응답 요청하기
-                </button>
+                </Button>
               ) : (
-                <button className="primary-button" type="button" onClick={onShowAlternative}>
+                <Button size="action" onClick={onShowAlternative}>
                   다른 시간 보기
-                </button>
+                </Button>
               )
             ) : null}
           </article>

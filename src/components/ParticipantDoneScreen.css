@@ -1,0 +1,22 @@
+.participant-done {
+  max-width: 640px;
+  display: grid;
+  gap: 16px;
+  margin: 0 auto;
+}
+
+.participant-done h1 {
+  margin: 0;
+  color: var(--mc-color-text-primary);
+  font-size: 32px;
+  font-weight: var(--type-weight-bold);
+  line-height: 40px;
+}
+
+.participant-done p {
+  margin: 0;
+  color: var(--mc-color-text-tertiary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 24px;
+}

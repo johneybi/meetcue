@@ -1,7 +1,46 @@
 # Changelog
 
+- Reassigned the host decision typography without shrinking the reading baseline: meeting criteria now belong to the meeting header, candidate times retain readable body sizing, and the decision sentence carries the primary emphasis.
+
+- Added semantic typography tokens and normalized the host decision hierarchy: metadata is lighter, candidate titles follow body roles, decision copy is readable at body-small size, dense matrix labels respect the 11px minimum, and Korean negative tracking was removed. DESIGN.md now matches the existing Wanted Sans Variable implementation.
+- Removed unused ASTRYX CSS/theme wiring, replaced its remaining spacing dependencies with MeetCue tokens, and moved the required browser reset into project-owned global styles.
+- Updated the component architecture guide to remove obsolete App.css and legacy-button compatibility claims and document the shared attendance control.
+- Converted account-level create, restart, notification, and section-link commands to shared Button variants; navigation tabs and list rows remain purpose-built composite controls.
+- Moved reminder, participant reset, and participant-shell exit commands onto shared Button variants while preserving their screen-owned placement classes.
+- Shared the minimum-attendance stepper between create and criteria-review flows, and moved criteria choices onto SelectableCard's data-selected contract.
+- Removed root-scoped typography overrides from create, account, shortlist, and decision-matrix styles; account CSS no longer changes badges or required labels owned by other screens.
+- Moved the remaining HostCandidateDetail request, fallback, and criteria commands onto explicit Button variants and removed another root-scoped typography override.
+- Added a 36px icon button size, moved attendee removal and attendance steppers onto explicit Button variants, removed a leaked global button-typography block, and added Escape dismissal to the mobile people picker.
+- Replaced meeting-duration raw radio buttons and `is-selected` state with the shared SelectableCard contract; the custom stepper retains Button/Input primitives with local geometry only.
+- Restored explicit Input, Textarea, and SelectableCard border ownership after identifying that the later ASTRYX reset can override Tailwind's border utility layer.
+- Extracted Field context styling into `ui/field.css`, aligned Textarea with the Input token contract, and removed ineffective 52px field overrides in favor of the 56px field size.
+- Unified invitee and attendance-card selection on `SelectableCard`'s `data-selected` contract, moved Avatar sizing into CVA, and removed duplicate Input/SelectableCard base CSS.
+- Replaced legacy primary/secondary/text/icon button classes with explicit shadcn-compatible `variant` and `size` contracts; screen CSS now targets stable data attributes.
+- Replaced numeric 800/900 weights with semantic semibold/bold tokens, removed component typography `!important` declarations, and changed the global type reset from a forced override to low-specificity defaults.
+- Replaced all legacy `--tds-*` and soft-shadow references with canonical `--mc-*` tokens, promoted glass/elevation values to named MeetCue tokens, and removed the compatibility alias layer.
+- Removed `App.css` after splitting its final global, theme, host-shell, participant-panel, and time-grid responsibilities into explicit owners; dead avatar and legend rules were dropped.
+- Moved shared action rows and legacy shadcn Button compatibility classes into `ui/primitives.css`, while host-only prototype actions now belong to `HostShell.css`.
+- Moved participant response-panel and time-grid visual overrides into their owning component stylesheets, and removed the unused legacy response list/baseline surface rules.
+- Extracted the two-part attendee disclosure flow into `CreateAttendeeFlow.css` and moved the create-only required-field chip out of the global stylesheet.
+- Moved every `.create-*` and `.time-create-stage*` rule, including responsive branches and mixed-selector splits, from `App.css` into `CreateScreen.css` with PostCSS-preserved source order.
+- Extracted the participant route frame, responsive content width, sticky header, and shared typography from `App.css` into `ParticipantPageShell.css`; invalid-invite and standard participant routes now share the same explicit style owner.
+
 ## 2026-07-13 - 디자인 시스템 리팩터링 기반 정리
 
+- 계정 셸과 홈, 내 회의, 받은 요청, 알림 화면을 `AccountScreens.tsx`로 분리하고 계정 화면 전용 CSS 677줄을 `AccountScreens.css`로 이전했다.
+- 계정 시나리오 fixture와 전역 계정 헤더의 소유권을 기능 모듈로 옮겨 `App.tsx`가 라우팅과 상태 연결만 담당하도록 정리했다.
+- 주최자 공통 프레임과 상태별 카피, 보조 내비게이션을 `HostShell.tsx`로 분리해 라우터에서 화면 셸 구현을 제거했다.
+- 요청 발송 완료, 참석 기준 수정, 응답 대기 화면을 각각 독립 컴포넌트로 분리하고 관련 CSS 1,090줄을 화면별 스타일시트로 이전했다.
+- 응답 진행률과 다시 알리기 상태, 참석 기준 입력 제약을 각 화면 내부로 옮겨 `App.tsx`가 도메인 상태 변경 콜백만 연결하도록 정리했다.
+- 확정 안내와 잘못된 초대 링크 화면을 독립 컴포넌트로 분리하고 상태별 CSS를 각 화면에 귀속했다.
+- 개발 화면 전환기와 fixture 목록을 `DevScreenSwitcher.tsx`로 이동하고 참석자 토큰을 명시적인 props 계약으로 변경했다.
+- 제출용 5단계 데모 가이드를 `DemoGuide.tsx`와 전용 CSS로 분리하고 깨진 한글 카피를 정상화했다.
+- 앱 라우트 타입과 해시 파싱·생성·대상 판정을 `lib/appRoutes.ts`로 통합하고 라우팅 계약 테스트 3건을 추가했다.
+- 회의 초안과 참석자 응답을 변경하는 12개 명령을 `useMeetingEditor`로 이동해 앱 컴포넌트에서 직접 상태를 편집하는 코드를 제거했다.
+- PENDING 데모 fixture와 변경 로그 생성을 순수 도메인 유틸로 분리하고 핵심 fixture 계약 테스트 2건을 추가했다.
+- 라우트 동기화, 후보 선택, 재요청 대상, 계정·DEV fixture 전환과 토스트를 `useMeetCueController`로 통합했다.
+- 계정 시나리오 fixture를 화면 모듈에서 `domain/accountScenarios.ts`로 이동하고 fixture 계약 테스트를 추가했다.
+- `App.tsx`를 상태 구현이 없는 216줄의 화면 조합 파일로 축소했다.
 - 디자인 권위를 `DESIGN.md`로 단일화하고 TDS, ASTRYX, OMD, Creative Production 산출물의 채택·폐기 범위를 분리했다.
 - Tailwind CSS와 shadcn 호환 primitive 기반을 추가하고 MeetCue 소유의 `--mc-*` 토큰을 정의했다.
 - ASTRYX와 레거시 전역 CSS가 남아 있는 동안 Tailwind Preflight를 제외해 기존 화면의 reset 소유권을 유지했다.
@@ -16,9 +55,54 @@
 - 현재 DOM에서 사라진 과거 상세 요약·응답 disclosure cascade를 제거했다.
 - 응답 요청 포털을 `HostResponseRequestDialog`로 분리하고 선택·닫기·포커스 복원 계약을 유지했다.
 - 응답 요청 dialog와 커스텀 체크박스의 최종 계산값을 `--mc-request-*` 토큰과 전용 CSS로 통합하고 중간 glass·host override를 제거했다.
-- 전체 후보 날짜·시간 지도를 `HostCandidateCalendar`로 분리하고 날짜 선택, 후보 선택, 추천·상태 연결 계산을 컴포넌트 경계로 옮겼다.
-- 후보 날짜 포맷과 media query를 작은 공용 유틸리티로 분리하고 외부 후보 변경 시 지도 날짜가 함께 동기화되도록 상태 계약을 정리했다.
+- 주최자 결과 화면의 조합과 상호작용 상태를 `HostDecisionScreen`으로 분리하고 프레임·2열 관계·모바일 재배치 스타일을 전용 CSS로 이전했다.
+- 결과 화면에서 더는 사용하지 않는 과거 레이아웃 실험과 상태 표현 selector를 제거해 `App.css`의 중첩 override를 정리했다.
+- `HostDecisionMatrix`로 대체된 뒤 숨김 상태로 남아 있던 `HostCandidateCalendar`와 관련 CSS를 제거했다.
 - 추천 후보 헤더의 반복 설명과 `추천 개수 · 전체 개수`를 제거하고, 추천 근거는 접근 가능한 정보 툴팁으로 전환해 좁은 후보 열의 정보 밀도를 낮췄다.
+- 생성 화면의 프레임·캔버스·콘텐츠 폭·페이지 elevation 규칙을 `CreateScreen.css`로 분리하고 중간에 덮이던 960px·1040px 값을 제거해 최종 1120px 프레임을 토큰으로 고정했다.
+- 주최자 페인트형 시간 입력을 `AvailabilityWindowPicker`로 분리하고 30분 격자, 주간 이동, 포인터·키보드 편집과 날짜 유틸의 소유권을 캡슐화했다.
+- 생성 화면의 진행 표시·헤더·이전 동작·하단 CTA를 `CreateFlowFrame`으로 분리하고 세 버튼을 CVA 기반 shadcn `Button` primitive로 전환했다.
+- 처음 실제 사용된 shadcn primitive가 Vite에서도 안정적으로 번들링되도록 `Button`의 공통 유틸 import 경로를 정상화했다.
+- 참석자 선택 이후의 전원 참석·필수 참석자·최소 인원 설정을 `AttendanceCriteriaStep`으로 분리하고 기준 관련 타입·옵션·전용 CSS를 함께 이동했다.
+- 복합 라디오 카드는 기존 정보 구조를 유지하고 최소 인원 스테퍼의 `+/-` 명령만 shadcn `Button` primitive로 전환했다.
+- 사람 검색·최근 목록·선택 요약·모바일 sheet를 `AttendeePeopleStep`과 전용 CSS로 분리하고 관련 전역 selector를 제거했다.
+- 검색 필드는 shadcn `Input`, 추가·수정·삭제·닫기·완료 명령은 `Button`으로 전환하되 복합 listbox option의 정보 구조는 유지했다.
+- 회의 제목·목적·선택 자료 입력을 `MeetingBriefStep`과 전용 CSS로 분리하고 단문·장문 입력 및 자료 명령을 shadcn primitive로 전환했다.
+- 날짜 범위와 회의 길이 입력을 `MeetingTimeConstraintsStep`으로 분리하고 직접 입력 상태와 30분 단위 검증을 컴포넌트 및 `meetingDuration` 유틸로 이동했다.
+- 더는 도달할 수 없던 고정 1시간 분기와 스타일을 제거하고 시간 조건 관련 전역 selector를 전용 CSS로 이전했다.
+- 가능 범위 편집과 응답 마감 화면을 각각 `MeetingAvailabilityStep`, `ResponseDeadlineStep`으로 분리하고 페인트 입력·마감 입력의 책임 경계를 명확히 했다.
+- 시간 하위 단계의 이전 설정 요약을 `TimeStepSummary`로 통합하고 수정 명령을 shadcn `Button` primitive로 전환했다.
+- 후보 단계 폭, 마감 필드와 요약 반응형 selector를 전용 CSS로 이동하고 `App.tsx`의 날짜 입력 보조 함수를 제거했다.
+- 요청 전 최종 확인 화면과 기본 시간 대비 제외·추가 범위 계산을 `CreateReviewStep`으로 분리했다.
+- 확인 화면의 섹션, 사실 행과 모바일 배치 selector를 전용 CSS로 이동하고 `App.tsx`에서 표시 전용 보조 컴포넌트를 제거했다.
+- 생성 단계 메타데이터, CTA 조건·문구, 다음·이전 전환과 포커스 이동을 `useCreateFlowController`로 분리했다.
+- 시간 범위 최초 초기화와 응답 마감 제안 규칙을 흐름 컨트롤러에 모으고 `CreateScreen`의 중복 상태·전환 함수를 제거했다.
+- 참석자 검색·추가·삭제, 최근 목록 저장과 선택 완료 상태를 `useAttendeeSelection`으로 분리했다.
+- 모바일 picker의 ESC·스크롤 잠금과 참석 기준 단계로 이어지는 포커스 이동을 참석자 선택 훅으로 옮겼다.
+- 생성 화면 조합 전체를 `CreateScreen.tsx`로 이동해 `App.tsx`에서 생성 기능의 렌더링과 상태 연결을 분리했다.
+- 참여자 응답 상단의 모바일 회의 정보, 마감 상태와 조율 조건을 `ParticipantMeetingContext`로 첫 구조 분리했다.
+- 참여자의 캘린더 불러오기, 직접 입력, 시간표와 저장 확인 UI를 `ParticipantAvailabilityPanel`로 분리했다.
+- 참여자 응답 초안, 입력 방식, 캘린더 기본값과 수동 수정 상태를 `useParticipantAvailabilityResponse`로 이동했다.
+- 참여자 회의 컨텍스트와 입력 패널 전용 선택자 1,565줄을 각각의 CSS로 이동하고 복합 전역 선택자에서 소유 부분만 분리했다.
+- 참여자 화면의 데스크톱·모바일 override 순서는 유지하면서 `App.css`에서 해당 컴포넌트 선택자를 제거했다.
+- 참여자 공통 헤더를 `ParticipantPageShell`로 분리하고 입력·완료·확정 화면에서 동일한 셸을 사용하도록 했다.
+- 응답 완료와 회의 확정 상태를 각각 `ParticipantDoneScreen`, `ParticipantConfirmedScreen`으로 이동하고 전용 스타일을 분리했다.
+- 참여자 응답 화면 전체 조합을 `ParticipantShell.tsx`로 이동해 `App.tsx`에서 참여자 기능 경계를 분리했다.
+- 참여자 상태 타입, 응답 라벨과 더미 캘린더 fixture를 셸로 옮겨 전역 화면 파일의 참여자 전용 계산을 제거했다.
+- 전체 소스의 class 참조를 기준으로 `App.css`의 도달 불가능한 레거시 규칙 608개와 selector branch 710개를 제거해 5,588줄을 2,467줄로 축소했다.
+- React Aria 런타임 상태 class와 현재 사용 중인 base class의 modifier는 보존하고, 호스트·생성·참여자 핵심 화면의 렌더링과 콘솔 오류를 확인했다.
+- 주최자 페인트형 시간 입력의 데스크톱 격자, 브러시 상태, 모바일 목록과 reduced-motion 스타일 592줄을 `AvailabilityWindowPicker.css`로 이동했다.
+- `App.css`에서 시간 입력 selector를 모두 제거해 전역 스타일을 1,876줄로 줄이고 컴포넌트 문서의 오래된 `App.tsx` 소유권 설명을 바로잡았다.
+- 주최자 공통 프레임의 `host-shell`, 컨텍스트 바와 콘텐츠 캔버스 selector를 `HostShell.css`로 분리했다.
+- 여러 시기에 중첩된 HostShell 규칙을 최종 계산값 기준으로 통합해 261줄을 198줄로 정리하고 `App.css`를 1,637줄로 축소했다.
+- 결과 후보 확정, 응답 요청, 대기 화면 전환, 참석 기준 저장, 확정 알림, 참여자 저장과 요청 완료의 primary·secondary 명령을 공통 shadcn `Button`으로 전환했다.
+- 응답 요청 dialog의 닫기 아이콘과 참여자 직접 입력 명령도 `quiet` variant로 통일하되, 기존 class를 유지해 화면별 시각값은 보존했다.
+- 기존 44px primary·secondary 버튼의 최종 계산값을 `ui/primitives.css`의 `ui-button` 호환 계층으로 옮기고 `App.css`의 전역 버튼·미사용 `create-button` 규칙을 제거했다.
+- success, warning, danger, info tone과 두 크기를 제공하는 공통 `Badge`를 추가하고 호스트 상태와 참여자 완료 상태를 전환했다.
+- `status-label`, `state-badge`의 색상·치수 cascade를 Badge primitive로 대체해 `App.css`를 1,500줄로 축소했다.
+- 라벨·입력·도움말 구조를 제공하는 공통 `Field`를 추가하고 회의 안내 2개, 날짜 2개와 응답 마감 입력을 전환했다.
+- 입력과 textarea의 최종 border, focus, typography 규칙을 `ui/primitives.css`로 이동하고 화면별 CSS가 폭과 강조를 소유하도록 cascade 순서를 정상화했다.
+- 전역 `.field` selector를 모두 제거해 `App.css`를 1,416줄로 축소했다.
 
 ## 2026-07-12 - 확정 전 일정 부담 표시
 

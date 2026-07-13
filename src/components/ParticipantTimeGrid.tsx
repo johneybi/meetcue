@@ -12,7 +12,7 @@ import './ParticipantTimeGrid.css'
 
 type SlotState = ResponseValue | null
 
-type CalendarEvent = {
+export type CalendarEvent = {
   id: string
   title: string
   timeLabel: string
@@ -195,14 +195,16 @@ export function ParticipantTimeGrid({
     const stateClass = state == null ? 'unset' : state
     const visibleCalendarEvent = state === 'unavailable' ? calendarEvent : null
     const isCalendarLabelAnchor =
-      visibleCalendarEvent != null && calendarLabelAnchors.get(visibleCalendarEvent.id) === slot.startAt
+      visibleCalendarEvent != null &&
+      calendarLabelAnchors.get(visibleCalendarEvent.id) === slot.startAt
     const nextState = getNextState(state)
 
     return (
       <div
         className={`participant-time-cell is-${stateClass}${context === 'mobile' ? ' is-mobile' : ''}${
           visibleCalendarEvent ? ` has-calendar-event is-event-${visibleCalendarEvent.segment}` : ''
-        }${isCalendarLabelAnchor ? ' is-calendar-anchor' : ''
+        }${
+          isCalendarLabelAnchor ? ' is-calendar-anchor' : ''
         }${isManuallyEdited ? ' is-manually-edited' : ''}`}
         key={`${context}-${slot.startAt}`}
       >
@@ -226,7 +228,13 @@ export function ParticipantTimeGrid({
           }}
         >
           <span className="participant-time-cell__state-symbol" aria-hidden="true">
-            {state === 'available' ? '○' : state === 'adjustable' ? '△' : state === 'unavailable' ? '×' : '·'}
+            {state === 'available'
+              ? '○'
+              : state === 'adjustable'
+                ? '△'
+                : state === 'unavailable'
+                  ? '×'
+                  : '·'}
           </span>
           {context === 'mobile' && !isCalendarLabelAnchor ? (
             <strong>{state ? stateLabels[state] : '미선택'}</strong>
@@ -254,9 +262,24 @@ export function ParticipantTimeGrid({
     >
       <div className="participant-state-guide" aria-label="응답 상태 색상 안내">
         <strong>칸을 누를 때마다 상태가 바뀌어요</strong>
-        <span><i className="is-available" aria-hidden="true">○</i>{stateLabels.available}</span>
-        <span><i className="is-adjustable" aria-hidden="true">△</i>{stateLabels.adjustable}</span>
-        <span><i className="is-unavailable" aria-hidden="true">×</i>{stateLabels.unavailable}</span>
+        <span>
+          <i className="is-available" aria-hidden="true">
+            ○
+          </i>
+          {stateLabels.available}
+        </span>
+        <span>
+          <i className="is-adjustable" aria-hidden="true">
+            △
+          </i>
+          {stateLabels.adjustable}
+        </span>
+        <span>
+          <i className="is-unavailable" aria-hidden="true">
+            ×
+          </i>
+          {stateLabels.unavailable}
+        </span>
         <small>여러 칸을 드래그하면 같은 상태로 한 번에 바뀌어요.</small>
       </div>
       <div

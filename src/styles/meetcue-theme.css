@@ -30,6 +30,42 @@
   --mc-radius-surface: 1rem;
   --mc-shadow-floating: 0 8px 24px rgb(25 31 40 / 8%);
 
+  --mc-color-glass: rgb(255 255 255 / 78%);
+  --mc-color-glass-strong: rgb(255 255 255 / 90%);
+  --mc-shadow-elevated: 0 24px 64px rgb(25 31 40 / 10%);
+  --mc-shadow-soft: 0 16px 42px rgb(25 31 40 / 7%);
+  --mc-shadow-inset: inset 0 1px 0 rgb(255 255 255 / 92%);
+  --mc-shadow-accent: 0 18px 46px rgb(49 130 246 / 18%);
+
+  --type-weight-regular: 400;
+  --type-weight-medium: 500;
+  --type-weight-semibold: 600;
+  --type-weight-bold: 700;
+  --mc-type-display-size: 32px;
+  --mc-type-display-leading: 42px;
+  --mc-type-page-title-size: 26px;
+  --mc-type-page-title-leading: 36px;
+  --mc-type-decision-title-size: 24px;
+  --mc-type-decision-title-leading: 34px;
+  --mc-type-section-title-size: 20px;
+  --mc-type-section-title-leading: 30px;
+  --mc-type-card-title-size: 17px;
+  --mc-type-card-title-leading: 26px;
+  --mc-type-body-size: 15px;
+  --mc-type-body-leading: 24px;
+  --mc-type-body-small-size: 14px;
+  --mc-type-body-small-leading: 22px;
+  --mc-type-caption-size: 13px;
+  --mc-type-caption-leading: 20px;
+  --mc-type-compact-size: 12px;
+  --mc-type-compact-leading: 18px;
+  --mc-type-dense-size: 11px;
+  --mc-type-dense-leading: 17px;
+  --button-text-default: 15px;
+  --button-leading-default: 22px;
+  --button-text-compact: 13px;
+  --button-leading-compact: 20px;
+
   --mc-space-0-5: 2px;
   --mc-space-0-25: 1px;
   --mc-space-0-75: 3px;
@@ -70,33 +106,18 @@
   --mc-candidate-card-recommend-text: #c48700;
   --mc-radius-candidate-card: 9px;
   --mc-radius-candidate-recommendation: 7px;
-  --mc-shadow-candidate-card-selected: 0 6px 18px rgb(49 130 246 / 7%),
-    0 0 0 1px rgb(49 130 246 / 16%);
+  --mc-shadow-candidate-card-selected:
+    0 6px 18px rgb(49 130 246 / 7%), 0 0 0 1px rgb(49 130 246 / 16%);
 
   --mc-candidate-detail-recommend-border: #f0d99c;
   --mc-candidate-detail-recommend-surface: #fff9e8;
   --mc-candidate-detail-pending-text: #8a5b00;
-  --mc-candidate-detail-ready-border: #dce8e5;
-  --mc-candidate-detail-ready-surface: linear-gradient(
-    68deg,
-    #effcf8 0%,
-    #f6fffc 52%,
-    #ffffff 88%
-  );
-  --mc-candidate-detail-pending-border: #eadfb9;
-  --mc-candidate-detail-pending-surface: linear-gradient(
-    68deg,
-    #fff9e9 0%,
-    #fffdf5 52%,
-    #ffffff 88%
-  );
-  --mc-candidate-detail-danger-border: #f0d7d9;
-  --mc-candidate-detail-danger-surface: linear-gradient(
-    68deg,
-    #fff3f3 0%,
-    #fffafa 52%,
-    #ffffff 88%
-  );
+  --mc-candidate-detail-ready-border: #dfe5ec;
+  --mc-candidate-detail-ready-surface: #ffffff;
+  --mc-candidate-detail-pending-border: #dfe5ec;
+  --mc-candidate-detail-pending-surface: #ffffff;
+  --mc-candidate-detail-danger-border: #dfe5ec;
+  --mc-candidate-detail-danger-surface: #ffffff;
   --mc-candidate-detail-positive: #087a5b;
   --mc-candidate-detail-danger: #b4232f;
   --mc-candidate-detail-burden: #9a6700;
@@ -117,7 +138,25 @@
   --mc-radius-candidate-detail-chip: 7px;
   --mc-radius-candidate-detail-label: 6px;
   --mc-radius-candidate-detail-control: 8px;
-  --mc-shadow-candidate-detail: 0 10px 26px rgb(31 52 83 / 9%);
+  --mc-shadow-candidate-detail: 0 2px 6px rgb(31 52 83 / 4%), 0 12px 32px rgb(31 52 83 / 10%);
+
+  --mc-host-decision-canvas:
+    radial-gradient(circle at 18% 9%, rgb(232 243 255 / 86%) 0, transparent 34rem),
+    radial-gradient(circle at 82% 16%, rgb(230 248 243 / 76%) 0, transparent 30rem),
+    radial-gradient(circle at 50% 58%, rgb(232 243 255 / 42%) 0, transparent 34rem),
+    linear-gradient(180deg, #fbfcfe 0%, #f5f8fc 54%, #f8fafc 100%);
+  --mc-host-decision-frame-width: 68.75rem;
+  --mc-host-decision-rail-width: 16.875rem;
+  --mc-host-decision-divider: #dfe6ed;
+  --mc-host-decision-header-min-height: 42px;
+  --mc-radius-host-decision-notice: 9px;
+
+  --mc-create-canvas:
+    radial-gradient(circle at 16% 10%, rgb(232 243 255 / 72%) 0, transparent 30rem),
+    radial-gradient(circle at 84% 18%, rgb(230 248 243 / 56%) 0, transparent 26rem), #f7f9fc;
+  --mc-create-frame-width: 70rem;
+  --mc-create-surface-width: 51.25rem;
+  --mc-shadow-create-panel: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);
 
   --mc-request-dialog-backdrop: rgb(17 24 39 / 48%);
   --mc-request-dialog-border: #e5e8eb;
@@ -142,8 +181,7 @@
   --mc-decision-matrix-unknown: #9aa6b2;
   --mc-radius-decision-matrix-base: 11px;
   --mc-radius-decision-matrix: 9px;
-  --mc-shadow-decision-tile: 0 6px 18px rgb(31 52 83 / 4%),
-    inset 0 0 0 1px rgb(255 255 255 / 52%);
+  --mc-shadow-decision-tile: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);
 }
 
 @theme inline {

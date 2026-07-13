@@ -6,6 +6,7 @@ import {
   type Meeting,
   type Participant,
 } from '../domain/meeting'
+import { Button } from './ui/button'
 import './HostCandidateDetail.css'
 
 type HostCandidateDetailProps = {
@@ -30,13 +31,6 @@ export function HostCandidateDetail({
   onReviewCriteria,
 }: HostCandidateDetailProps) {
   const canConfirm = evaluation.status === 'ready'
-  const requiredCount = meeting.participants.filter(
-    (participant) => participant.role === 'required',
-  ).length
-  const criteriaSummary =
-    meeting.preset === 'all_hands'
-      ? `주최자 포함 ${meeting.participants.length}명 모두 참석`
-      : `꼭 참석해야 하는 사람 ${requiredCount}명 · 최소 ${meeting.minAttendeeCount}명 참석`
   const selectedPendingCount = evaluation.responseDetails.filter(
     (detail) => detail.state === 'unknown',
   ).length
@@ -122,13 +116,12 @@ export function HostCandidateDetail({
           </span>
         </div>
         {canConfirm ? (
-          <button
-            className="primary-button"
-            type="button"
+          <Button
+            size="action"
             onClick={() => onConfirm(evaluation.candidate.id)}
           >
-            {formatCandidateTime(evaluation.candidate)} 확정하기
-          </button>
+            이 시간으로 확정하기
+          </Button>
         ) : null}
       </div>
 
@@ -145,9 +138,13 @@ export function HostCandidateDetail({
                     <strong>{participant.name}</strong>
                     <small>꼭 참석해야 하는 사람 · 응답 전</small>
                   </div>
-                  <button type="button" onClick={() => onRequest(evaluation.candidate.id)}>
+                  <Button
+                    variant="fieldAction"
+                    size="text"
+                    onClick={() => onRequest(evaluation.candidate.id)}
+                  >
                     다시 요청하기
-                  </button>
+                  </Button>
                 </div>
               ))}
             </section>
@@ -159,9 +156,13 @@ export function HostCandidateDetail({
                 {evaluation.positiveResponsesNeededAfterRequiredYes === 0 ? (
                   <span>추가 필요 없음</span>
                 ) : (
-                  <button type="button" onClick={() => onRequest(evaluation.candidate.id)}>
+                  <Button
+                    variant="fieldAction"
+                    size="text"
+                    onClick={() => onRequest(evaluation.candidate.id)}
+                  >
                     응답 요청하기
-                  </button>
+                  </Button>
                 )}
               </header>
               <div className="decision-optional-people">
@@ -181,8 +182,9 @@ export function HostCandidateDetail({
         <div className="decision-impossible-guide">
           <strong>다른 후보를 검토해 보세요</strong>
           <p>왼쪽 후보 목록에서 다른 시간을 선택하면 같은 기준으로 바로 비교할 수 있어요.</p>
-          <button
-            type="button"
+          <Button
+            variant="fieldAction"
+            size="text"
             onClick={() =>
               fallbackEvaluation != null
                 ? onSelectCandidate(fallbackEvaluation.candidate.id)
@@ -190,17 +192,10 @@ export function HostCandidateDetail({
             }
           >
             {fallbackEvaluation != null ? '지금 정할 수 있는 시간 보기' : '참석 기준 다시 보기'}
-          </button>
+          </Button>
         </div>
       ) : null}
 
-      <div className="decision-criteria-inline">
-        <span>참석 기준</span>
-        <strong>{criteriaSummary}</strong>
-        <button type="button" onClick={onReviewCriteria}>
-          수정
-        </button>
-      </div>
     </section>
   )
 }

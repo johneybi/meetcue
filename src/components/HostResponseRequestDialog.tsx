@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Check, X } from 'lucide-react'
 import type { CandidateEvaluation } from '../domain/evaluation'
 import type { Participant } from '../domain/meeting'
+import { Button } from './ui/button'
 import './HostResponseRequestDialog.css'
 
 type HostResponseRequestDialogProps = {
@@ -25,7 +26,7 @@ export function HostResponseRequestDialog({
     const previousOverflow = document.body.style.overflow
 
     document.body.style.overflow = 'hidden'
-    dialogRef.current?.querySelector<HTMLButtonElement>('.icon-button')?.focus()
+    dialogRef.current?.querySelector<HTMLButtonElement>("[data-size='icon']")?.focus()
 
     function handleKeyDown(event: globalThis.KeyboardEvent) {
       if (event.key === 'Escape') onCancel()
@@ -87,14 +88,14 @@ export function HostResponseRequestDialog({
             <span>응답 요청</span>
             <h2 id="request-recipient-title">누구에게 응답을 요청할까요?</h2>
           </div>
-          <button
-            className="icon-button"
-            type="button"
+          <Button
+            variant="quiet"
+            size="icon"
             aria-label="응답 요청 창 닫기"
             onClick={onCancel}
           >
             <X size={20} />
-          </button>
+          </Button>
         </header>
 
         {evaluation.requiredPending.length > 0 ? (
@@ -120,16 +121,15 @@ export function HostResponseRequestDialog({
 
         <footer>
           <p>응답이 필요한 사람 중에서 이번에 요청할 사람을 골라주세요.</p>
-          <button
-            className="primary-button"
-            type="button"
+          <Button
+            size="action"
             disabled={selectedIds.length === 0}
             onClick={() => onSend(selectedIds)}
           >
             {selectedIds.length > 0
               ? `${selectedIds.length}명에게 응답 요청하기`
               : '요청할 사람을 선택해 주세요'}
-          </button>
+          </Button>
         </footer>
       </section>
     </div>,

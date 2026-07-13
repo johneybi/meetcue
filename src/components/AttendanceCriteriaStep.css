@@ -1,0 +1,174 @@
+/* Attendance criteria component ownership. */
+
+.required-response-section {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-top: var(--mc-space-5);
+  padding-inline: 0;
+  padding-bottom: 0;
+  border: 0;
+  border-top: 1px solid var(--mc-color-border);
+}
+
+.required-response-section legend {
+  padding: 0;
+  color: var(--mc-color-text-primary);
+  font-size: 17px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 26px;
+}
+
+.required-response-section > p {
+  margin: 0 0 8px;
+  color: var(--mc-color-text-tertiary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.attendance-criteria {
+  display: grid;
+  gap: 20px;
+}
+
+.all-attendance-summary {
+  margin: 4px 0 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--mc-color-accent-soft);
+  color: var(--mc-color-accent-pressed);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 20px;
+}
+
+.attendee-decision-option:focus-visible,
+.required-person-card:focus-visible {
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 2px;
+}
+
+.attendee-decision-options {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.attendee-decision-option {
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 12px;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.decision-radio {
+  width: 20px;
+  height: 20px;
+  grid-row: span 2;
+  border: 2px solid var(--mc-color-border-strong);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.attendee-decision-option[data-selected='true'] .decision-radio {
+  border: 6px solid var(--mc-color-accent);
+}
+
+.attendee-decision-option strong {
+  font-size: 14px;
+  font-weight: var(--type-weight-bold);
+  line-height: 20px;
+}
+
+.attendee-decision-option small {
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.required-person-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.required-person-card {
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  padding: 12px;
+}
+
+.required-person-card .mc-avatar {
+  grid-row: span 2;
+}
+
+.required-person-card strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mc-color-text-primary);
+  font-size: 14px;
+  font-weight: var(--type-weight-bold);
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.required-person-card small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.required-person-card[data-selected='true'] strong,
+.required-person-card[data-selected='true'] small {
+  color: var(--mc-color-accent-pressed);
+}
+
+.attendance-threshold-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.attendance-threshold-options legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: var(--mc-color-text-secondary);
+  font-size: 14px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.attendance-threshold-options .ui-selectable-card {
+  min-height: 48px;
+  padding: 10px 14px;
+}
+
+@media (max-width: 760px) {
+  .required-person-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .attendance-threshold-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

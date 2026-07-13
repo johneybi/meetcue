@@ -1,0 +1,131 @@
+/* Meeting brief step component ownership. */
+
+.create-title-field {
+  max-width: 640px;
+  margin: 0;
+}
+
+.create-title-field input {
+  font-size: 18px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.meeting-brief-fields {
+  max-width: 660px;
+  display: grid;
+  gap: 18px;
+}
+
+.create-purpose-field,
+.create-reference-field {
+  max-width: 640px;
+  margin: 0;
+}
+
+.reference-source-panel > div > span {
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--type-weight-bold);
+  line-height: 18px;
+}
+
+.reference-source-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed var(--mc-color-border-strong);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.reference-source-panel > div {
+  display: grid;
+  gap: 4px;
+}
+
+.reference-source-panel > div > strong {
+  color: var(--mc-color-text-primary);
+  font-size: 14px;
+  font-weight: var(--type-weight-bold);
+  line-height: 20px;
+}
+
+.reference-source-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.reference-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reference-chip-list span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-tertiary);
+  font-size: 12px;
+  font-weight: var(--type-weight-bold);
+}
+
+.add-reference-button {
+  min-height: 40px;
+  justify-self: start;
+  padding: 0 12px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 10px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-accent-pressed);
+  font-size: 13px;
+  font-weight: var(--type-weight-bold);
+}
+
+@media (max-width: 680px) {
+  .reference-source-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.meeting-brief-fields {
+  gap: 22px;
+}
+
+.meeting-brief-fields .field {
+  gap: 7px;
+}
+
+.meeting-brief-fields .field > span,
+.reference-source-panel > div > strong {
+  color: var(--mc-color-text-tertiary);
+  font-size: 12px;
+  font-weight: var(--type-weight-bold);
+  line-height: 18px;
+}
+
+.meeting-brief-fields input,
+.meeting-brief-fields textarea {
+  border-color: rgb(207 216 229 / 76%);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.meeting-brief-fields input:focus,
+.meeting-brief-fields textarea:focus {
+  border-color: var(--mc-color-accent);
+  box-shadow: 0 0 0 3px rgb(49 130 246 / 12%);
+}
+
+.reference-source-panel {
+  padding: 16px;
+  border: 1px dashed rgb(180 194 214 / 78%);
+  border-radius: 10px;
+  background: rgb(248 250 253 / 64%);
+}

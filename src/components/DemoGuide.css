@@ -1,0 +1,200 @@
+.demo-guide {
+  position: fixed;
+  z-index: 1000;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: var(--font-ui);
+}
+
+.demo-guide__toggle {
+  min-width: 128px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--mc-color-border-strong);
+  border-radius: 8px;
+  background: var(--mc-color-surface);
+  box-shadow: 0 4px 16px rgb(25 31 40 / 8%);
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.demo-guide__toggle:hover {
+  background: var(--mc-color-surface-subtle);
+}
+
+.demo-guide__toggle:focus-visible,
+.demo-guide__panel button:focus-visible {
+  outline: 3px solid var(--mc-color-accent-soft-strong);
+  outline-offset: 2px;
+}
+
+.demo-guide__panel {
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--mc-color-border);
+  border-radius: 12px;
+  background: var(--mc-color-surface);
+  box-shadow: 0 8px 24px rgb(25 31 40 / 8%);
+}
+
+.demo-guide__header {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--mc-color-border);
+}
+
+.demo-guide__header > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.demo-guide__header strong {
+  color: var(--mc-color-text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+.demo-guide__header span {
+  order: 2;
+  color: var(--mc-color-accent-pressed);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.demo-guide__header p {
+  margin: 0;
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.demo-guide__steps {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-guide__steps button {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mc-color-text-secondary);
+  text-align: left;
+}
+
+.demo-guide__steps button:hover {
+  background: var(--mc-color-surface-subtle);
+}
+
+.demo-guide__steps button.is-current {
+  border-color: var(--mc-color-accent-soft-strong);
+  background: var(--mc-color-accent-soft);
+}
+
+.demo-guide__step-number {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-tertiary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.demo-guide__steps button.is-current .demo-guide__step-number {
+  background: var(--mc-color-accent);
+  color: #fff;
+}
+
+.demo-guide__step-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.demo-guide__step-copy strong {
+  color: var(--mc-color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.demo-guide__step-copy small {
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.demo-guide__steps button > svg {
+  color: var(--mc-color-text-placeholder);
+}
+
+.demo-guide__restart {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.demo-guide__restart:hover {
+  background: var(--mc-color-surface-pressed);
+}
+
+@media (max-width: 680px) {
+  .demo-guide {
+    right: 8px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .demo-guide__toggle {
+    min-width: 44px;
+    padding: 0 12px;
+  }
+
+  .demo-guide__toggle span {
+    display: none;
+  }
+
+  .demo-guide__panel {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,177 @@
+:root {
+  scrollbar-gutter: stable;
+}
+
+:where(*, *::before, *::after) {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: currentcolor;
+}
+
+html {
+  line-height: 1.5;
+  color-scheme: light;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: inherit;
+}
+
+:where(p, blockquote, figure, pre, dl, dd) {
+  margin: 0;
+}
+
+:where(ol, ul, menu) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where(img, svg, video, canvas, audio, iframe, embed, object) {
+  display: block;
+  vertical-align: middle;
+}
+
+:where(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+:where(button, input, optgroup, select, textarea) {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+:where(button, [type='button'], [type='reset'], [type='submit']) {
+  appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+
+:where(button, [role='button']) {
+  cursor: pointer;
+}
+
+:where(:disabled) {
+  cursor: not-allowed;
+}
+
+:where(textarea) {
+  resize: vertical;
+}
+
+:where(input::placeholder, textarea::placeholder) {
+  opacity: 1;
+  color: var(--mc-color-text-placeholder);
+}
+
+:where(fieldset) {
+  margin: 0;
+  padding: 0;
+}
+
+:where(legend) {
+  padding: 0;
+}
+
+:where(table) {
+  border-color: inherit;
+  border-collapse: collapse;
+  text-indent: 0;
+}
+
+:where(a) {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+:where([hidden]) {
+  display: none;
+}
+
+.meeting-cue-toast {
+  width: min(420px, calc(100vw - 32px)) !important;
+  min-height: 52px !important;
+  padding: 14px 16px !important;
+  border: 1px solid var(--mc-color-border) !important;
+  border-radius: 14px !important;
+  background: var(--mc-color-surface) !important;
+  box-shadow: 0 10px 30px rgb(25 31 40 / 14%) !important;
+  color: var(--mc-color-text-secondary) !important;
+  font-family: var(--font-ui) !important;
+  font-size: 14px !important;
+  font-weight: var(--type-weight-semibold) !important;
+}
+
+.meeting-cue-toast [data-icon] {
+  color: var(--mc-color-success) !important;
+}
+
+.brand-dot {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  object-fit: contain;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:where(p, li, dd, dt, td, th) {
+  letter-spacing: var(--tracking-ko-body);
+}
+
+:where(button, label, input, textarea, select, [role='button']) {
+  letter-spacing: var(--tracking-ko-control);
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  letter-spacing: var(--tracking-ko-title);
+}
+
+body {
+  font-weight: var(--type-weight-regular);
+}
+
+:where(h1) {
+  font-weight: var(--type-weight-bold);
+}
+
+:where(h2, h3, h4, h5, h6),
+:where(strong, b),
+:where(button, button *) {
+  font-weight: var(--type-weight-semibold);
+}
+
+:where(label, label *, legend, th, small),
+:where(input, textarea, select) {
+  font-weight: var(--type-weight-medium);
+}
+
+.brand-wordmark {
+  font-family: var(--font-brand);
+  font-size: 19px;
+  font-style: normal;
+  font-weight: var(--type-weight-medium);
+  line-height: 24px;
+  letter-spacing: 0.01em;
+}

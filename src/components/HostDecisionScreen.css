@@ -1,0 +1,167 @@
+/* Host decision screen layout styles. */
+
+.host-shell--decision {
+  background: var(--mc-host-decision-canvas);
+}
+
+.host-shell--decision .host-context-bar {
+  display: none;
+}
+
+.host-shell--decision .host-stage {
+  width: min(100%, var(--mc-host-decision-frame-width));
+  min-height: auto;
+  gap: var(--mc-space-3-5);
+  margin-inline: auto;
+  padding: var(--mc-space-7) var(--mc-space-6) calc(var(--mc-space-16) + var(--mc-space-2));
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-board {
+  display: grid;
+  gap: var(--mc-space-3-5);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-candidate-workspace {
+  display: grid;
+  grid-template-columns: var(--mc-host-decision-rail-width) minmax(0, 1fr);
+  grid-template-areas:
+    'head head'
+    'candidates detail';
+  gap: var(--mc-space-3-5) var(--mc-space-5);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.host-shell--decision .decision-candidate-head {
+  grid-area: head;
+  min-height: var(--mc-host-decision-header-min-height);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mc-space-5);
+  padding: 0 var(--mc-space-0-5) var(--mc-space-2-5);
+  border-bottom: 1px solid var(--mc-host-decision-divider);
+}
+
+.host-shell--decision .decision-candidate-head__meeting {
+  min-width: 0;
+  display: grid;
+  gap: var(--mc-space-1-5);
+}
+
+.host-shell--decision .decision-candidate-head__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mc-space-2-5);
+}
+
+.host-shell--decision .decision-candidate-head h1 {
+  margin: 0;
+  color: var(--mc-color-text-primary);
+  font-size: var(--mc-type-section-title-size);
+  font-weight: var(--type-weight-semibold);
+  line-height: var(--mc-type-section-title-leading);
+  letter-spacing: var(--tracking-ko-title);
+}
+
+.host-shell--decision .decision-candidate-head span,
+.host-shell--decision .decision-candidate-head p {
+  margin: 0;
+  color: var(--mc-color-text-tertiary);
+  font-size: var(--mc-type-caption-size);
+  font-weight: var(--type-weight-regular);
+  line-height: var(--mc-type-caption-leading);
+}
+
+.host-shell--decision .decision-meeting-criteria {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-2);
+  color: var(--mc-color-text-secondary);
+  font-size: var(--mc-type-body-small-size);
+  line-height: var(--mc-type-body-small-leading);
+}
+
+.host-shell--decision .decision-meeting-criteria > span {
+  flex: 0 0 auto;
+  color: var(--mc-color-text-tertiary);
+  font-size: inherit;
+  font-weight: var(--type-weight-medium);
+  line-height: inherit;
+}
+
+.host-shell--decision .decision-meeting-criteria > strong {
+  min-width: 0;
+  font-weight: var(--type-weight-medium);
+}
+
+.host-shell--decision .decision-meeting-criteria > button {
+  flex: 0 0 auto;
+  min-height: var(--mc-space-8);
+  color: var(--mc-color-accent-pressed);
+}
+
+.host-shell--decision .prototype-flow-action--decision,
+.host-shell--decision .decision-deadline-notice {
+  border-radius: var(--mc-radius-host-decision-notice);
+  box-shadow: none;
+}
+
+.host-shell--decision .prototype-flow-action--decision {
+  padding: var(--mc-space-5) var(--mc-space-6);
+  border: 1px solid var(--mc-color-border);
+  background: var(--mc-color-canvas);
+}
+
+.host-shell--decision .decision-deadline-notice {
+  padding: var(--mc-space-3-25) var(--mc-space-4);
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-tertiary);
+  font-size: var(--mc-type-caption-size);
+  font-weight: var(--type-weight-medium);
+  line-height: var(--mc-type-caption-leading);
+}
+
+@media (max-width: 760px) {
+  .host-shell--decision .host-stage {
+    width: 100%;
+    padding: var(--mc-space-4-5) var(--mc-space-4) var(--mc-space-12);
+  }
+
+  .host-shell--decision .decision-candidate-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'detail'
+      'candidates';
+    gap: var(--mc-space-3-5);
+  }
+
+  .host-shell--decision .decision-candidate-head {
+    min-height: var(--mc-space-9-5);
+    padding-bottom: var(--mc-space-2);
+  }
+
+  .host-shell--decision .decision-candidate-head__title {
+    display: grid;
+    gap: 0;
+  }
+
+  .host-shell--decision .decision-meeting-criteria {
+    flex-wrap: wrap;
+  }
+
+  .host-shell--decision .decision-candidate-head p {
+    display: none;
+  }
+}

@@ -135,8 +135,11 @@ PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그
 기본 서체:
 
 ```css
-Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
+"Wanted Sans Variable", "Wanted Sans", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
 ```
+
+- 한국어 제품 UI는 Wanted Sans Variable을 우선 사용한다.
+- Wanted Sans를 불러오지 못하면 Pretendard와 시스템 UI 서체로 대체한다.
 
 워드마크 서체:
 
@@ -156,6 +159,7 @@ Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
 | --- | --- | --- |
 | Display | 32 / 42 | 700 |
 | Page title | 26 / 36 | 700 |
+| Decision title | 24 / 34 | 600 |
 | Section title | 20 / 30 | 600 |
 | Card title | 17 / 26 | 600 |
 | Body | 15 / 24 | 400~500 |
@@ -169,7 +173,8 @@ Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
 규칙:
 
 - 글자 크기를 viewport 너비로 비례 확대하지 않는다.
-- 음수 letter-spacing을 사용하지 않는다.
+- 한국어 본문, 캡션, 버튼, 레이블은 letter-spacing `0`을 사용한다.
+- 한국어 일반 제목은 `0` 또는 `-0.01em`, 폭을 의도적으로 압축하는 제목은 `-0.02em`까지 사용한다.
 - 한국어 본문은 충분한 행간을 사용한다.
 - 작은 라벨을 여러 층으로 쌓지 않는다.
 - 굵기는 정보 위계를 위해 사용한다.
@@ -424,7 +429,7 @@ MeetCue 용어와 표기:
 - 과도한 pill
 - 큰 hero 타이포를 좁은 도구 화면에 사용
 - viewport 기반 글자 크기
-- 음수 letter-spacing
+- 역할 구분 없이 임의로 적용한 음수 letter-spacing
 - 제품 기능을 설명하는 보조 문구 남용
 - 실제 데이터나 동작이 없는 추천·자동화 표현
 

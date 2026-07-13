@@ -1,0 +1,62 @@
+.field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.field > span {
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+  font-weight: var(--type-weight-medium, 500);
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.field .ui-input {
+  width: 100%;
+  padding-inline: 13px;
+  border-color: rgb(207 216 229 / 82%);
+  border-radius: var(--mc-radius-control);
+  background: rgb(255 255 255 / 76%);
+  color: var(--mc-color-text-primary);
+  box-shadow: var(--mc-shadow-inset);
+  font-size: 15px;
+  font-weight: var(--type-weight-medium, 500);
+}
+
+.field .ui-textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 13px;
+  border-color: rgb(207 216 229 / 82%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 76%);
+  color: var(--mc-color-text-primary);
+  box-shadow: var(--mc-shadow-inset);
+  font: inherit;
+  font-size: 15px;
+  font-weight: var(--type-weight-medium, 500);
+  line-height: 23px;
+}
+
+.field .ui-input:focus,
+.field .ui-textarea:focus {
+  border-color: var(--mc-color-accent);
+  outline: 4px solid rgb(201 226 255 / 72%);
+}
+
+.field > em {
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: var(--type-weight-medium, 500);
+  line-height: 18px;
+}
+
+.field > span small {
+  margin-left: 6px;
+  color: var(--mc-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--type-weight-semibold, 600);
+}

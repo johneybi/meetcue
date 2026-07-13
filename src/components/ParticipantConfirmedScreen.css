@@ -1,0 +1,9 @@
+.participant-confirmed-notice {
+  padding: 13px 14px;
+  border-radius: 10px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 20px;
+}

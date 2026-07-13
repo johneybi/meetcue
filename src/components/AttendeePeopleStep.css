@@ -1,0 +1,281 @@
+/* Attendee people picker component ownership. */
+
+.attendee-edit-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.attendee-compact-summary {
+  animation: attendee-substep-reveal 220ms ease both;
+}
+
+.attendee-compact-summary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--mc-space-3);
+  align-items: baseline;
+  padding: var(--mc-space-3) 0;
+  border-top: 1px solid var(--mc-color-border);
+  border-bottom: 1px solid var(--mc-color-border);
+}
+
+.attendee-compact-summary strong {
+  color: var(--mc-color-text-primary);
+  font-size: 14px;
+  font-weight: var(--type-weight-bold);
+}
+
+.attendee-compact-summary span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mc-color-text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attendee-compact-summary {
+    animation: none;
+    transition: none;
+  }
+}
+
+.people-search {
+  display: block;
+}
+
+.mobile-people-picker-trigger,
+.people-picker-overlay {
+  display: none;
+}
+
+.selected-invitees {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--mc-color-accent-soft-strong);
+  border-radius: 12px;
+  background: var(--mc-color-accent-soft);
+}
+
+.selected-invitees-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-invitees-head strong,
+.people-options > strong {
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--type-weight-bold);
+  line-height: 20px;
+}
+
+.selected-invitees-head span {
+  color: var(--mc-color-accent-pressed);
+  font-size: 13px;
+  font-weight: var(--type-weight-bold);
+}
+
+.selected-invitee-list {
+  display: grid;
+  border-top: 1px solid var(--mc-color-accent-soft-strong);
+}
+
+.selected-invitee-row {
+  min-width: 0;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--mc-color-accent-soft-strong);
+  color: var(--mc-color-text-primary);
+}
+
+.selected-invitee-row:last-child {
+  border-bottom: 0;
+}
+
+.selected-invitee-row > strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: var(--type-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-invitee-row > small {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--mc-color-accent-pressed);
+  font-size: 11px;
+  font-weight: var(--type-weight-semibold);
+}
+
+.selected-invitee-row > button {
+  border-radius: 50%;
+  color: var(--mc-color-text-muted);
+  font-size: 21px;
+  line-height: 1;
+}
+
+.selected-invitee-row > button:hover {
+  background: rgb(255 255 255 / 72%);
+  color: var(--mc-color-text-primary);
+}
+
+.people-options {
+  display: grid;
+  gap: 10px;
+}
+
+.people-options-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.people-options-empty {
+  margin: 0;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--mc-color-surface-subtle);
+  color: var(--mc-color-text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.people-picker-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.people-picker-head > div {
+  display: grid;
+  gap: 4px;
+}
+
+.people-picker-head h3,
+.people-picker-head p {
+  margin: 0;
+}
+
+.people-picker-head h3 {
+  color: var(--mc-color-text-primary);
+  font-size: 20px;
+  font-weight: var(--type-weight-bold);
+  line-height: 28px;
+}
+
+.people-picker-head p {
+  color: var(--mc-color-text-tertiary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.people-picker-done {
+  min-height: 52px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--mc-color-accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: var(--type-weight-bold);
+}
+
+@media (max-width: 760px) {
+  .create-task__surface:has(.people-picker-overlay) .create-actions {
+    display: none;
+  }
+
+  .people-search--desktop,
+  .people-options--desktop {
+    display: none;
+  }
+
+  .mobile-people-picker-trigger {
+    min-height: 52px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border: 1px solid var(--mc-color-border-strong);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--mc-color-text-muted);
+    text-align: left;
+  }
+
+  .mobile-people-picker-trigger span {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-people-picker-trigger strong {
+    color: var(--mc-color-accent-pressed);
+    font-size: 13px;
+    font-weight: var(--type-weight-bold);
+  }
+
+  .people-picker-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    align-items: end;
+    background: rgb(25 31 40 / 42%);
+  }
+
+  .people-picker-sheet {
+    max-height: 88dvh;
+    display: grid;
+    gap: 18px;
+    overflow-y: auto;
+    padding: 20px 18px max(20px, env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    background: #fff;
+    box-shadow: 0 -12px 36px rgb(25 31 40 / 16%);
+  }
+
+  .people-options-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .selected-invitees--compact {
+    position: sticky;
+    top: -20px;
+    z-index: 2;
+    margin-inline: -2px;
+    background: #eaf4ff;
+  }
+
+  .people-picker-done {
+    position: sticky;
+    bottom: calc(env(safe-area-inset-bottom) * -1);
+    z-index: 2;
+    box-shadow: 0 -10px 24px rgb(25 31 40 / 8%);
+  }
+
+  .people-picker-done:disabled {
+    background: var(--mc-color-disabled);
+    color: var(--mc-color-text-muted);
+  }
+}

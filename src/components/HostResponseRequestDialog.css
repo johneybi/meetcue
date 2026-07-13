@@ -44,14 +44,14 @@ body > .request-recipient-modal .request-recipient-panel > header > div {
 body > .request-recipient-modal .request-recipient-panel > header span {
   color: var(--mc-color-text-muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: var(--type-weight-bold);
 }
 
 body > .request-recipient-modal .request-recipient-panel h2 {
   margin: 0;
   color: var(--mc-color-text-primary);
   font-size: 22px;
-  font-weight: 900;
+  font-weight: var(--type-weight-bold);
   line-height: 30px;
 }
 
@@ -69,7 +69,7 @@ body > .request-recipient-modal .request-recipient-group legend {
   margin-bottom: var(--mc-space-0-5);
   color: var(--mc-color-text-secondary);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: var(--type-weight-bold);
 }
 
 body > .request-recipient-modal .request-recipient-option {
@@ -157,7 +157,7 @@ body > .request-recipient-modal .request-recipient-option small {
 body > .request-recipient-modal .request-recipient-option strong {
   color: var(--mc-color-text-primary);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: var(--type-weight-bold);
 }
 
 body > .request-recipient-modal .request-recipient-option small {
@@ -175,7 +175,7 @@ body > .request-recipient-modal .request-recipient-panel > footer p {
   line-height: 20px;
 }
 
-body > .request-recipient-modal .request-recipient-panel > footer .primary-button {
+body > .request-recipient-modal .request-recipient-panel > footer .ui-button[data-variant='primary'][data-size='action'] {
   min-width: 220px;
 }
 
@@ -199,7 +199,7 @@ body > .request-recipient-modal .request-recipient-panel > footer .primary-butto
     flex-direction: column;
   }
 
-  body > .request-recipient-modal .request-recipient-panel > footer .primary-button {
+  body > .request-recipient-modal .request-recipient-panel > footer .ui-button[data-variant='primary'][data-size='action'] {
     width: 100%;
   }
 

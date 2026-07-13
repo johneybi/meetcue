@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Clock3, X } from 'lucide-react'
+import { Check, ChevronDown, Clock3, Triangle, X } from 'lucide-react'
 import type { CandidateEvaluation } from '../domain/evaluation'
 import { formatCandidateTime, type Meeting } from '../domain/meeting'
 import './HostDecisionMatrix.css'
@@ -62,15 +62,19 @@ export function HostDecisionMatrix({
                       className={`${evaluation.candidate.id === selectedCandidateId ? 'is-selected ' : ''}is-${state ?? 'unknown'}`}
                       key={evaluation.candidate.id}
                       aria-label={
-                        state === 'available' || state === 'adjustment_commit'
+                        state === 'available'
                           ? '가능'
+                          : state === 'adjustment_commit'
+                            ? '조정 시 가능'
                           : state === 'unavailable'
                             ? '참석 어려움'
                             : '응답 전'
                       }
                     >
-                      {state === 'available' || state === 'adjustment_commit' ? (
+                      {state === 'available' ? (
                         <Check size={16} />
+                      ) : state === 'adjustment_commit' ? (
+                        <Triangle className="decision-matrix__adjustment" aria-hidden="true" size={15} />
                       ) : state === 'unavailable' ? (
                         <X size={16} />
                       ) : (
@@ -86,6 +90,7 @@ export function HostDecisionMatrix({
       </div>
       <footer>
         <span className="is-positive">가능</span>
+        <span className="is-adjustment">조정 시 가능</span>
         <span className="is-negative">참석 어려움</span>
         <span className="is-unknown">응답 전</span>
       </footer>

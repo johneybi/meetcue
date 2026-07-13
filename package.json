@@ -14,9 +14,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@astryxdesign/cli": "^0.1.2",
-    "@astryxdesign/core": "^0.1.2",
-    "@astryxdesign/theme-neutral": "^0.1.2",
     "@internationalized/date": "^3.12.2",
     "@tailwindcss/vite": "^4.3.2",
     "class-variance-authority": "^0.7.1",
