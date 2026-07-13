@@ -438,15 +438,17 @@
   }
 
   .participant-time-cell.is-mobile .participant-time-cell__paint {
-    grid-template-columns: minmax(0, 1fr) 8px;
+    grid-template-columns: auto minmax(0, 1fr);
     justify-items: start;
-    gap: 8px;
-    padding: 0 42px 0 12px;
+    gap: 10px;
+    padding: 0 12px;
+    touch-action: pan-y;
   }
 
   .participant-time-cell.is-mobile .participant-time-cell__paint strong {
     font-size: 13px;
     font-weight: 900;
+    white-space: nowrap;
   }
 
   .participant-time-cell.is-mobile .participant-calendar-event strong {

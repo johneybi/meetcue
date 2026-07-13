@@ -15719,6 +15719,335 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   box-shadow: inset 0 0 0 1px var(--tds-blue);
 }
 
+@media (max-width: 760px) {
+  .respond-app .respond-main.is-schedule-entry {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+
+  .host-shell--create .create-main-panel.create-main-panel--meeting {
+    gap: 22px;
+  }
+
+  .host-shell--create
+    .create-main-panel.create-main-panel--meeting
+    > .create-task__header {
+    margin-bottom: 0;
+  }
+
+  .host-shell--create .create-workflow--meeting .meeting-brief-fields {
+    gap: 26px;
+  }
+}
+
+/* Placeholders explain the format, not the field hierarchy. */
+.host-shell--create .create-workflow input::placeholder,
+.host-shell--create .create-workflow textarea::placeholder {
+  color: var(--tds-placeholder);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: 0;
+  opacity: 1;
+}
+
+.host-shell--create .create-workflow--meeting .meeting-brief-fields .field > span {
+  color: var(--tds-text-2);
+}
+
+.host-shell--create .create-workflow--meeting .create-field-label {
+  color: var(--tds-text-2);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+/* Final mobile participant layout overrides legacy responsive rules. */
+.respond-mobile-context {
+  display: none;
+}
+
+.response-submit-bar {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .respond-app .respond-main .respond-progress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .respond-app .respond-main .respond-progress > div {
+    gap: 6px;
+    min-width: 0;
+    padding: 14px 10px;
+  }
+
+  .respond-app .respond-main .respond-progress span {
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .respond-app .respond-main .respond-progress strong {
+    font-size: 14px;
+    line-height: 20px;
+    word-break: keep-all;
+  }
+
+  .respond-app .respond-main .respond-hero {
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .respond-app .respond-main .respond-meeting-overview {
+    margin-top: 10px;
+  }
+
+  .respond-app .respond-main .respond-status-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px 10px;
+    align-items: baseline;
+    padding: 14px 0 0;
+  }
+
+  .respond-app .respond-main .respond-status-card strong {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .respond-app .respond-main .respond-status-card small {
+    grid-column: 2;
+  }
+
+  .respond-app .response-panel--participant {
+    padding-bottom: 104px;
+  }
+
+  body > .response-submit-bar {
+    display: block;
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(207 216 229 / 72%);
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 -10px 28px rgb(31 52 83 / 8%);
+    backdrop-filter: blur(16px);
+  }
+
+  body > .response-submit-bar .response-submit {
+    position: static;
+    width: min(100%, 760px);
+    min-height: 52px;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 8px 22px rgb(49 130 246 / 20%);
+  }
+
+  .respond-app .response-submit--desktop {
+    display: none;
+  }
+
+  .respond-app .respond-main.is-schedule-entry {
+    gap: 12px;
+    padding-top: 12px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry > .respond-hero,
+  .respond-app .respond-main.is-schedule-entry > .respond-progress {
+    display: none;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-mobile-context {
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgb(207 216 229 / 72%);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 88%);
+    box-shadow: 0 4px 14px rgb(31 52 83 / 4%);
+  }
+
+  .respond-mobile-context > summary {
+    min-height: 64px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .respond-mobile-context > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .respond-mobile-context > summary:focus-visible {
+    outline: 3px solid rgb(49 130 246 / 24%);
+    outline-offset: -3px;
+  }
+
+  .respond-mobile-context > summary > div {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .respond-mobile-context > summary > div strong {
+    overflow: hidden;
+    color: var(--tds-text-1);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 22px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .respond-mobile-context > summary > div span {
+    color: var(--tds-muted);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  .respond-mobile-context__toggle {
+    flex: 0 0 auto;
+    min-height: 36px;
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    color: var(--tds-blue-pressed);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .respond-mobile-context[open] .respond-mobile-context__toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .respond-mobile-context__detail {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border-top: 1px solid #e5ebf1;
+  }
+
+  .respond-mobile-context__detail p {
+    margin: 0;
+    color: var(--tds-text-2);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .respond-mobile-context__detail > span {
+    color: var(--tds-muted);
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .respond-mobile-context__detail dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    margin: 4px 0 0;
+    border: 1px solid var(--tds-border);
+    border-radius: 8px;
+    background: var(--tds-border);
+  }
+
+  .respond-mobile-context__detail dl > div {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+    padding: 10px 8px;
+    background: #fff;
+  }
+
+  .respond-mobile-context__detail dt,
+  .respond-mobile-context__detail dd {
+    margin: 0;
+  }
+
+  .respond-mobile-context__detail dt {
+    color: var(--tds-muted);
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .respond-mobile-context__detail dd {
+    color: var(--tds-text-2);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
+    word-break: keep-all;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-hero {
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-eyebrow,
+  .respond-app .respond-main.is-schedule-entry .respond-meeting-overview > span,
+  .respond-app .respond-main.is-schedule-entry .respond-meeting-overview > small {
+    display: none;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-hero h1 {
+    font-size: 19px;
+    line-height: 27px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-meeting-overview {
+    margin-top: 4px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-meeting-overview strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 20px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-status-card {
+    gap: 2px 8px;
+    padding-top: 10px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-status-card span {
+    font-size: 11px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-status-card strong {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-status-card small {
+    display: none;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-progress > div {
+    gap: 2px;
+    padding: 10px 8px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-progress span {
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .respond-app .respond-main.is-schedule-entry .respond-progress strong {
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
+
 /* Participant scheduling: one elevated task surface, flat internal layers. */
 .respond-main .response-panel--participant {
   gap: 24px;
@@ -15832,6 +16161,18 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   box-shadow: none;
 }
 
+.respond-main .response-panel--participant .participant-state-guide {
+  padding: 4px 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.respond-main .response-panel--participant .participant-week-grid,
+.respond-main .response-panel--participant .participant-day-table {
+  background: #fff;
+}
+
 .respond-main .response-panel--participant:has(.calendar-import-card) .calendar-import-card {
   padding-top: 0;
   border-top: 0;
@@ -15851,6 +16192,39 @@ button.decision-candidate-card .decision-candidate-card__rank strong {
   font-size: 11px;
   font-weight: 700;
   line-height: 17px;
+}
+
+/* The participant route shares the same global header frame as account and host routes. */
+.respond-app .respond-header {
+  padding-inline: max(24px, calc((100vw - 1180px) / 2 + 24px));
+}
+
+@media (max-width: 760px) {
+  .respond-app .respond-header {
+    padding-inline: 16px;
+  }
+
+  .respond-main .respond-progress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .respond-main .respond-progress > div {
+    gap: 6px;
+    min-width: 0;
+    padding: 14px 10px;
+  }
+
+  .respond-main .respond-progress span {
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .respond-main .respond-progress strong {
+    font-size: 14px;
+    line-height: 20px;
+    word-break: keep-all;
+  }
 }
 
 @media (max-width: 760px) {

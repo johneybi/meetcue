@@ -4359,7 +4359,8 @@ function CreateScreen({
           <div className="meeting-brief-fields">
             <label className="field create-title-field">
               <span>
-                회의 이름 <strong className="required-chip">필수</strong>
+                <strong className="create-field-label">회의 이름</strong>{' '}
+                <strong className="required-chip">필수</strong>
               </span>
               <input
                 value={meeting.title}
@@ -4372,7 +4373,8 @@ function CreateScreen({
 
             <label className="field create-purpose-field">
               <span>
-                이 회의에서 정할 일 <strong className="required-chip">필수</strong>
+                <strong className="create-field-label">이 회의에서 정할 일</strong>{' '}
+                <strong className="required-chip">필수</strong>
               </span>
               <textarea
                 value={meeting.purpose}
@@ -5283,8 +5285,42 @@ function ParticipantShell({
       </header>
 
       <main
-        className={`respond-main${state === 'PARTICIPANT_EDITING' ? ' is-participant-editing' : ''}`}
+        className={`respond-main${state === 'PARTICIPANT_EDITING' ? ' is-participant-editing' : ''}${
+          hasChosenResponseBaseline ? ' is-schedule-entry' : ''
+        }`}
       >
+        {hasChosenResponseBaseline ? (
+          <details className="respond-mobile-context">
+            <summary>
+              <div>
+                <strong>{meeting.title}</strong>
+                <span>마감 {formatDeadline(meeting.responseDeadline)}</span>
+              </div>
+              <span className="respond-mobile-context__toggle">
+                회의 정보
+                <ChevronDown size={16} aria-hidden="true" />
+              </span>
+            </summary>
+            <div className="respond-mobile-context__detail">
+              <p>{meeting.purpose}</p>
+              <span>요청자: {meeting.hostLabel}</span>
+              <dl>
+                <div>
+                  <dt>조율 기간</dt>
+                  <dd>{formatSchedulingWindow(meeting.schedulingWindow)}</dd>
+                </div>
+                <div>
+                  <dt>비워둘 시간</dt>
+                  <dd>{formatMeetingDuration(meeting.durationMinutes)}</dd>
+                </div>
+                <div>
+                  <dt>최종 결정</dt>
+                  <dd>주최자가 확정</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
+        ) : null}
         <section className="respond-hero" aria-label="응답 안내">
           <div>
             <span className="respond-eyebrow">회의 요청</span>
@@ -5446,19 +5482,39 @@ function ParticipantShell({
               </div>
             </div>
           ) : hasChosenResponseBaseline ? (
-            <button
-              className="primary-button response-submit"
-              type="button"
-              onClick={() => {
-                if (remainingCount > 0) {
-                  setIsSaveConfirmationOpen(true)
-                  return
-                }
-                onSubmit(draftWindows)
-              }}
-            >
-              {state === 'PARTICIPANT_EDITING' ? '수정 내용 저장하기' : '응답 저장하기'}
-            </button>
+            <>
+              <button
+                className="primary-button response-submit response-submit--desktop"
+                type="button"
+                onClick={() => {
+                  if (remainingCount > 0) {
+                    setIsSaveConfirmationOpen(true)
+                    return
+                  }
+                  onSubmit(draftWindows)
+                }}
+              >
+                {state === 'PARTICIPANT_EDITING' ? '수정 내용 저장하기' : '응답 저장하기'}
+              </button>
+              {createPortal(
+                <div className="response-submit-bar">
+                  <button
+                    className="primary-button response-submit"
+                    type="button"
+                    onClick={() => {
+                      if (remainingCount > 0) {
+                        setIsSaveConfirmationOpen(true)
+                        return
+                      }
+                      onSubmit(draftWindows)
+                    }}
+                  >
+                    {state === 'PARTICIPANT_EDITING' ? '수정 내용 저장하기' : '응답 저장하기'}
+                  </button>
+                </div>,
+                document.body,
+              )}
+            </>
           ) : null}
         </section>
       </main>

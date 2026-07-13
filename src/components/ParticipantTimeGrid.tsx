@@ -122,6 +122,7 @@ export function ParticipantTimeGrid({
   const [activeDateKey, setActiveDateKey] = useState(() => groups[0]?.key ?? '')
   const paintedSlotsRef = useRef<Set<string> | null>(null)
   const paintTargetRef = useRef<ResponseValue | null>(null)
+  const touchTapRef = useRef(false)
 
   const timeRows = useMemo(() => {
     if (slots.length === 0) return []
@@ -153,6 +154,11 @@ export function ParticipantTimeGrid({
 
   function beginPaint(event: ReactPointerEvent<HTMLButtonElement>, slot: AvailabilitySlot) {
     if (event.button !== 0) return
+    if (event.pointerType === 'touch') {
+      touchTapRef.current = true
+      return
+    }
+    touchTapRef.current = false
     const targetState = getNextState(getState(slot))
     paintedSlotsRef.current = new Set([slot.startAt])
     paintTargetRef.current = targetState
@@ -213,7 +219,10 @@ export function ParticipantTimeGrid({
           onPointerUp={finishPaint}
           onPointerCancel={finishPaint}
           onClick={(event) => {
-            if (event.detail === 0) onPaintSlot(slot, getNextState(getState(slot)))
+            if (event.detail === 0 || touchTapRef.current) {
+              onPaintSlot(slot, getNextState(getState(slot)))
+            }
+            touchTapRef.current = false
           }}
         >
           <span className="participant-time-cell__state-symbol" aria-hidden="true">
