@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Pencil } from 'lucide-react'
 import {
   hasSameRecommendationPriority,
   selectCandidateShortlist,
@@ -38,7 +39,6 @@ export function HostDecisionScreen({
   const [requestCandidateId, setRequestCandidateId] = useState<string | null>(null)
   const recommendedEvaluation = selectedEvaluation
   const systemRecommendedEvaluation = evaluations[0] ?? selectedEvaluation
-  const readyCount = evaluations.filter((evaluation) => evaluation.status === 'ready').length
   const shortlistEvaluations = selectCandidateShortlist(evaluations, 6)
   const requiredCount = meeting.participants.filter(
     (participant) => participant.role === 'required',
@@ -55,8 +55,6 @@ export function HostDecisionScreen({
       evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
       evaluation.status === 'ready',
   )
-  const candidateStatusSummary = `추천 ${shortlistEvaluations.length}개 · 가능한 시간 ${readyCount}개`
-
   return (
     <div className="decision-board">
       <section className="decision-candidate-workspace" aria-labelledby="decision-candidates-title">
@@ -66,15 +64,21 @@ export function HostDecisionScreen({
               <h1 id="decision-candidates-title">{meeting.title}</h1>
               <span>{formatDeadline(meeting.responseDeadline)} 마감</span>
             </div>
-            <div className="decision-meeting-criteria">
-              <span>참석 기준</span>
-              <strong>{criteriaSummary}</strong>
-              <Button variant="quiet" size="text" onClick={onReviewCriteria}>
-                수정
-              </Button>
-            </div>
           </div>
-          <p>{candidateStatusSummary}</p>
+          <div className="decision-meeting-criteria">
+            <span>참석 기준</span>
+            <strong>{criteriaSummary}</strong>
+            <Button
+              className="decision-meeting-criteria__edit"
+              variant="quiet"
+              size="iconSmall"
+              aria-label="참석 기준 수정"
+              title="참석 기준 수정"
+              onClick={onReviewCriteria}
+            >
+              <Pencil aria-hidden="true" size={16} strokeWidth={2} />
+            </Button>
+          </div>
         </header>
 
         <HostCandidateShortlist

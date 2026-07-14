@@ -151,6 +151,10 @@
   line-height: var(--mc-type-compact-leading);
 }
 
+.host-shell--decision .decision-state-counts span[hidden] {
+  display: none;
+}
+
 .host-shell--decision .decision-state-counts .is-positive {
   background: var(--mc-candidate-detail-positive-surface);
   color: var(--mc-candidate-detail-positive);

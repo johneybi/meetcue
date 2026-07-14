@@ -86,7 +86,7 @@ export function HostCandidateDetail({
               )}
               <span>
                 {adjustmentParticipants.length > 0
-                  ? `${formatParticipantSummary(adjustmentParticipants)} 기존 일정을 옮겨 참석해요.`
+                  ? `${formatParticipantSummary(adjustmentParticipants)} 조정 시 참석 가능해요.`
                   : '일정 변경 없이 참석할 수 있어요.'}
               </span>
             </div>
@@ -105,13 +105,13 @@ export function HostCandidateDetail({
           </div>
         ) : null}
         <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
-          <span className="is-positive">
+          <span className="is-positive" hidden={evaluation.availableCount === 0}>
             <strong>{evaluation.availableCount}명</strong> 가능
           </span>
-          <span className="is-negative">
+          <span className="is-negative" hidden={evaluation.unavailableCount === 0}>
             <strong>{evaluation.unavailableCount}명</strong> 참석 어려움
           </span>
-          <span className="is-unknown">
+          <span className="is-unknown" hidden={selectedPendingCount === 0}>
             <strong>{selectedPendingCount}명</strong> 응답 전
           </span>
         </div>
