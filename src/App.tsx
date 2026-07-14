@@ -50,6 +50,7 @@ function App() {
     updateAttendanceMode,
     updateMinAttendeeCount,
     updateAttendanceThresholdMode,
+    applyAttendanceCriteria,
     addParticipant,
     removeParticipant,
     submitParticipantAvailability,
@@ -57,13 +58,13 @@ function App() {
     remindParticipant,
     sendResponseReminder,
     confirmCandidate,
+    completeConfirmation,
     startNewMeeting,
     openAccountMeeting,
     openAccountRequest,
     sendResponseRequest,
     advancePrototypeToPending,
     openDevScreen,
-    notifyConfirmation,
   } = useMeetCueController()
 
   return (
@@ -183,11 +184,11 @@ function App() {
             {route === 'criteria' ? (
               <MeetingCriteriaReviewScreen
                 meeting={meeting}
-                onAttendanceModeChange={updateAttendanceMode}
-                onAttendanceThresholdModeChange={updateAttendanceThresholdMode}
-                onMinAttendeeCountChange={updateMinAttendeeCount}
-                onParticipantRoleChange={updateParticipantRole}
-                onDone={() => navigateTo('host')}
+                onApply={(criteria) => {
+                  applyAttendanceCriteria(criteria)
+                  navigateTo('host')
+                }}
+                onCancel={() => navigateTo('host')}
               />
             ) : null}
 
@@ -196,7 +197,7 @@ function App() {
                 meeting={meeting}
                 evaluation={selectedEvaluation}
                 onBack={() => navigateTo('host')}
-                onNotify={notifyConfirmation}
+                onConfirm={() => completeConfirmation(selectedEvaluation.candidate.id)}
               />
             ) : null}
 
@@ -204,7 +205,7 @@ function App() {
               <MessageScreen
                 meeting={meeting}
                 evaluation={selectedEvaluation}
-                onNotify={notifyConfirmation}
+                onConfirm={() => completeConfirmation(selectedEvaluation.candidate.id)}
               />
             ) : null}
           </HostShell>

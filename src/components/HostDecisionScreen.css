@@ -177,3 +177,16 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 }
+
+.host-shell--decision .prototype-flow-action__person {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-3);
+}
+
+.host-shell--decision .prototype-flow-action__person > div {
+  min-width: 0;
+  display: grid;
+  gap: var(--mc-space-1);
+}

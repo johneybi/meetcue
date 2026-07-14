@@ -134,7 +134,7 @@ function getParticipantTitle(state: ParticipantCoordinationState, participant: P
   if (state === 'PARTICIPANT_EDITING') {
     return `${participant.name}님, 이전 응답을 수정할 수 있어요`
   }
-  return `${participant.name}님, 참석 가능한 시간을 알려주세요`
+  return '내 일정을 알려주세요'
 }
 
 function getSimulatedCalendarEvent(slot: AvailabilitySlot) {

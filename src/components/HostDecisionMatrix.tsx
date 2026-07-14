@@ -1,6 +1,7 @@
 import { Check, ChevronDown, Clock3, Triangle, X } from 'lucide-react'
 import type { CandidateEvaluation } from '../domain/evaluation'
 import { formatCandidateTime, type Meeting } from '../domain/meeting'
+import { Avatar } from './ui/avatar'
 import './HostDecisionMatrix.css'
 
 type HostDecisionMatrixProps = {
@@ -49,8 +50,13 @@ export function HostDecisionMatrix({
             {meeting.participants.map((participant) => (
               <tr key={participant.id}>
                 <th scope="row">
-                  <strong>{participant.name}</strong>
-                  {participant.role === 'required' ? <small>필수</small> : null}
+                  <span className="decision-matrix-person">
+                    <Avatar name={participant.name} size="small" />
+                    <span className="decision-matrix-person__copy">
+                      <strong>{participant.name}</strong>
+                      {participant.role === 'required' ? <small>필수</small> : null}
+                    </span>
+                  </span>
                 </th>
                 {evaluations.map((evaluation) => {
                   const detail = evaluation.responseDetails.find(

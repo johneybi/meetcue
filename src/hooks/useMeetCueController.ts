@@ -72,10 +72,6 @@ export function useMeetCueController() {
   }, [])
 
   useEffect(() => {
-    if (route === 'message' && hostState !== 'HOST_CONFIRMED') {
-      navigateTo('host', true)
-      return
-    }
     if (route === 'criteria' && meeting.status === 'confirmed') navigateTo('host', true)
   }, [hostState, meeting.status, route])
 
@@ -110,13 +106,20 @@ export function useMeetCueController() {
   }
 
   function confirmCandidate(candidateId: string) {
+    setSelectedCandidateId(candidateId)
+    navigateTo('message')
+  }
+
+  function completeConfirmation(candidateId: string) {
     setMeeting((current) => ({
       ...current,
       status: 'confirmed',
       confirmedCandidateId: candidateId,
     }))
     setSelectedCandidateId(candidateId)
-    navigateTo('message')
+    toast.success('회의를 확정하고 참석자에게 알렸어요', {
+      id: 'confirmation-notification',
+    })
   }
 
   function startNewMeeting() {
@@ -184,10 +187,6 @@ export function useMeetCueController() {
     navigateTo(screen.route, false, screen.participantToken)
   }
 
-  function notifyConfirmation() {
-    toast.success('참석자에게 확정 알림을 보냈어요', { id: 'confirmation-notification' })
-  }
-
   return {
     ...editor,
     route,
@@ -208,13 +207,13 @@ export function useMeetCueController() {
     remindParticipant,
     sendResponseReminder,
     confirmCandidate,
+    completeConfirmation,
     startNewMeeting,
     openAccountMeeting,
     openAccountRequest,
     sendResponseRequest,
     advancePrototypeToPending,
     openDevScreen,
-    notifyConfirmation,
   }
 }
 

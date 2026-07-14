@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react'
 import type { CandidateEvaluation } from '../domain/evaluation'
 import type { Participant } from '../domain/meeting'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './HostResponseRequestDialog.css'
 
 type HostResponseRequestDialogProps = {
@@ -60,7 +61,8 @@ export function HostResponseRequestDialog({
         <span className="request-recipient-check" aria-hidden="true">
           <Check size={14} strokeWidth={3} />
         </span>
-        <span>
+        <Avatar name={participant.name} size="small" />
+        <span className="request-recipient-option__copy">
           <strong>{participant.name}</strong>
           <small>{context}</small>
         </span>

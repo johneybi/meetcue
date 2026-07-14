@@ -7,6 +7,7 @@ import {
   type Participant,
 } from '../domain/meeting'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './HostWaitingScreen.css'
 
 export function HostWaitingScreen({
@@ -95,8 +96,11 @@ export function HostWaitingScreen({
                   key={participant.id}
                 >
                   <div className="waiting-response-row__person">
-                    <strong>{participant.name}</strong>
-                    <small>{participantRoleLabels[participant.role]}</small>
+                    <Avatar name={participant.name} size="small" />
+                    <div>
+                      <strong>{participant.name}</strong>
+                      <small>{participantRoleLabels[participant.role]}</small>
+                    </div>
                   </div>
                   <span className={`waiting-response-state${isComplete ? ' is-complete' : ''}`}>
                     {isComplete ? (

@@ -1,5 +1,7 @@
+import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import type { AttendeeDecisionMode, AttendanceThresholdMode } from './AttendanceCriteriaStep'
-import type { Meeting, ParticipantRole } from '../domain/meeting'
+import type { Meeting, MeetingPreset, ParticipantRole } from '../domain/meeting'
 import { Avatar } from './ui/avatar'
 import { Button } from './ui/button'
 import { SelectableCard } from './ui/selectable-card'
@@ -8,28 +10,90 @@ import './MeetingCriteriaReviewScreen.css'
 
 export function MeetingCriteriaReviewScreen({
   meeting,
-  onAttendanceModeChange,
-  onAttendanceThresholdModeChange,
-  onMinAttendeeCountChange,
-  onParticipantRoleChange,
-  onDone,
+  onApply,
+  onCancel,
 }: {
   meeting: Meeting
-  onAttendanceModeChange: (mode: AttendeeDecisionMode) => void
-  onAttendanceThresholdModeChange: (mode: AttendanceThresholdMode) => void
-  onMinAttendeeCountChange: (count: number) => void
-  onParticipantRoleChange: (participantId: string, role: ParticipantRole) => void
-  onDone: () => void
+  onApply: (criteria: AttendanceCriteriaUpdate) => void
+  onCancel: () => void
 }) {
-  const invitees = meeting.participants.filter((participant) => participant.id !== meeting.hostId)
+  const [draft, setDraft] = useState<AttendanceCriteriaUpdate>(() => ({
+    preset: meeting.preset,
+    minAttendeeCount: meeting.minAttendeeCount,
+    participantRoles: Object.fromEntries(
+      meeting.participants.map((participant) => [participant.id, participant.role]),
+    ),
+  }))
+  const participants = meeting.participants.map((participant) => ({
+    ...participant,
+    role: draft.participantRoles[participant.id] ?? participant.role,
+  }))
+  const invitees = participants.filter((participant) => participant.id !== meeting.hostId)
   const requiredInvitees = invitees.filter((participant) => participant.role === 'required')
-  const isEveryoneRequired = meeting.preset === 'all_hands'
+  const isEveryoneRequired = draft.preset === 'all_hands'
   const thresholdMode: AttendanceThresholdMode =
-    meeting.preset === 'quorum' ? 'minimum_count' : 'required_only'
+    draft.preset === 'quorum' ? 'minimum_count' : 'required_only'
   const minimumAllowed = requiredInvitees.length + 1
+
+  function changeAttendanceMode(mode: AttendeeDecisionMode) {
+    setDraft(() => {
+      const participantRoles = Object.fromEntries(
+        participants.map((participant) => [
+          participant.id,
+          mode === 'everyone' || participant.id === meeting.hostId ? 'required' : 'optional',
+        ]),
+      ) as Record<string, ParticipantRole>
+      return {
+        preset: mode === 'everyone' ? 'all_hands' : 'core_attendees',
+        minAttendeeCount: mode === 'everyone' ? participants.length : 1,
+        participantRoles,
+      }
+    })
+  }
+
+  function changeParticipantRole(participantId: string, role: ParticipantRole) {
+    setDraft((current) => {
+      const participantRoles = { ...current.participantRoles, [participantId]: role }
+      const requiredCount = Object.values(participantRoles).filter(
+        (participantRole) => participantRole === 'required',
+      ).length
+      return {
+        ...current,
+        participantRoles,
+        minAttendeeCount: Math.max(current.minAttendeeCount, requiredCount),
+      }
+    })
+  }
+
+  function changeThresholdMode(mode: AttendanceThresholdMode) {
+    setDraft((current) => {
+      const requiredCount = Object.values(current.participantRoles).filter(
+        (role) => role === 'required',
+      ).length
+      return {
+        ...current,
+        preset: mode === 'required_only' ? 'core_attendees' : 'quorum',
+        minAttendeeCount:
+          mode === 'required_only'
+            ? requiredCount
+            : Math.max(requiredCount, current.minAttendeeCount),
+      }
+    })
+  }
+
+  function changeMinimumCount(count: number) {
+    setDraft((current) => ({
+      ...current,
+      minAttendeeCount: Math.min(participants.length, Math.max(minimumAllowed, count)),
+    }))
+  }
 
   return (
     <div className="criteria-review-workspace">
+      <Button className="criteria-review-back" variant="quiet" size="text" onClick={onCancel}>
+        <ArrowLeft aria-hidden="true" size={18} />
+        결과로 돌아가기
+      </Button>
       <section className="criteria-review-panel" aria-labelledby="criteria-review-title">
         <header>
           <span>참석 기준</span>
@@ -42,14 +106,14 @@ export function MeetingCriteriaReviewScreen({
           <SelectableCard
             isSelected={isEveryoneRequired}
             aria-pressed={isEveryoneRequired}
-            onClick={() => onAttendanceModeChange('everyone')}
+            onClick={() => changeAttendanceMode('everyone')}
           >
             모두 참석해야 해요
           </SelectableCard>
           <SelectableCard
             isSelected={!isEveryoneRequired}
             aria-pressed={!isEveryoneRequired}
-            onClick={() => onAttendanceModeChange('required')}
+            onClick={() => changeAttendanceMode('required')}
           >
             몇 명은 빠져도 진행할 수 있어요
           </SelectableCard>
@@ -69,7 +133,7 @@ export function MeetingCriteriaReviewScreen({
                       isSelected={isRequired}
                       aria-pressed={isRequired}
                       onClick={() =>
-                        onParticipantRoleChange(
+                        changeParticipantRole(
                           participant.id,
                           isRequired ? 'optional' : 'required',
                         )
@@ -89,14 +153,14 @@ export function MeetingCriteriaReviewScreen({
               <SelectableCard
                 isSelected={thresholdMode === 'required_only'}
                 aria-pressed={thresholdMode === 'required_only'}
-                onClick={() => onAttendanceThresholdModeChange('required_only')}
+                onClick={() => changeThresholdMode('required_only')}
               >
                 네, 필수 참석자만 오면 돼요
               </SelectableCard>
               <SelectableCard
                 isSelected={thresholdMode === 'minimum_count'}
                 aria-pressed={thresholdMode === 'minimum_count'}
-                onClick={() => onAttendanceThresholdModeChange('minimum_count')}
+                onClick={() => changeThresholdMode('minimum_count')}
               >
                 아니요, 전체 참석 인원도 중요해요
               </SelectableCard>
@@ -104,10 +168,10 @@ export function MeetingCriteriaReviewScreen({
 
             {thresholdMode === 'minimum_count' ? (
               <MinimumAttendanceControl
-                value={meeting.minAttendeeCount}
+                value={draft.minAttendeeCount}
                 minimum={minimumAllowed}
                 maximum={meeting.participants.length}
-                onChange={onMinAttendeeCountChange}
+                onChange={changeMinimumCount}
               />
             ) : null}
           </>
@@ -118,15 +182,21 @@ export function MeetingCriteriaReviewScreen({
             <span>현재 기준</span>
             <strong>
               {isEveryoneRequired
-                ? `주최자 포함 ${meeting.participants.length}명 모두`
-                : `필수 ${requiredInvitees.length + 1}명 · 최소 ${meeting.minAttendeeCount}명`}
+                ? `주최자 포함 ${participants.length}명 모두`
+                : `필수 ${requiredInvitees.length + 1}명 · 최소 ${draft.minAttendeeCount}명`}
             </strong>
           </div>
-          <Button size="action" onClick={onDone}>
-            이 기준으로 결과 다시 보기
+          <Button size="action" onClick={() => onApply(draft)}>
+            변경한 기준으로 다시 계산하기
           </Button>
         </footer>
       </section>
     </div>
   )
+}
+
+export interface AttendanceCriteriaUpdate {
+  preset: MeetingPreset
+  minAttendeeCount: number
+  participantRoles: Record<string, ParticipantRole>
 }

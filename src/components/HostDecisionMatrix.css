@@ -66,11 +66,22 @@
 }
 
 .decision-matrix th:first-child {
-  min-width: 128px;
+  min-width: 156px;
   text-align: left;
 }
 
 .decision-matrix tbody th {
+  padding-inline: var(--mc-space-3);
+}
+
+.decision-matrix-person {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-2);
+}
+
+.decision-matrix-person__copy {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--mc-space-1-5);

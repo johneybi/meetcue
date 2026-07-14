@@ -1,6 +1,7 @@
-import { CalendarCheck2 } from 'lucide-react'
-import { generateConfirmationMessage, type CandidateEvaluation } from '../domain/evaluation'
+import { Check, Users } from 'lucide-react'
+import type { CandidateEvaluation } from '../domain/evaluation'
 import { formatCandidateTime, type Meeting } from '../domain/meeting'
+import { Avatar } from './ui/avatar'
 import { Button } from './ui/button'
 import './MessageScreen.css'
 
@@ -8,55 +9,70 @@ export function MessageScreen({
   meeting,
   evaluation,
   onBack,
-  onNotify,
+  onConfirm,
 }: {
   meeting: Meeting
   evaluation: CandidateEvaluation
   onBack?: () => void
-  onNotify: () => void
+  onConfirm: () => void
 }) {
-  const message = generateConfirmationMessage(meeting, evaluation)
-  const recipientCount = meeting.participants.filter(
-    (participant) => participant.id !== meeting.hostId,
-  ).length
+  const isConfirmed = meeting.status === 'confirmed'
+  const recipients = meeting.participants.filter((participant) => participant.id !== meeting.hostId)
 
   return (
     <div className="message-workspace">
-      <section className="message-panel">
+      <section className="message-panel" data-confirmed={isConfirmed}>
         <header className="message-panel__header">
-          <span className="message-panel__icon" aria-hidden="true">
-            <CalendarCheck2 size={22} />
-          </span>
           <div>
-            <span>회의 시간 확정</span>
-            <h1>회의 시간을 확정했어요</h1>
-            <p>{meeting.title}</p>
+            <span>{isConfirmed ? '회의 확정 완료' : '최종 확인'}</span>
+            <h1>{isConfirmed ? '회의가 확정됐어요' : '이 시간으로 확정할까요?'}</h1>
+            <p>
+              {isConfirmed
+                ? '참석자에게 확정된 일정을 알렸어요.'
+                : '확정하면 참석자에게 최종 일정을 바로 알려드려요.'}
+            </p>
           </div>
         </header>
-        <div className="message-panel__time">
-          <span>확정 시간</span>
+
+        <section className="message-panel__event" aria-labelledby="confirmation-event-title">
+          <span>{isConfirmed ? '확정 일정' : '선택한 일정'}</span>
+          <h2 id="confirmation-event-title">{meeting.title}</h2>
           <strong>{formatCandidateTime(evaluation.candidate)}</strong>
-        </div>
-        <section className="message-panel__preview" aria-labelledby="confirmation-preview-title">
-          <div>
-            <span id="confirmation-preview-title">참석자에게 보낼 내용</span>
-            <small>{recipientCount}명에게 전송</small>
-          </div>
-          <p>{message}</p>
         </section>
-        <footer className="message-panel__actions">
-          <p>확정 알림을 보내면 참석자에게 최종 시간이 안내돼요.</p>
-          <div className="button-row">
-            <Button size="action" onClick={onNotify}>
-              확정 알림 보내기
-            </Button>
-            {onBack ? (
-              <Button variant="secondary" size="action" onClick={onBack}>
-                회의 결과로 돌아가기
-              </Button>
-            ) : null}
+
+        <section className="message-panel__recipients" aria-label="알림 대상">
+          <span className="message-panel__recipients-icon" aria-hidden="true">
+            {isConfirmed ? <Check size={18} /> : <Users size={18} />}
+          </span>
+          <div>
+            <strong>
+              {isConfirmed
+                ? `${recipients.length}명에게 알렸어요`
+                : `참석자 ${recipients.length}명에게 알릴게요`}
+            </strong>
+            <span>{recipients.map((participant) => participant.name).join(', ')}</span>
           </div>
-        </footer>
+          <div className="message-panel__avatar-stack" aria-hidden="true">
+            {recipients.map((participant) => (
+              <Avatar key={participant.id} name={participant.name} size="small" />
+            ))}
+          </div>
+        </section>
+
+        {!isConfirmed ? (
+          <footer className="message-panel__actions">
+            <div className="button-row">
+              {onBack ? (
+                <Button variant="secondary" size="action" onClick={onBack}>
+                  결과로 돌아가기
+                </Button>
+              ) : null}
+              <Button size="action" onClick={onConfirm}>
+                확정하고 참석자에게 알리기
+              </Button>
+            </div>
+          </footer>
+        ) : null}
       </section>
     </div>
   )

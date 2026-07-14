@@ -25,12 +25,15 @@ type AvatarProps = {
 
 function Avatar({ name, src, alt, size = 'default', className }: AvatarProps) {
   const fallback = Array.from(name.trim())[0] ?? '?'
+  const accessibilityProps = alt
+    ? { role: 'img', 'aria-label': alt }
+    : { 'aria-hidden': true as const }
 
   return (
     <span
       className={cn('mc-avatar', avatarVariants({ size }), className)}
       data-size={size}
-      aria-label={alt ?? name}
+      {...accessibilityProps}
     >
       {src ? <img className="size-full object-cover" src={src} alt="" /> : fallback}
     </span>

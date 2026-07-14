@@ -67,7 +67,9 @@ export function HostShell({
           route === 'share' ? ' host-shell--share' : ''
         }${route === 'message' || state === 'HOST_CONFIRMED' ? ' host-shell--message' : ''}${
           route === 'host' && isWaiting ? ' host-shell--waiting' : ''
-        }${route === 'host' && state === 'HOST_DECISION' ? ' host-shell--decision' : ''}`}
+        }${route === 'host' && state === 'HOST_DECISION' ? ' host-shell--decision' : ''}${
+          route === 'criteria' ? ' host-shell--criteria' : ''
+        }`}
       >
         <header className="host-context-bar" aria-label="회의 조율 상태">
           <div className="host-context-main">
@@ -116,17 +118,9 @@ export function HostShell({
 function getHostNavigationItems(route: AppRoute) {
   if (route === 'create') return []
   if (route === 'share') {
-    return [
-      { route: 'criteria' as const, label: '참석 기준 보기' },
-      { route: 'host' as const, label: '응답 현황 보기' },
-    ]
+    return [{ route: 'host' as const, label: '응답 현황 보기' }]
   }
-  if (route === 'criteria') {
-    return [
-      { route: 'host' as const, label: '결과로 돌아가기' },
-      { route: 'share' as const, label: '응답 현황 보기' },
-    ]
-  }
+  if (route === 'criteria') return []
   if (route === 'message') return [{ route: 'host' as const, label: '회의 결과 보기' }]
   return [{ route: 'share' as const, label: '응답 현황 보기' }]
 }

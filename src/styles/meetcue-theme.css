@@ -97,7 +97,7 @@
   --mc-candidate-card-surface: rgb(255 255 255 / 76%);
   --mc-candidate-card-border: #e0e6ed;
   --mc-candidate-card-selected-border: #7baef7;
-  --mc-candidate-card-selected-surface: linear-gradient(120deg, #f2f7ff, #f3fbf9);
+  --mc-candidate-card-selected-surface: #f7faff;
   --mc-candidate-card-positive: #087a5b;
   --mc-candidate-card-pending: #8a5b00;
   --mc-candidate-card-negative: #b4232f;

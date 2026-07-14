@@ -92,7 +92,8 @@
 .calendar-import-card__copy {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  align-content: center;
+  gap: 4px;
 }
 
 .calendar-import-card__copy > span {
@@ -104,16 +105,16 @@
 
 .calendar-import-card__copy > strong {
   color: var(--mc-color-text-primary);
-  font-size: 18px;
-  font-weight: var(--type-weight-bold);
-  line-height: 26px;
+  font-size: 16px;
+  font-weight: var(--type-weight-semibold);
+  line-height: 24px;
 }
 
 .calendar-import-card__copy > p {
   margin: 0;
   color: var(--mc-color-text-tertiary);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--type-weight-regular);
   line-height: 20px;
 }
 
@@ -247,7 +248,7 @@
   line-height: 20px;
 }
 
-.response-guide span {
+.response-guide > span {
   color: var(--mc-color-text-muted);
   font-size: 12px;
   font-weight: 500;
@@ -323,10 +324,17 @@
 
 @media (max-width: 680px) {
   .calendar-import-card__actions .ui-button[data-variant='primary'][data-size='action'],
-  .calendar-import-card__actions .ui-button[data-variant='quiet'][data-size='text'] {
+  .calendar-import-card__actions .ui-button[data-variant='fieldAction'][data-size='action'] {
     width: 100%;
     min-height: 48px;
   }
+}
+
+.response-guide__identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 @media (max-width: 680px) {
@@ -424,7 +432,7 @@
   }
 }
 
-.response-guide span {
+.response-guide > span {
   color: var(--mc-color-text-muted);
   font-size: 12px;
   font-weight: var(--type-weight-semibold);
@@ -501,7 +509,7 @@
   letter-spacing: -0.01em;
 }
 
-.respond-main .response-panel--participant .response-guide span {
+.respond-main .response-panel--participant .response-guide > span {
   color: var(--mc-color-text-tertiary);
   font-size: 14px;
   font-weight: 500;
@@ -610,6 +618,20 @@
 
 .respond-main .response-panel--participant .calendar-import-card__actions .ui-button[data-variant='primary'][data-size='action'] {
   min-height: 42px;
+}
+
+@media (min-width: 761px) {
+  .respond-main .response-panel--participant .calendar-import-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .respond-main .response-panel--participant .calendar-import-card__actions .ui-button[data-variant='fieldAction'][data-size='action'] {
+    min-height: 42px;
+    padding-inline: 14px;
+    white-space: nowrap;
+  }
 }
 
 .respond-main .response-panel--participant .calendar-import-card__copy > small {

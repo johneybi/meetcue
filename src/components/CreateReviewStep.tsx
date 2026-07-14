@@ -10,6 +10,7 @@ import {
   formatSchedulingWindow,
   type AvailabilityWindow,
   type Meeting,
+  type Participant,
 } from '../domain/meeting'
 import {
   formatCandidateFullDate,
@@ -17,6 +18,7 @@ import {
   getCandidateDateKey,
 } from '../lib/candidateTime'
 import type { AttendeeDecisionMode } from './AttendanceCriteriaStep'
+import { Avatar } from './ui/avatar'
 import './CreateReviewStep.css'
 
 type CreateReviewStepProps = {
@@ -42,7 +44,7 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
         <h2 id="review-meeting-title">회의 안내</h2>
         <div className="create-review-facts">
           <ReviewFactRow label="회의" value={meeting.title} />
-          <ReviewFactRow label="요청자" value={meeting.hostLabel} />
+          <ReviewIdentityRow label="요청자" name={meeting.hostLabel} />
           <ReviewFactRow label="정할 내용" value={meeting.purpose.trim()} />
           {referenceMaterial ? <ReviewFactRow label="참고 출처" value={referenceMaterial} /> : null}
         </div>
@@ -51,9 +53,9 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
       <section className="create-review-section" aria-labelledby="review-people-title">
         <h2 id="review-people-title">참석자와 참석 기준</h2>
         <div className="create-review-facts">
-          <ReviewFactRow
+          <ReviewPeopleRow
             label="참석자"
-            value={invitedParticipants.map((participant) => participant.name).join(', ')}
+            participants={invitedParticipants}
             detail={`주최자 포함 ${invitedParticipants.length + 1}명`}
           />
           <ReviewFactRow
@@ -65,9 +67,9 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
             }
           />
           {attendanceMode === 'required' && requiredParticipants.length > 0 ? (
-            <ReviewFactRow
+            <ReviewPeopleRow
               label="꼭 필요한 사람"
-              value={requiredParticipants.map((participant) => participant.name).join(', ')}
+              participants={requiredParticipants}
             />
           ) : null}
         </div>
@@ -164,6 +166,47 @@ function ReviewFactRow({
       <div>
         <strong>{value}</strong>
         {detail ? <small>{detail}</small> : null}
+      </div>
+    </div>
+  )
+}
+
+function ReviewPeopleRow({
+  label,
+  participants,
+  detail,
+}: {
+  label: string
+  participants: Participant[]
+  detail?: string
+}) {
+  return (
+    <div className="review-fact-row">
+      <span>{label}</span>
+      <div>
+        <div className="review-people-list">
+          {participants.map((participant) => (
+            <span className="review-person" key={participant.id}>
+              <Avatar name={participant.name} size="small" />
+              <strong>{participant.name}</strong>
+            </span>
+          ))}
+        </div>
+        {detail ? <small>{detail}</small> : null}
+      </div>
+    </div>
+  )
+}
+
+function ReviewIdentityRow({ label, name }: { label: string; name: string }) {
+  return (
+    <div className="review-fact-row">
+      <span>{label}</span>
+      <div>
+        <span className="review-person">
+          <Avatar name={name} size="small" />
+          <strong>{name}</strong>
+        </span>
       </div>
     </div>
   )

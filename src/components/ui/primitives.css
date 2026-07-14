@@ -128,6 +128,17 @@
   box-shadow: var(--mc-shadow-inset);
 }
 
+.ui-button[data-size='action'][data-variant='fieldAction'] {
+  border: 1px solid var(--mc-color-border-strong);
+  background: var(--mc-color-surface);
+  color: var(--mc-color-text-secondary);
+  box-shadow: none;
+}
+
+.ui-button[data-size='action'][data-variant='fieldAction']:hover:not(:disabled) {
+  background: var(--mc-color-surface-subtle);
+}
+
 .ui-button[data-size='action'][data-variant='secondary']:hover:not(:disabled) {
   background: var(--mc-color-surface-pressed);
 }

@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import { formatDeadline, participantRoleLabels, type Meeting } from '../domain/meeting'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './RequestSentScreen.css'
 
 export function RequestSentScreen({
@@ -39,9 +40,12 @@ export function RequestSentScreen({
         <div className="request-recipient-list" aria-label="응답 요청 대상">
           {responseTargets.map((participant) => (
             <div className="request-recipient-row" key={participant.id}>
-              <div>
-                <strong>{participant.name}</strong>
-                <small>{participantRoleLabels[participant.role]}</small>
+              <div className="request-recipient-row__person">
+                <Avatar name={participant.name} size="small" />
+                <div>
+                  <strong>{participant.name}</strong>
+                  <small>{participantRoleLabels[participant.role]}</small>
+                </div>
               </div>
               <span
                 className={`request-delivery-status${

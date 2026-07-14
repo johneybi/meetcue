@@ -11,6 +11,7 @@ import { HostCandidateShortlist } from './HostCandidateShortlist'
 import { HostDecisionMatrix } from './HostDecisionMatrix'
 import { HostResponseRequestDialog } from './HostResponseRequestDialog'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './HostDecisionScreen.css'
 
 type HostDecisionScreenProps = {
@@ -131,9 +132,12 @@ export function HostDecisionScreen({
 
       {requestedParticipant ? (
         <div className="prototype-flow-action prototype-flow-action--decision">
-          <div>
-            <span>요청이 전달됐어요</span>
-            <strong>{requestedParticipant.name}님의 응답이 오면 결과를 다시 계산해요</strong>
+          <div className="prototype-flow-action__person">
+            <Avatar name={requestedParticipant.name} />
+            <div>
+              <span>요청이 전달됐어요</span>
+              <strong>{requestedParticipant.name}님의 응답이 오면 결과를 다시 계산해요</strong>
+            </div>
           </div>
           <Button
             size="action"

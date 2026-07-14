@@ -1,5 +1,9 @@
 # Changelog
 
+- Replaced the selected candidate gradient with a neutral pale-blue surface so the blue outline alone communicates selection without implying candidate status.
+- Fixed avatar corruption caused by broad descendant `span` selectors in the host matrix, optional-participant chips, participant context, and account request rows.
+- Made adjacent-text avatars decorative by default so participant names are not announced twice by assistive technology.
+- Standardized participant identity rows on the shared Avatar component across create review, participant context and response entry, account requests, host waiting, decision details, comparison matrix, response requests, and sent-request status.
 - Reassigned the host decision typography without shrinking the reading baseline: meeting criteria now belong to the meeting header, candidate times retain readable body sizing, and the decision sentence carries the primary emphasis.
 
 - Added semantic typography tokens and normalized the host decision hierarchy: metadata is lighter, candidate titles follow body roles, decision copy is readable at body-small size, dense matrix labels respect the 11px minimum, and Korean negative tracking was removed. DESIGN.md now matches the existing Wanted Sans Variable implementation.

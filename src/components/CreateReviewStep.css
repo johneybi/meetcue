@@ -69,6 +69,18 @@
   line-height: 20px;
 }
 
+.review-people-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.review-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 @media (max-width: 720px) {
   .create-review {
     gap: 26px;

@@ -231,7 +231,15 @@
   box-shadow: none;
 }
 
-.host-shell--decision .decision-pending-person > div {
+.host-shell--decision .decision-pending-person__identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--mc-space-2-5);
+}
+
+.host-shell--decision .decision-pending-person__identity > div {
+  min-width: 0;
   display: grid;
   gap: var(--mc-space-0-5);
 }
@@ -261,7 +269,10 @@
   box-shadow: none;
 }
 
-.host-shell--decision .decision-optional-people span {
+.host-shell--decision .decision-optional-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-space-1-5);
   padding: var(--mc-space-1) var(--mc-space-2);
   border-radius: var(--mc-radius-candidate-detail-label);
   background: var(--mc-candidate-detail-person-surface);

@@ -5,6 +5,7 @@ import {
   formatSchedulingWindow,
   type Meeting,
 } from '../domain/meeting'
+import { Avatar } from './ui/avatar'
 import './ParticipantMeetingContext.css'
 
 type ParticipantMeetingContextProps = {
@@ -40,7 +41,10 @@ export function ParticipantMeetingContext({
           </summary>
           <div className="respond-mobile-context__detail">
             <p>{meeting.purpose}</p>
-            <span>요청자: {meeting.hostLabel}</span>
+            <span className="respond-requester">
+              <Avatar name={meeting.hostLabel} size="small" />
+              요청자 {meeting.hostLabel}
+            </span>
             <dl>
               <div>
                 <dt>조율 기간</dt>
@@ -65,7 +69,10 @@ export function ParticipantMeetingContext({
           <h1>{meeting.title}</h1>
           <div className="respond-meeting-overview">
             <strong>{meeting.purpose}</strong>
-            <span>요청자: {meeting.hostLabel}</span>
+            <span className="respond-requester">
+              <Avatar name={meeting.hostLabel} size="small" />
+              요청자 {meeting.hostLabel}
+            </span>
             {referenceMaterial ? <small>참고 출처: {referenceMaterial}</small> : null}
           </div>
         </div>

@@ -180,11 +180,17 @@
   line-height: 22px;
 }
 
-.respond-meeting-overview span {
+.respond-meeting-overview > span {
   color: var(--mc-color-text-tertiary);
   font-size: 13px;
   font-weight: 500;
   line-height: 20px;
+}
+
+.respond-requester {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .respond-meeting-overview small {

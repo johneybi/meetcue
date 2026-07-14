@@ -334,13 +334,19 @@
 }
 
 .account-task-copy small,
-.account-list-row__copy span,
+.account-list-row__copy > span,
 .account-list-row__copy small,
 .notification-list small {
   color: var(--mc-color-text-muted);
   font-size: 13px;
   font-weight: 700;
   line-height: 20px;
+}
+
+.account-list-row__copy .account-list-row__owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .account-task-action {

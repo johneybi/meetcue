@@ -18,6 +18,7 @@ import type {
   AttendeeDecisionMode,
   AttendanceThresholdMode,
 } from '../components/AttendanceCriteriaStep'
+import type { AttendanceCriteriaUpdate } from '../components/MeetingCriteriaReviewScreen'
 
 export function useMeetingEditor(initialMeeting: () => Meeting) {
   const [meeting, setMeeting] = useState<Meeting>(initialMeeting)
@@ -168,6 +169,18 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
     })
   }
 
+  function applyAttendanceCriteria(criteria: AttendanceCriteriaUpdate) {
+    setMeeting((current) => ({
+      ...current,
+      preset: criteria.preset,
+      minAttendeeCount: criteria.minAttendeeCount,
+      participants: current.participants.map((participant) => ({
+        ...participant,
+        role: criteria.participantRoles[participant.id] ?? participant.role,
+      })),
+    }))
+  }
+
   function addParticipant(name?: string) {
     setMeeting((current) => {
       const nextIndex =
@@ -286,6 +299,7 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
     updateAttendanceMode,
     updateMinAttendeeCount,
     updateAttendanceThresholdMode,
+    applyAttendanceCriteria,
     addParticipant,
     removeParticipant,
     submitParticipantAvailability,

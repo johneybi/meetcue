@@ -7,6 +7,7 @@ import {
   type Participant,
 } from '../domain/meeting'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './HostCandidateDetail.css'
 
 type HostCandidateDetailProps = {
@@ -134,9 +135,12 @@ export function HostCandidateDetail({
               </header>
               {evaluation.requiredPending.map((participant) => (
                 <div className="decision-pending-person" key={participant.id}>
-                  <div>
-                    <strong>{participant.name}</strong>
-                    <small>꼭 참석해야 하는 사람 · 응답 전</small>
+                  <div className="decision-pending-person__identity">
+                    <Avatar name={participant.name} size="small" />
+                    <div>
+                      <strong>{participant.name}</strong>
+                      <small>꼭 참석해야 하는 사람 · 응답 전</small>
+                    </div>
                   </div>
                   <Button
                     variant="fieldAction"
@@ -167,7 +171,10 @@ export function HostCandidateDetail({
               </header>
               <div className="decision-optional-people">
                 {evaluation.optionalPendingPool.map((participant) => (
-                  <span key={participant.id}>{participant.name}</span>
+                  <span className="decision-optional-person" key={participant.id}>
+                    <Avatar name={participant.name} size="small" />
+                    {participant.name}
+                  </span>
                 ))}
               </div>
               <p>

@@ -12,6 +12,7 @@ import {
 import { formatSchedulingWindow, type Meeting } from '../domain/meeting'
 import type { AccountScenarioId } from '../domain/accountScenarios'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './AccountScreens.css'
 
 const meetCueEmblemUrl = `${import.meta.env.BASE_URL}brand/meetcue-emblem-64.png`
@@ -416,7 +417,10 @@ export function RequestsScreen({
             </span>
             <span className="account-list-row__copy">
               <strong>디자인 QA 기준 정리</strong>
-              <span>디자인팀 서연</span>
+              <span className="account-list-row__owner">
+                <Avatar name="서연" size="small" />
+                디자인팀 서연
+              </span>
               <small>7. 14. - 7. 16. · 응답을 수정할 수 있어요</small>
             </span>
             <span className="account-status account-status--done">응답 완료</span>

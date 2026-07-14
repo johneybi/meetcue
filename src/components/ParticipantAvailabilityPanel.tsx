@@ -5,6 +5,7 @@ import type { AvailabilitySlot } from '../domain/availability'
 import type { Participant, ResponseValue } from '../domain/meeting'
 import { ParticipantTimeGrid, type CalendarEvent } from './ParticipantTimeGrid'
 import { Button } from './ui/button'
+import { Avatar } from './ui/avatar'
 import './ParticipantAvailabilityPanel.css'
 
 type ParticipantAvailabilityPanelProps = {
@@ -71,7 +72,10 @@ export function ParticipantAvailabilityPanel({
       data-submission-status={submissionStatus}
     >
       <header className="response-guide">
-        <strong>{title}</strong>
+        <div className="response-guide__identity">
+          <Avatar name={participant.name} />
+          <strong>{title}</strong>
+        </div>
         {hasBaseline && participant.responseStatus === 'not_started' ? (
           <Button
             className="response-baseline-reset"
@@ -90,21 +94,19 @@ export function ParticipantAvailabilityPanel({
             <CalendarDays size={24} strokeWidth={2.3} />
           </div>
           <div className="calendar-import-card__copy">
-            <span>연결된 Google Calendar</span>
-            <strong id="calendar-import-title">일정을 다시 입력하지 않아도 돼요</strong>
-            <p>비어 있는 시간과 일정이 있는 시간을 먼저 채워드릴게요.</p>
-            <small>일정 제목은 공유하지 않고 비어 있음 여부만 사용해요.</small>
+            <strong id="calendar-import-title">Google Calendar에서 불러올까요?</strong>
+            <p>일정 제목은 공유하지 않고, 비어 있음 여부만 사용해요.</p>
           </div>
           <div className="calendar-import-card__actions">
-            <Button size="action" onClick={onApplyCalendar}>
-              캘린더 일정 불러오기
-            </Button>
             <Button
-              variant="quiet"
-              size="text"
+              variant="fieldAction"
+              size="action"
               onClick={onStartManualEntry}
             >
-              직접 입력하기
+              직접 입력
+            </Button>
+            <Button size="action" onClick={onApplyCalendar}>
+              캘린더 불러오기
             </Button>
           </div>
         </div>
