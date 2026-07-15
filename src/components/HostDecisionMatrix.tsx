@@ -1,18 +1,18 @@
 import { Check, ChevronDown, Clock3, Triangle, X } from 'lucide-react'
-import type { CandidateEvaluation } from '../domain/evaluation'
-import { formatCandidateTime, type Meeting } from '../domain/meeting'
+import type { CandidateEvaluationGroup } from '../domain/evaluation'
+import type { Candidate, Meeting } from '../domain/meeting'
 import { Avatar } from './ui/avatar'
 import './HostDecisionMatrix.css'
 
 type HostDecisionMatrixProps = {
   meeting: Meeting
-  evaluations: CandidateEvaluation[]
+  groups: CandidateEvaluationGroup[]
   selectedCandidateId: string
 }
 
 export function HostDecisionMatrix({
   meeting,
-  evaluations,
+  groups,
   selectedCandidateId,
 }: HostDecisionMatrixProps) {
   return (
@@ -21,6 +21,7 @@ export function HostDecisionMatrix({
         <div>
           <span>참석 가능 현황</span>
           <strong>전체 후보 비교</strong>
+          <small>{groups.length}개 결과 범위로 묶어 보여드려요</small>
         </div>
         <span className="decision-matrix-disclosure__affordance">
           <small className="is-closed-label">펼쳐 보기</small>
@@ -33,17 +34,24 @@ export function HostDecisionMatrix({
           <thead>
             <tr>
               <th scope="col">참석자</th>
-              {evaluations.map((evaluation) => (
-                <th
-                  className={
-                    evaluation.candidate.id === selectedCandidateId ? 'is-selected' : ''
-                  }
-                  key={evaluation.candidate.id}
-                  scope="col"
-                >
-                  {formatCandidateTime(evaluation.candidate)}
-                </th>
-              ))}
+              {groups.map((group) => {
+                const isSelected = group.evaluations.some(
+                  (evaluation) => evaluation.candidate.id === selectedCandidateId,
+                )
+                return (
+                  <th className={isSelected ? 'is-selected' : ''} key={group.id} scope="col">
+                    <span className="decision-matrix-date">
+                      {formatMatrixDate(group.evaluations[0].candidate)}
+                    </span>
+                    <span className="decision-matrix-time">{formatMatrixGroupTime(group)}</span>
+                    {group.evaluations.length > 1 ? (
+                      <span className="decision-matrix-group-count">
+                        {group.evaluations.length}개 시간
+                      </span>
+                    ) : null}
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
@@ -58,15 +66,22 @@ export function HostDecisionMatrix({
                     </span>
                   </span>
                 </th>
-                {evaluations.map((evaluation) => {
+                {groups.map((group) => {
+                  const evaluation =
+                    group.evaluations.find(
+                      (item) => item.candidate.id === selectedCandidateId,
+                    ) ?? group.evaluations[0]
+                  const isSelected = group.evaluations.some(
+                    (item) => item.candidate.id === selectedCandidateId,
+                  )
                   const detail = evaluation.responseDetails.find(
                     (item) => item.participant.id === participant.id,
                   )
                   const state = detail?.state
                   return (
                     <td
-                      className={`${evaluation.candidate.id === selectedCandidateId ? 'is-selected ' : ''}is-${state ?? 'unknown'}`}
-                      key={evaluation.candidate.id}
+                      className={`${isSelected ? 'is-selected ' : ''}is-${state ?? 'unknown'}`}
+                      key={group.id}
                       aria-label={
                         state === 'available'
                           ? '가능'
@@ -102,4 +117,39 @@ export function HostDecisionMatrix({
       </footer>
     </details>
   )
+}
+
+function formatMatrixDate(candidate: Candidate) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    weekday: 'short',
+    month: 'numeric',
+    day: 'numeric',
+  }).format(new Date(candidate.startAt))
+}
+
+function formatMatrixTime(candidate: Candidate) {
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  })
+
+  return `${formatter.format(new Date(candidate.startAt))}–${formatter.format(new Date(candidate.endAt))}`
+}
+
+function formatMatrixGroupTime(group: CandidateEvaluationGroup) {
+  const firstCandidate = group.evaluations[0].candidate
+  const lastCandidate = group.evaluations[group.evaluations.length - 1].candidate
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  })
+
+  if (group.evaluations.length === 1) return formatMatrixTime(firstCandidate)
+
+  return `${formatter.format(new Date(firstCandidate.startAt))}–${formatter.format(new Date(lastCandidate.endAt))}`
 }

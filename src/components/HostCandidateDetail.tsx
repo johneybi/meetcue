@@ -63,7 +63,7 @@ export function HostCandidateDetail({
       className={`decision-reference-detail is-${getStatusTone(evaluation.status)}`}
       aria-labelledby="selected-time-title"
     >
-      <header className="decision-focus-head">
+      <header className="decision-state-panel__time">
         <div>
           <span>선택한 후보</span>
           <h2 id="selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
@@ -72,11 +72,24 @@ export function HostCandidateDetail({
       </header>
 
       <div className="decision-state-panel">
-        <span className="decision-state-panel__label">
-          {candidateStatusLabels[evaluation.status]}
-        </span>
-        <h3>{statusTitle}</h3>
-        <p>{statusDescription}</p>
+        <div className="decision-summary">
+          <span className="decision-state-panel__label">
+            {candidateStatusLabels[evaluation.status]}
+          </span>
+          <h3>{statusTitle}</h3>
+          <p>{statusDescription}</p>
+          <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
+            <span className="is-positive" hidden={evaluation.availableCount === 0}>
+              <strong>{evaluation.availableCount}명</strong> 가능
+            </span>
+            <span className="is-negative" hidden={evaluation.unavailableCount === 0}>
+              <strong>{evaluation.unavailableCount}명</strong> 참석 어려움
+            </span>
+            <span className="is-unknown" hidden={selectedPendingCount === 0}>
+              <strong>{selectedPendingCount}명</strong> 응답 전
+            </span>
+          </div>
+        </div>
         {evaluation.status === 'ready' ? (
           <div className="decision-burden-summary" aria-label="확정 전 확인할 일정 부담">
             <div className={adjustmentParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
@@ -105,24 +118,15 @@ export function HostCandidateDetail({
             </div>
           </div>
         ) : null}
-        <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
-          <span className="is-positive" hidden={evaluation.availableCount === 0}>
-            <strong>{evaluation.availableCount}명</strong> 가능
-          </span>
-          <span className="is-negative" hidden={evaluation.unavailableCount === 0}>
-            <strong>{evaluation.unavailableCount}명</strong> 참석 어려움
-          </span>
-          <span className="is-unknown" hidden={selectedPendingCount === 0}>
-            <strong>{selectedPendingCount}명</strong> 응답 전
-          </span>
-        </div>
         {canConfirm ? (
-          <Button
-            size="action"
-            onClick={() => onConfirm(evaluation.candidate.id)}
-          >
-            이 시간으로 확정하기
-          </Button>
+          <div className="decision-action-footer">
+            <Button
+              size="action"
+              onClick={() => onConfirm(evaluation.candidate.id)}
+            >
+              이 시간으로 확정하기
+            </Button>
+          </div>
         ) : null}
       </div>
 

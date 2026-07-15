@@ -9,7 +9,6 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  justify-content: space-between;
   color: var(--mc-color-text-muted);
   font-size: 13px;
   font-weight: var(--type-weight-semibold);
@@ -84,10 +83,11 @@
 
 .availability-picker .time-picker__toolbar {
   grid-template-columns: minmax(0, 1fr);
+  padding-left: 52px;
 }
 
 .availability-picker .time-picker__week-navigation {
-  justify-self: start;
+  justify-self: center;
 }
 
 .availability-brush-toolbar {
@@ -411,6 +411,15 @@
   background: var(--mc-color-surface-subtle);
 }
 
+.availability-picker .week-time-grid__row > div > button:disabled {
+  opacity: 1;
+}
+
+.availability-picker .week-time-grid__row > div > button:disabled::after {
+  border-color: var(--mc-color-border);
+  background: var(--mc-color-surface-subtle);
+}
+
 .mobile-time-picker {
   display: grid;
   gap: 24px;
@@ -530,6 +539,10 @@
   white-space: nowrap;
 }
 
+.mobile-time-slot-list > button.is-selected > span small {
+  color: var(--mc-color-accent-pressed);
+}
+
 .mobile-time-slot-list > button:focus-visible {
   outline: 3px solid var(--mc-color-accent-soft-strong);
   outline-offset: 1px;
@@ -588,6 +601,21 @@
 
   .mobile-date-strip > button {
     min-height: 66px;
+  }
+}
+
+@media (max-width: 900px) {
+  .availability-picker .time-picker__toolbar {
+    padding-left: 0;
+  }
+
+  .availability-brush-toolbar {
+    justify-content: flex-end;
+  }
+
+  .availability-brush-group,
+  .availability-scope-legend {
+    display: none;
   }
 }
 

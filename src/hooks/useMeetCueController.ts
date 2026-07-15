@@ -4,7 +4,10 @@ import { createAccountScenarioMeeting, type AccountScenarioId } from '../domain/
 import { evaluateCandidates, type CandidateEvaluation } from '../domain/evaluation'
 import { createChangeLog } from '../domain/meetingChanges'
 import { createDraftMeeting, createPrototypeMeeting } from '../domain/mockMeeting'
-import { createPendingPrototypeState } from '../domain/prototypeState'
+import {
+  createPendingPrototypeState,
+  createRespondedPrototypeState,
+} from '../domain/prototypeState'
 import { formatCandidateTime, type Meeting, type Participant } from '../domain/meeting'
 import type { DevScreen } from '../components/DevScreenSwitcher'
 import type { HostCoordinationState } from '../components/HostShell'
@@ -65,6 +68,10 @@ export function useMeetCueController() {
       window.removeEventListener('popstate', handleRouteChange)
     }
   }, [])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [inviteToken, route])
 
   useEffect(() => {
     const timer = window.setInterval(() => setEvaluationNow(new Date()), 60_000)
@@ -178,7 +185,7 @@ export function useMeetCueController() {
 
     const fixture = createFixtureForScreen(screen)
     const pendingEvaluation =
-      screen.route === 'host' && screen.fixture === 'collecting'
+      screen.route === 'host' && (screen.fixture === 'collecting' || screen.fixture === 'pending')
         ? findSujinPendingCandidate(fixture)
         : undefined
     setMeeting(fixture)
@@ -276,6 +283,12 @@ function findSujinPendingCandidate(meeting: Meeting) {
 
 function createFixtureForScreen(screen: DevScreen) {
   const fixture = screen.fixture === 'draft' ? createDraftMeeting() : createPrototypeMeeting()
+  if (screen.fixture === 'pending') {
+    return createPendingPrototypeState(fixture).meeting
+  }
+  if (screen.fixture === 'responded') {
+    return createRespondedPrototypeState(fixture).meeting
+  }
   if (screen.fixture === 'waiting') {
     fixture.participants = fixture.participants.map((participant) =>
       participant.id === fixture.hostId

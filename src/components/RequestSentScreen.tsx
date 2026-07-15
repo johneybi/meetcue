@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react'
 import { formatDeadline, participantRoleLabels, type Meeting } from '../domain/meeting'
 import { Button } from './ui/button'
 import { Avatar } from './ui/avatar'
@@ -22,9 +21,6 @@ export function RequestSentScreen({
     <div className="share-workspace">
       <section className="share-card">
         <header className="share-card__header">
-          <span className="share-card__status-icon" aria-hidden="true">
-            <Check size={19} strokeWidth={2.5} />
-          </span>
           <div>
             <span>요청 발송 완료</span>
             <h1>요청을 보냈어요</h1>

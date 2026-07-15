@@ -235,6 +235,24 @@ export function AvailabilityWindowPicker({
     commitRange(range)
   }
 
+  function toggleBoundary(date: CalendarDate, startMinutes: number) {
+    const existingWindow = windowOccupyingSlot(date, startMinutes)
+
+    if (existingWindow != null) {
+      excludeRange({
+        date,
+        startMinutes,
+        endMinutes: startMinutes + TIME_QUANTUM_MINUTES,
+      })
+      return
+    }
+
+    if (isOutsideWindow(date)) return
+
+    const range = buildRange(date, startMinutes)
+    if (range != null) commitRange(range)
+  }
+
   function commitRange(range: { date: CalendarDate; startMinutes: number; endMinutes: number }) {
     const nextWindow: AvailabilityWindow = {
       id: `aw-${meeting.hostId}-${toLocalDate(range.date, range.startMinutes).getTime()}`,
@@ -410,7 +428,6 @@ export function AvailabilityWindowPicker({
             {selectedDateCount}일 · {formatMeetingDuration(selectedMinutes)}
           </strong>
         </div>
-        <span>안 되는 시간만 빼면 돼요</span>
       </div>
 
       <div className="availability-brush-toolbar" aria-label="시간 범위 편집 도구">
@@ -489,11 +506,7 @@ export function AvailabilityWindowPicker({
             })}
           </div>
           <section className="mobile-time-slots" aria-labelledby="mobile-availability-title">
-            <h2 id="mobile-availability-title">
-              {brushMode === 'exclude'
-                ? '제외할 시간을 눌러 지워주세요'
-                : '추가할 시간을 눌러 칠해주세요'}
-            </h2>
+            <h2 id="mobile-availability-title">시간을 눌러 포함하거나 제외하세요</h2>
             <div
               className="mobile-time-slot-list mobile-availability-list"
               onPointerMove={updateDragSelection}
@@ -512,9 +525,13 @@ export function AvailabilityWindowPicker({
                     data-availability-date={activeDate.toString()}
                     data-start-minutes={startMinutes}
                     onPointerDown={(event) => beginDragSelection(event, activeDate, startMinutes)}
-                    onClick={() => chooseBoundary(activeDate, startMinutes)}
+                    aria-label={`${formatTimeOfDay(startMinutes)}, 현재 ${selectedWindow != null ? '포함' : '제외'}, 누르면 ${selectedWindow != null ? '제외' : '포함'}`}
+                    onClick={() => toggleBoundary(activeDate, startMinutes)}
                   >
-                    <span>{formatTimeOfDay(startMinutes)}</span>
+                    <span>
+                      {formatTimeOfDay(startMinutes)}
+                      <small>{selectedWindow != null ? '포함' : '제외'}</small>
+                    </span>
                   </button>
                 )
               })}

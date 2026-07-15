@@ -40,8 +40,9 @@ export function MessageScreen({
         </header>
 
         <section className="message-panel__event" aria-labelledby="confirmation-event-title">
-          <h2 id="confirmation-event-title">{meeting.title}</h2>
-          <p>{formatCandidateTime(evaluation.candidate)}</p>
+          <span>{isConfirmed ? '확정된 일정' : '확정할 일정'}</span>
+          <h2 id="confirmation-event-title">{formatCandidateTime(evaluation.candidate)}</h2>
+          <p>{meeting.title}</p>
         </section>
 
         <section className="message-panel__recipients" aria-label="알림 대상">
@@ -51,6 +52,7 @@ export function MessageScreen({
             ))}
           </div>
           <div>
+            <span className="message-panel__recipients-label">알림 대상</span>
             <strong>
               {isConfirmed
                 ? `${recipients.length}명에게 알렸어요`

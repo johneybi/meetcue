@@ -181,20 +181,6 @@
 
 @media (max-width: 680px) {
   .demo-guide {
-    right: 8px;
-    bottom: calc(76px + env(safe-area-inset-bottom));
-  }
-
-  .demo-guide__toggle {
-    min-width: 44px;
-    padding: 0 12px;
-  }
-
-  .demo-guide__toggle span {
     display: none;
-  }
-
-  .demo-guide__panel {
-    padding: 16px;
   }
 }

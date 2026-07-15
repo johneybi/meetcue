@@ -1,38 +1,41 @@
 .host-shell--decision .decision-reference-detail {
   grid-area: detail;
+  align-self: start;
+  margin-top: calc(32px + var(--mc-space-1-5));
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
-  gap: var(--mc-space-3);
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  gap: 0;
+  padding: var(--mc-space-5);
+  border: 1px solid var(--mc-candidate-detail-ready-border);
+  border-radius: var(--mc-radius-candidate-detail-panel);
+  background: var(--mc-color-surface);
+  box-shadow: var(--mc-shadow-candidate-detail);
 }
 
-.host-shell--decision .decision-focus-head {
-  min-height: var(--mc-space-12);
+.host-shell--decision .decision-state-panel__time {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--mc-space-4-5);
-  padding: 0 var(--mc-space-0-5);
+  padding-bottom: var(--mc-space-4);
+  border-bottom: 1px solid var(--mc-candidate-detail-divider);
 }
 
-.host-shell--decision .decision-focus-head > div {
+.host-shell--decision .decision-state-panel__time > div {
   display: grid;
   gap: var(--mc-space-1);
 }
 
-.host-shell--decision .decision-focus-head span {
+.host-shell--decision .decision-state-panel__time span {
   color: var(--mc-color-text-tertiary);
   font-size: var(--mc-type-compact-size);
   font-weight: var(--type-weight-medium);
   line-height: var(--mc-type-compact-leading);
 }
 
-.host-shell--decision .decision-focus-head h2 {
+.host-shell--decision .decision-state-panel__time h2 {
   margin: 0;
   color: var(--mc-color-text-primary);
   font-size: var(--mc-type-section-title-size);
@@ -41,7 +44,7 @@
   letter-spacing: var(--tracking-ko-title-compact);
 }
 
-.host-shell--decision .decision-focus-head > strong {
+.host-shell--decision .decision-state-panel__time > strong {
   padding: var(--mc-space-1-25) var(--mc-space-2-25);
   border: 1px solid var(--mc-candidate-detail-recommend-border);
   border-radius: var(--mc-radius-candidate-detail-recommendation);
@@ -53,22 +56,33 @@
 
 .host-shell--decision .decision-state-panel {
   display: grid;
-  gap: var(--mc-space-2);
-  padding: var(--mc-space-5);
-  border: 1px solid var(--mc-candidate-detail-ready-border);
-  border-radius: var(--mc-radius-candidate-detail-panel);
+  gap: var(--mc-space-5);
+  padding: var(--mc-space-4) 0 0;
+  border: 0;
+  border-radius: 0;
   background: var(--mc-candidate-detail-ready-surface);
-  box-shadow: var(--mc-shadow-candidate-detail);
+  box-shadow: none;
+}
+
+.host-shell--decision .decision-summary {
+  display: grid;
+  gap: var(--mc-space-1);
 }
 
 .host-shell--decision .decision-reference-detail.is-info .decision-state-panel {
-  border-color: var(--mc-candidate-detail-pending-border);
   background: var(--mc-candidate-detail-pending-surface);
 }
 
 .host-shell--decision .decision-reference-detail.is-danger .decision-state-panel {
-  border-color: var(--mc-candidate-detail-danger-border);
   background: var(--mc-candidate-detail-danger-surface);
+}
+
+.host-shell--decision .decision-reference-detail.is-info {
+  border-color: var(--mc-candidate-detail-pending-border);
+}
+
+.host-shell--decision .decision-reference-detail.is-danger {
+  border-color: var(--mc-candidate-detail-danger-border);
 }
 
 .host-shell--decision .decision-state-panel__label {
@@ -97,7 +111,7 @@
 }
 
 .host-shell--decision .decision-state-panel p {
-  margin: -4px 0 0;
+  margin: 0;
   color: var(--mc-color-text-tertiary);
   font-size: var(--mc-type-body-small-size);
   font-weight: var(--type-weight-regular);
@@ -107,8 +121,8 @@
 .host-shell--decision .decision-burden-summary {
   display: grid;
   gap: var(--mc-space-1-5);
-  padding: var(--mc-space-2-5) 0;
-  border-block: 1px solid var(--mc-candidate-detail-divider);
+  padding: var(--mc-space-4) 0 0;
+  border-top: 1px solid var(--mc-candidate-detail-divider);
 }
 
 .host-shell--decision .decision-burden-summary > div {
@@ -139,7 +153,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--mc-space-2);
-  margin-top: var(--mc-space-1);
+  margin-top: var(--mc-space-2);
 }
 
 .host-shell--decision .decision-state-counts span {
@@ -170,9 +184,13 @@
   color: var(--mc-candidate-detail-unknown);
 }
 
-.host-shell--decision .decision-state-panel > .ui-button[data-variant='primary'][data-size='action'] {
+.host-shell--decision .decision-action-footer {
+  display: grid;
+}
+
+.host-shell--decision .decision-action-footer > .ui-button[data-variant='primary'][data-size='action'] {
   min-height: var(--mc-space-12);
-  margin-top: var(--mc-space-1-5);
+  margin: 0;
   border-radius: var(--mc-radius-candidate-detail-group);
   box-shadow: none;
 }
@@ -180,6 +198,7 @@
 .host-shell--decision .decision-pending-groups {
   display: grid;
   gap: var(--mc-space-2-5);
+  margin-top: var(--mc-space-4);
 }
 
 .host-shell--decision .decision-pending-group,
@@ -295,6 +314,7 @@
 .host-shell--decision .decision-impossible-guide {
   display: grid;
   gap: var(--mc-space-0-75);
+  margin-top: var(--mc-space-4);
   padding: var(--mc-space-4);
 }
 
@@ -320,6 +340,10 @@
 }
 
 @media (max-width: 760px) {
+  .host-shell--decision .decision-reference-detail {
+    margin-top: 0;
+  }
+
   .host-shell--decision .decision-focus-head {
     min-height: 0;
   }

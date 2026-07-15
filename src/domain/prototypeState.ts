@@ -5,9 +5,16 @@ export function createPendingPrototypeState(meeting: Meeting) {
   const requiredCount = meeting.participants.filter(
     (participant) => participant.role === 'required',
   ).length
-  const optionalTarget = invitees.find(
-    (participant) => participant.role === 'optional' && meeting.minAttendeeCount > requiredCount,
-  )
+  const optionalTarget =
+    invitees.find(
+      (participant) =>
+        participant.role === 'optional' &&
+        participant.responseStatus !== 'submitted' &&
+        meeting.minAttendeeCount > requiredCount,
+    ) ??
+    invitees.find(
+      (participant) => participant.role === 'optional' && meeting.minAttendeeCount > requiredCount,
+    )
   const target =
     optionalTarget ??
     invitees.find((participant) => participant.role === 'required') ??
@@ -104,5 +111,49 @@ export function createPendingPrototypeState(meeting: Meeting) {
     },
     target: pendingTarget,
     pendingCandidateId: pendingCandidate.id,
+  }
+}
+
+export function createRespondedPrototypeState(meeting: Meeting) {
+  const pendingState = createPendingPrototypeState(meeting)
+  const target = pendingState.target
+  const candidate = pendingState.meeting.candidates.find(
+    (item) => item.id === pendingState.pendingCandidateId,
+  )
+
+  if (target == null || candidate == null) return pendingState
+
+  return {
+    ...pendingState,
+    meeting: {
+      ...pendingState.meeting,
+      participants: pendingState.meeting.participants.map((participant) =>
+        participant.id === target.id
+          ? { ...participant, responseStatus: 'submitted' as const }
+          : participant,
+      ),
+      availabilityWindows: [
+        ...pendingState.meeting.availabilityWindows,
+        {
+          id: `aw-${target.id}-${candidate.id}-demo-response`,
+          meetingId: pendingState.meeting.id,
+          ownerId: target.id,
+          startAt: candidate.startAt,
+          endAt: candidate.endAt,
+          state: 'available' as const,
+        },
+      ],
+      responses: [
+        ...pendingState.meeting.responses,
+        {
+          id: `response-${target.id}-${candidate.id}-demo-response`,
+          participantId: target.id,
+          candidateId: candidate.id,
+          value: 'available' as const,
+          updatedAt: new Date().toISOString(),
+          updateSource: 'participant_edit' as const,
+        },
+      ],
+    },
   }
 }

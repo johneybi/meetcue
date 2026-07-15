@@ -17,13 +17,25 @@ export function MeetingCriteriaReviewScreen({
   onApply: (criteria: AttendanceCriteriaUpdate) => void
   onCancel: () => void
 }) {
-  const [draft, setDraft] = useState<AttendanceCriteriaUpdate>(() => ({
-    preset: meeting.preset,
-    minAttendeeCount: meeting.minAttendeeCount,
-    participantRoles: Object.fromEntries(
+  const [draft, setDraft] = useState<AttendanceCriteriaUpdate>(() => {
+    const participantRoles = Object.fromEntries(
       meeting.participants.map((participant) => [participant.id, participant.role]),
-    ),
-  }))
+    )
+    const requiredCount = Object.values(participantRoles).filter(
+      (role) => role === 'required',
+    ).length
+
+    return {
+      preset: meeting.preset,
+      minAttendeeCount:
+        meeting.preset === 'all_hands'
+          ? meeting.participants.length
+          : meeting.preset === 'core_attendees'
+            ? requiredCount
+            : Math.max(requiredCount, meeting.minAttendeeCount),
+      participantRoles,
+    }
+  })
   const participants = meeting.participants.map((participant) => ({
     ...participant,
     role: draft.participantRoles[participant.id] ?? participant.role,
@@ -60,7 +72,10 @@ export function MeetingCriteriaReviewScreen({
       return {
         ...current,
         participantRoles,
-        minAttendeeCount: Math.max(current.minAttendeeCount, requiredCount),
+        minAttendeeCount:
+          current.preset === 'core_attendees'
+            ? requiredCount
+            : Math.max(current.minAttendeeCount, requiredCount),
       }
     })
   }
@@ -183,7 +198,9 @@ export function MeetingCriteriaReviewScreen({
             <strong>
               {isEveryoneRequired
                 ? `주최자 포함 ${participants.length}명 모두`
-                : `필수 ${requiredInvitees.length + 1}명 · 최소 ${draft.minAttendeeCount}명`}
+                : thresholdMode === 'required_only'
+                  ? `필수 ${requiredInvitees.length + 1}명이 가능하면 진행`
+                  : `필수 ${requiredInvitees.length + 1}명 · 최소 ${draft.minAttendeeCount}명`}
             </strong>
           </div>
           <Button size="action" onClick={() => onApply(draft)}>

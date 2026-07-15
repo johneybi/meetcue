@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pencil } from 'lucide-react'
 import {
+  groupCandidateEvaluations,
   hasSameRecommendationPriority,
   selectCandidateShortlist,
   type CandidateEvaluation,
@@ -40,7 +41,8 @@ export function HostDecisionScreen({
   const [requestCandidateId, setRequestCandidateId] = useState<string | null>(null)
   const recommendedEvaluation = selectedEvaluation
   const systemRecommendedEvaluation = evaluations[0] ?? selectedEvaluation
-  const shortlistEvaluations = selectCandidateShortlist(evaluations, 6)
+  const shortlistEvaluations = selectCandidateShortlist(evaluations, 5)
+  const comparisonGroups = groupCandidateEvaluations(evaluations)
   const requiredCount = meeting.participants.filter(
     (participant) => participant.role === 'required',
   ).length
@@ -114,7 +116,7 @@ export function HostDecisionScreen({
 
       <HostDecisionMatrix
         meeting={meeting}
-        evaluations={evaluations}
+        groups={comparisonGroups}
         selectedCandidateId={recommendedEvaluation.candidate.id}
       />
 

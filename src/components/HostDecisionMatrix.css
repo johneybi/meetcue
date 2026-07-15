@@ -6,12 +6,12 @@
 }
 
 .decision-matrix-disclosure > summary {
-  min-height: 56px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--mc-space-4);
-  padding: var(--mc-space-2-5) var(--mc-space-4);
+  padding: var(--mc-space-3-5) var(--mc-space-4);
   cursor: pointer;
   list-style: none;
 }
@@ -51,7 +51,7 @@
 
 .decision-matrix th,
 .decision-matrix td {
-  height: 48px;
+  height: 52px;
   padding: var(--mc-space-2) var(--mc-space-2-5);
   border-bottom: 1px solid var(--mc-decision-matrix-cell-divider);
   text-align: center;
@@ -65,13 +65,52 @@
   line-height: var(--mc-type-compact-leading);
 }
 
+.decision-matrix thead th:not(:first-child) {
+  min-width: 116px;
+}
+
+.decision-matrix-date,
+.decision-matrix-time {
+  display: block;
+  white-space: nowrap;
+}
+
+.decision-matrix-date {
+  color: var(--mc-color-text-secondary);
+  font-size: var(--mc-type-compact-size);
+  font-weight: var(--type-weight-semibold);
+}
+
+.decision-matrix-time {
+  color: var(--mc-color-text-muted);
+  font-size: var(--mc-type-dense-size);
+  font-weight: var(--type-weight-medium);
+}
+
+.decision-matrix-group-count {
+  display: block;
+  margin-top: var(--mc-space-0-5);
+  color: var(--mc-color-text-muted);
+  font-size: var(--mc-type-dense-size);
+  font-weight: var(--type-weight-medium);
+  line-height: var(--mc-type-dense-leading);
+  white-space: nowrap;
+}
+
 .decision-matrix th:first-child {
-  min-width: 156px;
+  position: sticky;
+  z-index: 2;
+  left: 0;
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  padding-inline: var(--mc-space-5);
+  background: var(--mc-color-surface);
   text-align: left;
 }
 
-.decision-matrix tbody th {
-  padding-inline: var(--mc-space-3);
+.decision-matrix thead th:first-child {
+  z-index: 3;
 }
 
 .decision-matrix-person {
@@ -81,10 +120,12 @@
 }
 
 .decision-matrix-person__copy {
+  flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: var(--mc-space-1-5);
+  justify-content: space-between;
+  gap: var(--mc-space-3);
 }
 
 .decision-matrix tbody tr:last-child th,
@@ -99,8 +140,9 @@
 }
 
 .decision-matrix tbody th small {
-  padding: var(--mc-space-0-5) var(--mc-space-1-25);
-  border-radius: var(--mc-space-1-25);
+  flex: none;
+  padding: var(--mc-space-0-5) var(--mc-space-1-5);
+  border-radius: var(--mc-radius-decision-matrix-badge);
   background: var(--mc-decision-matrix-required);
   color: var(--mc-color-accent-pressed);
   font-size: var(--mc-type-dense-size);
@@ -110,6 +152,9 @@
 
 .decision-matrix .is-selected {
   background: var(--mc-decision-matrix-selected);
+  box-shadow:
+    inset 1px 0 0 var(--mc-color-accent-soft-strong),
+    inset -1px 0 0 var(--mc-color-accent-soft-strong);
 }
 
 .decision-matrix td svg {
@@ -138,8 +183,11 @@
 
 .decision-matrix-disclosure > footer {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: var(--mc-space-4);
-  padding: var(--mc-space-2-5) var(--mc-space-4);
+  min-height: 52px;
+  padding: var(--mc-space-3-5) var(--mc-space-5) var(--mc-space-4);
   color: var(--mc-color-text-tertiary);
   font-size: var(--mc-type-dense-size);
   font-weight: var(--type-weight-medium);
@@ -208,6 +256,7 @@
   }
 
   .host-shell--decision .decision-matrix-disclosure > summary {
-    min-height: 52px;
+    min-height: 60px;
+    padding-block: var(--mc-space-3);
   }
 }

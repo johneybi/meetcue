@@ -113,10 +113,10 @@
 }
 
 .host-shell--share .host-stage {
-  width: min(100%, 760px);
+  width: min(100%, 820px);
   min-height: auto;
   margin-inline: auto;
-  padding: 44px 0 72px;
+  padding: 32px 0 72px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -133,31 +133,19 @@
   gap: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid #d8e1eb;
-  border-radius: 14px;
-  background: rgb(255 255 255 / 82%);
-  box-shadow: none;
+  border: 1px solid rgb(207 216 229 / 78%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 14px 34px rgb(31 52 83 / 7%), 0 3px 10px rgb(31 52 83 / 4%);
   backdrop-filter: none;
 }
 
 .share-card__header {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   padding: 24px;
   border-bottom: 1px solid #e5ebf1;
-}
-
-.share-card__status-icon {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: #e7f8f3;
-  color: #087a5b;
 }
 
 .share-card__header > div {
@@ -166,7 +154,7 @@
 }
 
 .share-card__header > div > span {
-  color: #087a5b;
+  color: var(--mc-color-accent-pressed);
   font-size: 12px;
   font-weight: var(--type-weight-semibold);
 }
@@ -299,15 +287,7 @@
   }
 
   .share-card__header {
-    grid-template-columns: 36px minmax(0, 1fr);
-    gap: 11px;
     padding: 20px 16px;
-  }
-
-  .share-card__status-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
   }
 
   .share-card__header h1 {

@@ -1,6 +1,10 @@
-import type { RefObject } from 'react'
+import { useState, type RefObject } from 'react'
 import type { Participant } from '../domain/meeting'
 import { InviteeOption } from './InviteeOption'
+import {
+  OrganizationDirectoryIcon,
+  OrganizationDirectoryPicker,
+} from './OrganizationDirectoryPicker'
 import { Button } from './ui/button'
 import { Avatar } from './ui/avatar'
 import { Input } from './ui/input'
@@ -45,6 +49,7 @@ export function AttendeePeopleStep({
     participants.map((participant) => participant.name.trim().toLocaleLowerCase()),
   )
   const normalizedQuery = query.trim().toLocaleLowerCase()
+  const [isOrganizationOpen, setIsOrganizationOpen] = useState(false)
 
   function renderSelectedInvitees(compact = false) {
     if (!hasInvitee) return null
@@ -144,7 +149,7 @@ export function AttendeePeopleStep({
       <div className="attendee-substep-heading-row">
         <div className="attendee-section-head">
           <h3 id="attendee-people-title" tabIndex={-1} data-attendee-step-heading>
-            {isFinalized ? '시간을 물어볼 사람' : '누구에게 시간을 물어볼까요?'}
+            참석자
           </h3>
         </div>
         {isFinalized ? (
@@ -180,12 +185,17 @@ export function AttendeePeopleStep({
             <strong>찾기</strong>
           </Button>
 
-          {renderSearch(
-            '참석자 이름 또는 이메일',
-            'desktop-attendee-options',
-            false,
-            'people-search--desktop',
-          )}
+          <div className="people-find-controls people-search--desktop">
+            {renderSearch('참석자 이름 또는 이메일', 'desktop-attendee-options')}
+            <Button
+              className="organization-directory-trigger"
+              variant="secondary"
+              onClick={() => setIsOrganizationOpen(true)}
+            >
+              <OrganizationDirectoryIcon />
+              팀에서 찾기
+            </Button>
+          </div>
           {renderSelectedInvitees()}
           <div className="people-options--desktop">
             {renderPeopleOptions('desktop-attendee-options')}
@@ -217,6 +227,15 @@ export function AttendeePeopleStep({
                 </div>
                 {renderSelectedInvitees(true)}
                 {renderSearch('사람 찾기', 'mobile-attendee-options', true)}
+                <Button
+                  className="organization-directory-trigger"
+                  variant="secondary"
+                  width="full"
+                  onClick={() => setIsOrganizationOpen(true)}
+                >
+                  <OrganizationDirectoryIcon />
+                  팀에서 찾기
+                </Button>
                 {renderPeopleOptions('mobile-attendee-options')}
                 <Button
                   className="people-picker-done"
@@ -231,6 +250,15 @@ export function AttendeePeopleStep({
           ) : null}
         </div>
       )}
+      {isOrganizationOpen ? (
+        <OrganizationDirectoryPicker
+          selectedNames={inviteeNames}
+          onClose={() => setIsOrganizationOpen(false)}
+          onApply={(changes) => {
+            changes.forEach(({ name }) => onToggle(name))
+          }}
+        />
+      ) : null}
     </section>
   )
 }

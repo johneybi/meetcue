@@ -33,6 +33,7 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
   const requiredParticipants = invitedParticipants.filter(
     (participant) => participant.role === 'required',
   )
+  const host = meeting.participants.find((participant) => participant.id === meeting.hostId)
   const hostAvailabilityWindows = meeting.availabilityWindows.filter(
     (window) => window.ownerId === meeting.hostId,
   )
@@ -44,7 +45,7 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
         <h2 id="review-meeting-title">회의 안내</h2>
         <div className="create-review-facts">
           <ReviewFactRow label="회의" value={meeting.title} />
-          <ReviewIdentityRow label="요청자" name={meeting.hostLabel} />
+          <ReviewIdentityRow label="요청자" name={host?.name ?? meeting.hostLabel} />
           <ReviewFactRow label="정할 내용" value={meeting.purpose.trim()} />
           {referenceMaterial ? <ReviewFactRow label="참고 출처" value={referenceMaterial} /> : null}
         </div>

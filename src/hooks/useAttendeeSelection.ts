@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Meeting, Participant } from '../domain/meeting'
 import type { AttendeeDecisionMode } from '../components/AttendanceCriteriaStep'
 
-const ATTENDEE_DIRECTORY = ['유진', '현우', '다은', '도윤']
+const ATTENDEE_DIRECTORY = ['유진', '현우', '다은', '도윤', '서연', '민수']
 const RECENT_INVITEES_STORAGE_KEY = 'confirmation-board-recent-invitees'
 
 type UseAttendeeSelectionOptions = {
@@ -38,7 +38,10 @@ export function useAttendeeSelection({
     participants.map((participant) => participant.name.trim().toLocaleLowerCase()),
   )
   const normalizedQuery = query.trim().toLocaleLowerCase()
-  const visiblePeople = (normalizedQuery ? ATTENDEE_DIRECTORY : recentInvitees).filter(
+  const peopleSource = normalizedQuery
+    ? ATTENDEE_DIRECTORY
+    : [...recentInvitees, ...ATTENDEE_DIRECTORY]
+  const visiblePeople = peopleSource.filter(
     (name, index, names) =>
       names.indexOf(name) === index && name.toLocaleLowerCase().includes(normalizedQuery),
   )
@@ -164,9 +167,11 @@ function readRecentInvitees() {
 
   try {
     const storedNames = JSON.parse(window.localStorage.getItem(RECENT_INVITEES_STORAGE_KEY) ?? '[]')
-    return Array.isArray(storedNames) && storedNames.length > 0
-      ? storedNames.filter((name): name is string => typeof name === 'string')
-      : ATTENDEE_DIRECTORY
+    if (!Array.isArray(storedNames) || storedNames.length === 0) return ATTENDEE_DIRECTORY
+
+    return [...storedNames.filter((name): name is string => typeof name === 'string'), ...ATTENDEE_DIRECTORY]
+      .filter((name, index, names) => names.indexOf(name) === index)
+      .slice(0, 8)
   } catch {
     return ATTENDEE_DIRECTORY
   }
@@ -176,8 +181,13 @@ function focusAttendeeSubstep(target: HTMLElement | null) {
   if (!target) return
 
   const heading = target.querySelector<HTMLElement>('[data-attendee-step-heading]')
+  const workflow = target.closest<HTMLElement>('.create-workflow')
+  const isMobile = window.matchMedia('(max-width: 760px)').matches
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+  ;(isMobile ? target : workflow)?.scrollIntoView({
+    behavior: reduceMotion ? 'auto' : 'smooth',
+    block: 'start',
+  })
   heading?.focus({ preventScroll: true })
 }

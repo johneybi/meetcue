@@ -10,6 +10,7 @@ test('creates a pending demo state with one actionable non-host attendee', () =>
   assert.equal(result.meeting.status, 'collecting')
   assert.ok(result.pendingCandidateId)
   assert.ok(result.target)
+  assert.equal(result.target?.id, 'p-sujin')
   assert.notEqual(result.target?.id, source.hostId)
   assert.equal(
     result.meeting.participants.find((participant) => participant.id === result.target?.id)

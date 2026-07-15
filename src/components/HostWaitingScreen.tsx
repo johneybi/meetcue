@@ -39,12 +39,10 @@ export function HostWaitingScreen({
     <div className="waiting-workspace">
       <section className="waiting-card">
         <header className="waiting-header">
-          <div className="waiting-header__context">
-            <div>
-              <span>회의</span>
-              <strong>{meeting.title}</strong>
-            </div>
+          <div className="waiting-header__meta">
             <span className="waiting-header__eyebrow">응답 수집 중</span>
+            <span aria-hidden="true">·</span>
+            <strong>{meeting.title}</strong>
           </div>
           <h1>{pendingParticipants.length}명의 응답을 기다리고 있어요</h1>
           <p>모든 응답을 기다리지 않아도, 조건을 충족한 시간이 생기면 바로 확인할 수 있어요.</p>
@@ -62,16 +60,11 @@ export function HostWaitingScreen({
             <span className="waiting-progress__track" aria-hidden="true">
               <span style={{ width: `${responseProgress}%` }} />
             </span>
-            <span>{responseProgress}% 완료</span>
           </div>
           <dl className="waiting-overview__meta">
             <div>
               <dt>응답 마감</dt>
               <dd>{formatDeadline(meeting.responseDeadline)}</dd>
-            </div>
-            <div>
-              <dt>후보 시간</dt>
-              <dd>{meeting.candidates.length}개</dd>
             </div>
           </dl>
         </section>
@@ -80,11 +73,10 @@ export function HostWaitingScreen({
           <div className="waiting-participants__head">
             <div>
               <h2>참석자 응답</h2>
-              <p>응답이 필요한 사람을 먼저 보여드려요.</p>
+              {completedParticipants.length > 0 ? (
+                <p>응답을 기다리는 사람을 먼저 보여드려요.</p>
+              ) : null}
             </div>
-            <span>
-              대기 {pendingParticipants.length} · 완료 {completedParticipants.length}
-            </span>
           </div>
           <div className="waiting-response-list">
             {orderedParticipants.map((participant) => {
@@ -139,26 +131,18 @@ export function HostWaitingScreen({
             })}
           </div>
         </section>
+        {onAdvancePrototype ? (
+          <footer className="waiting-demo-footer" aria-label="데모 시연">
+            <div>
+              <span>데모 시연</span>
+              <strong>응답이 도착한 뒤의 판단 화면을 확인해 보세요.</strong>
+            </div>
+            <Button variant="fieldAction" size="text" onClick={onAdvancePrototype}>
+              응답이 온 결과 보기
+            </Button>
+          </footer>
+        ) : null}
       </section>
-      {onAdvancePrototype ? (
-        <aside className="prototype-flow-action waiting-demo-card" aria-label="데모 시연">
-          <div>
-            <span>
-              {completedParticipants.length > 0
-                ? `${completedParticipants.length}명의 응답을 반영했어요`
-                : '데모 시연'}
-            </span>
-            <strong>
-              {completedParticipants.length > 0
-                ? '현재 조건으로 가능한 시간을 확인해 보세요'
-                : '응답이 도착한 다음 화면을 미리 확인해 보세요'}
-            </strong>
-          </div>
-          <Button size="action" onClick={onAdvancePrototype}>
-            {completedParticipants.length > 0 ? '결과 확인하기' : '다음 단계 보기'}
-          </Button>
-        </aside>
-      ) : null}
     </div>
   )
 }

@@ -138,13 +138,14 @@ export function useCreateFlowController({
 
     previousCreateStepRef.current = step
     const frame = window.requestAnimationFrame(() => {
-      const activePhase = workflowRef.current?.querySelector<HTMLElement>(
+      const workflow = workflowRef.current
+      const activePhase = workflow?.querySelector<HTMLElement>(
         '.create-task[aria-current="step"]',
       )
       const heading = activePhase?.querySelector<HTMLElement>('h1')
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-      activePhase?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+      workflow?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
       heading?.focus({ preventScroll: true })
     })
 

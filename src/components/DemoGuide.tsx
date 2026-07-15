@@ -15,32 +15,32 @@ const demoGuideSteps: Array<DevScreen & { title: string; description: string }> 
   },
   {
     label: '2',
-    title: '응답이 필요한 상황',
-    description: '현재 응답만으로 무엇을 결정할 수 있는지 확인해요.',
+    title: '추가 응답 요청하기',
+    description: '아직 정할 수 없는 이유를 보고 필요한 사람에게 요청해요.',
     route: 'host',
-    fixture: 'collecting',
+    fixture: 'pending',
   },
   {
     label: '3',
     title: '참석자 응답',
-    description: '캘린더를 불러오고 가능한 시간을 직접 조정해요.',
+    description: '수진이 캘린더를 확인하고 가능한 시간을 제출해요.',
     route: 'invite',
-    fixture: 'current',
+    fixture: 'pending',
     participantToken: 'token-p-sujin',
   },
   {
     label: '4',
     title: '바뀐 결과 확인',
-    description: '새 응답이 후보 시간과 판단 근거에 반영된 모습을 봐요.',
+    description: '새 응답으로 달라진 결과와 판단 근거를 확인해요.',
     route: 'host',
-    fixture: 'current',
+    fixture: 'responded',
   },
   {
     label: '5',
     title: '회의 확정',
-    description: '참석 부담을 확인하고 최종 시간을 확정해요.',
-    route: 'host',
-    fixture: 'confirmed',
+    description: '선택한 시간을 확인하고 직접 회의를 확정해요.',
+    route: 'message',
+    fixture: 'responded',
   },
 ]
 
@@ -123,7 +123,7 @@ export function DemoGuide({
 function getCurrentDemoStepIndex(route: AppRoute, meeting: Meeting) {
   if (route === 'create') return 0
   if (route === 'invite' || route === 'invite-edit' || route === 'invite-done') return 2
-  if (route === 'host' && meeting.status === 'confirmed') return 4
+  if (route === 'message' || (route === 'host' && meeting.status === 'confirmed')) return 4
   if (
     route === 'host' &&
     meeting.participants.find((participant) => participant.id === 'p-sujin')?.responseStatus ===

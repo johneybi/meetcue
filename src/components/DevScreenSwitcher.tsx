@@ -6,7 +6,7 @@ import './DevScreenSwitcher.css'
 export type DevScreen = {
   label: string
   route: AppRoute
-  fixture: 'draft' | 'waiting' | 'collecting' | 'confirmed' | 'current'
+  fixture: 'draft' | 'waiting' | 'collecting' | 'pending' | 'responded' | 'confirmed' | 'current'
   participantToken?: string
 }
 
@@ -15,15 +15,15 @@ const devScreenGroups: Array<{ label: string; screens: DevScreen[] }> = [
     label: '핵심 시연',
     screens: [
       { label: '1. 생성', route: 'create', fixture: 'draft' },
-      { label: '2. PENDING 결과', route: 'host', fixture: 'collecting' },
+      { label: '2. 추가 응답 요청', route: 'host', fixture: 'pending' },
       {
         label: '3. 수진 응답',
         route: 'invite',
-        fixture: 'current',
+        fixture: 'pending',
         participantToken: 'token-p-sujin',
       },
-      { label: '4. 재판정 결과', route: 'host', fixture: 'current' },
-      { label: '5. 확정', route: 'host', fixture: 'confirmed' },
+      { label: '4. 재판정 결과', route: 'host', fixture: 'responded' },
+      { label: '5. 최종 확정', route: 'message', fixture: 'responded' },
     ],
   },
   {

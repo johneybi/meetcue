@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from './ui/button'
-import { MainCard, MainCardContent, MainCardHeader } from './ui/main-card'
+import { MainCard, MainCardContent, MainCardFooter, MainCardHeader } from './ui/main-card'
 import './ui/main-card.css'
 
 type CreateStepPresentation = {
@@ -54,11 +54,11 @@ export function CreateFlowFrame({
               <Button
                 className="create-back-button"
                 variant="quiet"
-                size="compact"
+                size="text"
                 aria-label="이전 단계"
                 onClick={onBack}
               >
-                <ChevronLeft aria-hidden="true" size={20} strokeWidth={2.2} />
+                <ArrowLeft aria-hidden="true" size={18} strokeWidth={2.2} />
                 <span>이전</span>
               </Button>
             ) : null}
@@ -94,26 +94,27 @@ export function CreateFlowFrame({
                   <p>{activeStep.description}</p>
                 </MainCardHeader>
                 <MainCardContent className="create-phase-body">{children}</MainCardContent>
+                <MainCardFooter className="create-actions">
+                  <Button
+                    className="create-primary-action--desktop"
+                    size="action"
+                    width="full"
+                    onClick={onPrimary}
+                    disabled={!canContinue}
+                  >
+                    {desktopPrimaryLabel}
+                  </Button>
+                  <Button
+                    className="create-primary-action--mobile"
+                    size="action"
+                    width="full"
+                    onClick={onPrimary}
+                    disabled={!canContinue}
+                  >
+                    {mobilePrimaryLabel}
+                  </Button>
+                </MainCardFooter>
               </MainCard>
-            </div>
-            <div className="create-actions">
-              <Button
-                className="create-primary-action--desktop"
-                size="action"
-                onClick={onPrimary}
-                disabled={!canContinue}
-              >
-                {desktopPrimaryLabel}
-              </Button>
-              <Button
-                className="create-primary-action--mobile"
-                size="action"
-                width="full"
-                onClick={onPrimary}
-                disabled={!canContinue}
-              >
-                {mobilePrimaryLabel}
-              </Button>
             </div>
           </div>
         </section>

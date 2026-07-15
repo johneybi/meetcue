@@ -720,7 +720,52 @@
 
 @media (max-width: 760px) {
   .respond-main .response-panel--participant {
-    padding: 20px;
+    gap: 14px;
+    padding: 16px 16px 88px;
     border-radius: 14px;
+  }
+
+  .respond-main .response-panel--participant .response-guide {
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .respond-main .response-panel--participant .calendar-import-summary {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .respond-main .response-panel--participant .calendar-import-summary span {
+    display: none;
+  }
+
+  .respond-main .response-panel--participant .calendar-import-reset {
+    grid-column: 3;
+    min-height: 36px;
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
+
+  .respond-main .response-panel--participant .participant-time-table {
+    gap: 12px;
+  }
+
+  .respond-main .response-panel--participant .participant-state-guide {
+    gap: 8px 12px;
+    padding-top: 0;
+    font-size: 12px;
+  }
+
+  .respond-main .response-panel--participant .participant-state-guide > strong,
+  .respond-main .response-panel--participant .participant-state-guide > small {
+    display: none;
+  }
+
+  .respond-main .response-panel--participant .participant-state-guide i {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    font-size: 12px;
   }
 }

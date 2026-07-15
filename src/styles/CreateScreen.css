@@ -14,6 +14,7 @@
   width: 100%;
   min-width: 0;
   margin-inline: auto;
+  scroll-margin-top: 84px;
 }
 
 .create-workflow--review {
@@ -243,6 +244,10 @@
 }
 
 @media (max-width: 760px) {
+
+  .create-workflow {
+    scroll-margin-top: 68px;
+  }
 
   .create-progress {
     margin-bottom: 24px;
@@ -564,6 +569,7 @@
 
 .create-main-panel .create-task__header {
   justify-items: start;
+  margin-bottom: 0;
   padding-bottom: 18px;
   border-bottom: 1px solid rgb(207 216 229 / 54%);
   text-align: left;
@@ -636,26 +642,16 @@
 }
 
 .host-shell--create .create-back-button {
-  width: auto;
+  width: fit-content;
   min-width: 0;
-  height: 36px;
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0 10px 0 7px;
-  border: 1px solid #dce4ed;
-  border-radius: 8px;
-  background: rgb(255 255 255 / 72%);
-  color: var(--mc-color-text-tertiary);
+  margin-left: -8px;
+  color: var(--mc-color-text-secondary);
   font-size: 13px;
   font-weight: var(--type-weight-semibold);
 }
 
 .host-shell--create .create-back-button:hover {
-  border-color: #c9d4e1;
-  background: #fff;
+  background: var(--mc-color-surface-subtle);
   color: var(--mc-color-text-primary);
 }
 
@@ -786,8 +782,20 @@
   margin-inline: 0;
 }
 
+.host-shell--create .create-workflow--time-candidates .time-create-stage {
+  width: 100%;
+}
+
 .host-shell--create .create-actions {
-  justify-content: flex-end;
+  width: 100%;
+  justify-content: stretch;
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid rgb(207 216 229 / 54%);
+}
+
+.host-shell--create .create-actions .ui-button[data-variant='primary'][data-size='action'] {
+  width: 100%;
 }
 
 @media (max-width: 760px) {

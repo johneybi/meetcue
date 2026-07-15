@@ -2,7 +2,7 @@
 
 .attendee-edit-button {
   min-width: 44px;
-  min-height: 44px;
+  min-height: 36px;
 }
 
 .attendee-compact-summary {
@@ -11,13 +11,10 @@
 
 .attendee-compact-summary {
   min-width: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--mc-space-3);
+  display: flex;
+  gap: var(--mc-space-2);
   align-items: baseline;
-  padding: var(--mc-space-3) 0;
-  border-top: 1px solid var(--mc-color-border);
-  border-bottom: 1px solid var(--mc-color-border);
+  padding: 0;
 }
 
 .attendee-compact-summary strong {
@@ -36,6 +33,46 @@
   white-space: nowrap;
 }
 
+.attendee-substep.is-summary {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--mc-space-3);
+  align-items: center;
+  padding: var(--mc-space-3) var(--mc-space-4);
+  border-radius: 10px;
+  background: var(--mc-color-surface-subtle);
+}
+
+.attendee-substep.is-summary .attendee-substep-heading-row {
+  display: contents;
+}
+
+.attendee-substep.is-summary .attendee-section-head {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.attendee-substep.is-summary .attendee-compact-summary {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.attendee-substep.is-summary .attendee-edit-button {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: center;
+}
+
+@media (max-width: 560px) {
+  .attendee-substep.is-summary {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-inline: var(--mc-space-3);
+  }
+
+  .attendee-substep.is-summary .attendee-compact-summary span {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .attendee-compact-summary {
     animation: none;
@@ -45,6 +82,27 @@
 
 .people-search {
   display: block;
+}
+
+.people-find-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.organization-directory-trigger {
+  min-height: 52px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 16px;
+  white-space: nowrap;
+}
+
+.people-search > .ui-input[data-control-size='field'] {
+  padding-inline: 18px;
 }
 
 .mobile-people-picker-trigger,
@@ -218,6 +276,10 @@
     background: #fff;
     color: var(--mc-color-text-muted);
     text-align: left;
+  }
+
+  .organization-directory-trigger {
+    min-height: 48px;
   }
 
   .mobile-people-picker-trigger span {
