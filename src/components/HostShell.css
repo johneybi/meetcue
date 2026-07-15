@@ -240,6 +240,10 @@
 
 /* Host routes retain the original 1440px application canvas contract. */
 .tds-app {
+  --mc-shell-gutter: 20px;
+  --mc-mobile-app-bar-height: 59px;
+  --mc-mobile-action-bar-height: calc(89px + env(safe-area-inset-bottom));
+
   width: min(100%, 1440px);
   min-height: 100vh;
   box-sizing: border-box;
@@ -247,7 +251,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--mc-shell-gutter);
   background:
     radial-gradient(circle at 16% 4%, rgb(232 243 255 / 84%), transparent 31rem),
     radial-gradient(circle at 86% 12%, rgb(230 248 243 / 72%), transparent 27rem),
@@ -268,4 +272,14 @@
 .tds-app small {
   color: var(--mc-color-text-muted);
   font-size: max(12px, 0.75rem);
+}
+
+@media (max-width: 760px) {
+  .tds-app {
+    min-height: calc(100dvh - var(--mc-mobile-app-bar-height));
+  }
+
+  .tds-app .host-stage.host-stage--create {
+    padding-bottom: 0;
+  }
 }

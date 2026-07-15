@@ -147,7 +147,7 @@
 @media (max-width: 760px) {
   .host-shell--decision .host-stage {
     width: 100%;
-    padding: var(--mc-space-4-5) var(--mc-space-4) var(--mc-space-12);
+    padding: var(--mc-space-2) 0 calc(var(--mc-space-7) + var(--mc-space-1));
   }
 
   .host-shell--decision .decision-candidate-workspace {

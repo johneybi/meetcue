@@ -1,5 +1,10 @@
-.host-shell--decision .decision-reference-candidates {
+.host-shell--decision .decision-reference-candidates-viewport {
   grid-area: candidates;
+  min-width: 0;
+  position: relative;
+}
+
+.host-shell--decision .decision-reference-candidates {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
@@ -179,7 +184,9 @@
   line-height: var(--mc-type-caption-leading);
 }
 
-.host-shell--decision .decision-reference-card > .ui-button[data-variant='primary'][data-size='action'] {
+.host-shell--decision
+  .decision-reference-card
+  > .ui-button[data-variant='primary'][data-size='action'] {
   display: none;
 }
 
@@ -199,6 +206,29 @@
 }
 
 @media (max-width: 760px) {
+  .host-shell--decision .decision-reference-candidates-viewport {
+    width: calc(100% + var(--mc-shell-gutter));
+    overflow: hidden;
+  }
+
+  .host-shell--decision .decision-reference-candidates-viewport::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: var(--mc-space-1);
+    width: calc(var(--mc-space-7) + var(--mc-space-1));
+    background: linear-gradient(90deg, transparent 0%, var(--mc-color-canvas) 92%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease;
+  }
+
+  .host-shell--decision .decision-reference-candidates-viewport[data-scroll-hint='true']::after {
+    opacity: 1;
+  }
+
   .host-shell--decision .decision-reference-candidates {
     display: flex;
     overflow-x: auto;
