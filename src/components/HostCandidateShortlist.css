@@ -4,6 +4,10 @@
   position: relative;
 }
 
+.host-shell--decision .decision-reference-candidates__mobile-label {
+  display: none;
+}
+
 .host-shell--decision .decision-reference-candidates {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -203,6 +207,10 @@
   border-radius: var(--mc-radius-candidate-recommendation);
   background: var(--mc-candidate-card-recommend-surface);
   color: var(--mc-candidate-card-recommend-text);
+}
+
+.host-shell--decision .decision-reference-card__selection {
+  display: none;
 }
 
 @media (max-width: 760px) {

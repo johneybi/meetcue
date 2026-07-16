@@ -199,6 +199,10 @@
   color: var(--mc-decision-matrix-positive);
 }
 
+.decision-matrix-disclosure > footer .is-required {
+  display: none;
+}
+
 .decision-matrix-disclosure > footer .is-negative::before {
   content: '× ';
   color: var(--mc-decision-matrix-negative);

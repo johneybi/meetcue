@@ -118,16 +118,28 @@ export function HostCandidateDetail({
             </div>
           </div>
         ) : null}
-        {canConfirm ? (
-          <div className="decision-action-footer">
-            <Button
-              size="action"
-              onClick={() => onConfirm(evaluation.candidate.id)}
-            >
+        <div className={`decision-action-footer is-${evaluation.status}`}>
+          {canConfirm ? (
+            <Button size="action" onClick={() => onConfirm(evaluation.candidate.id)}>
               이 시간으로 확정하기
             </Button>
-          </div>
-        ) : null}
+          ) : evaluation.status === 'pending' ? (
+            <Button size="action" onClick={() => onRequest(evaluation.candidate.id)}>
+              응답 요청하기
+            </Button>
+          ) : (
+            <Button
+              size="action"
+              onClick={() =>
+                fallbackEvaluation != null
+                  ? onSelectCandidate(fallbackEvaluation.candidate.id)
+                  : onReviewCriteria()
+              }
+            >
+              {fallbackEvaluation != null ? '다른 후보 보기' : '참석 기준 다시 보기'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {evaluation.status === 'pending' ? (
@@ -192,7 +204,7 @@ export function HostCandidateDetail({
       ) : evaluation.status === 'impossible' ? (
         <div className="decision-impossible-guide">
           <strong>다른 후보를 검토해 보세요</strong>
-          <p>왼쪽 후보 목록에서 다른 시간을 선택하면 같은 기준으로 바로 비교할 수 있어요.</p>
+          <p>후보 시간에서 다른 시간을 선택하면 같은 기준으로 바로 비교할 수 있어요.</p>
           <Button
             variant="fieldAction"
             size="text"
@@ -206,7 +218,6 @@ export function HostCandidateDetail({
           </Button>
         </div>
       ) : null}
-
     </section>
   )
 }

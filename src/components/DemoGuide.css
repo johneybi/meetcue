@@ -194,10 +194,15 @@
       .share-card__footer,
       .waiting-demo-footer,
       .criteria-review-panel > footer,
-      .message-panel__actions
+      .message-panel__actions,
+      .response-submit-bar
     )
     .demo-guide {
     bottom: calc(var(--demo-guide-action-offset) + 12px);
+  }
+
+  body:has(.response-submit-bar) .demo-guide {
+    --demo-guide-action-offset: calc(76px + env(safe-area-inset-bottom));
   }
 
   .demo-guide__toggle {
@@ -219,7 +224,8 @@
       .share-card__footer,
       .waiting-demo-footer,
       .criteria-review-panel > footer,
-      .message-panel__actions
+      .message-panel__actions,
+      .response-submit-bar
     )
     .demo-guide__panel {
     max-height: calc(100dvh - var(--demo-guide-action-offset) - 76px);

@@ -62,7 +62,11 @@ export function HostDecisionMatrix({
                     <Avatar name={participant.name} size="small" />
                     <span className="decision-matrix-person__copy">
                       <strong>{participant.name}</strong>
-                      {participant.role === 'required' ? <small>필수</small> : null}
+                      {participant.role === 'required' ? (
+                        <small className="decision-matrix-required" aria-label="필수 참석자">
+                          필수
+                        </small>
+                      ) : null}
                     </span>
                   </span>
                 </th>
@@ -110,6 +114,9 @@ export function HostDecisionMatrix({
         </table>
       </div>
       <footer>
+        <span className="is-required" aria-label="별표는 필수 참석자">
+          필수
+        </span>
         <span className="is-positive">가능</span>
         <span className="is-adjustment">조정 시 가능</span>
         <span className="is-negative">참석 어려움</span>

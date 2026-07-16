@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Info, Star } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Check, Info, Star } from 'lucide-react'
 import { hasSameRecommendationPriority, type CandidateEvaluation } from '../domain/evaluation'
 import { candidateStatusLabels, formatCandidateTime, type Meeting } from '../domain/meeting'
 import { Button } from './ui/button'
@@ -27,16 +27,60 @@ export function HostCandidateShortlist({
   onShowAlternative,
 }: HostCandidateShortlistProps) {
   const canConfirm = selectedEvaluation.status === 'ready'
-  const [showScrollHint, setShowScrollHint] = useState(true)
+  const listRef = useRef<HTMLDivElement>(null)
+  const [scrollEdges, setScrollEdges] = useState({ left: false, right: true })
+
+  const updateScrollEdges = useCallback((list: HTMLDivElement) => {
+    const nextEdges = {
+      left: list.scrollLeft > 2,
+      right: list.scrollLeft + list.clientWidth < list.scrollWidth - 2,
+    }
+    setScrollEdges((currentEdges) =>
+      currentEdges.left === nextEdges.left && currentEdges.right === nextEdges.right
+        ? currentEdges
+        : nextEdges,
+    )
+  }, [])
+
+  useEffect(() => {
+    const list = listRef.current
+    if (list == null) return
+
+    updateScrollEdges(list)
+    const observer = new ResizeObserver(() => updateScrollEdges(list))
+    observer.observe(list)
+    return () => observer.disconnect()
+  }, [updateScrollEdges])
+
+  useEffect(() => {
+    const list = listRef.current
+    if (list == null || !window.matchMedia('(max-width: 760px)').matches) return
+
+    const selectedCard = list
+      .querySelector<HTMLElement>('[aria-pressed="true"]')
+      ?.closest<HTMLElement>('.decision-reference-card')
+    if (selectedCard == null) return
+
+    list.scrollTo({
+      left: Math.max(0, selectedCard.offsetLeft - 20),
+      behavior: 'smooth',
+    })
+  }, [selectedEvaluation.candidate.id])
 
   return (
-    <div className="decision-reference-candidates-viewport" data-scroll-hint={showScrollHint}>
+    <div
+      className="decision-reference-candidates-viewport"
+      data-scroll-hint={scrollEdges.right}
+      data-can-scroll-left={scrollEdges.left}
+      data-can-scroll-right={scrollEdges.right}
+    >
+      <span className="decision-reference-candidates__mobile-label">후보 시간</span>
       <div
+        ref={listRef}
         className="decision-reference-candidates"
         aria-label="후보 시간 목록"
         onScroll={(event) => {
-          const list = event.currentTarget
-          setShowScrollHint(list.scrollLeft + list.clientWidth < list.scrollWidth - 2)
+          updateScrollEdges(event.currentTarget)
         }}
       >
         <header>
@@ -86,6 +130,11 @@ export function HostCandidateShortlist({
                     aria-label="같은 우선순위의 추천 후보"
                   >
                     <Star aria-hidden="true" size={15} fill="currentColor" />
+                  </span>
+                ) : null}
+                {isSelected ? (
+                  <span className="decision-reference-card__selection" aria-hidden="true">
+                    <Check size={14} strokeWidth={2.5} />
                   </span>
                 ) : null}
               </button>

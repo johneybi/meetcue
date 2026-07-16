@@ -188,6 +188,10 @@
   display: grid;
 }
 
+.host-shell--decision .decision-action-footer:not(.is-ready) {
+  display: none;
+}
+
 .host-shell--decision
   .decision-action-footer
   > .ui-button[data-variant='primary'][data-size='action'] {
