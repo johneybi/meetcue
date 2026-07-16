@@ -78,6 +78,12 @@ export function HostCandidateDetail({
       aria-labelledby="selected-time-title"
     >
       <section className="decision-mobile-focus" aria-labelledby="mobile-selected-time-title">
+        <span className="decision-mobile-focus__context">
+          {isSystemRecommendation ? '가장 먼저 추천하는 시간' : '선택한 후보 시간'}
+        </span>
+
+        <h2 id="mobile-selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
+
         <div className="decision-mobile-focus__status">
           {evaluation.status === 'ready' ? (
             <CheckCircle2 aria-hidden="true" size={18} />
@@ -88,8 +94,6 @@ export function HostCandidateDetail({
           )}
           <span>{candidateStatusLabels[evaluation.status]}</span>
         </div>
-
-        <h2 id="mobile-selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
 
         <button
           className="decision-mobile-response-toggle"
@@ -213,7 +217,7 @@ export function HostCandidateDetail({
         <div className={`decision-action-footer is-${evaluation.status}`}>
           {canConfirm ? (
             <Button size="action" onClick={() => onConfirm(evaluation.candidate.id)}>
-              이 시간으로 확정하기
+              {formatCandidateActionTime(evaluation.candidate.startAt)}로 확정하기
             </Button>
           ) : evaluation.status === 'pending' ? (
             <Button size="action" onClick={() => onRequest(evaluation.candidate.id)}>
@@ -330,4 +334,25 @@ function getParticipantStateLabel(state: CandidateEvaluation['responseDetails'][
   if (state === 'adjustment_commit') return '일정 조정'
   if (state === 'unavailable') return '참석 어려움'
   return '응답 전'
+}
+
+function formatCandidateActionTime(startAt: string) {
+  const start = new Date(startAt)
+  const date = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: 'long',
+    day: 'numeric',
+  }).format(start)
+  const timeParts = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).formatToParts(start)
+  const dayPeriod = timeParts.find((part) => part.type === 'dayPeriod')?.value ?? ''
+  const hour = timeParts.find((part) => part.type === 'hour')?.value ?? ''
+  const minute = timeParts.find((part) => part.type === 'minute')?.value ?? '00'
+  const time = minute === '00' ? `${dayPeriod} ${hour}시` : `${dayPeriod} ${hour}시 ${minute}분`
+
+  return `${date} ${time}`
 }
