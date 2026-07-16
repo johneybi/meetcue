@@ -29,7 +29,7 @@ export function HostCandidateShortlist({
   const canConfirm = selectedEvaluation.status === 'ready'
   const listRef = useRef<HTMLDivElement>(null)
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: true })
-  const [showMobileAlternatives, setShowMobileAlternatives] = useState(false)
+  const [showMobileAlternatives, setShowMobileAlternatives] = useState(true)
 
   const updateScrollEdges = useCallback((list: HTMLDivElement) => {
     const nextEdges = {
