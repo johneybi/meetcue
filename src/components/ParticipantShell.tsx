@@ -152,35 +152,72 @@ function getSimulatedCalendarEvent(slot: AvailabilitySlot) {
   const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
   const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
 
-  if (weekday === 'Tue' && hour === 14) {
+  const event = simulatedCalendarEvents.find(
+    (calendarEvent) => calendarEvent.weekday === weekday && calendarEvent.hour === hour,
+  )
+  if (event) {
     return {
-      id: `${day}-design-review`,
-      title: '디자인 리뷰',
-      timeLabel: '오후 2:00-오후 3:00',
-      segment: minute === 0 ? ('start' as const) : ('end' as const),
-    }
-  }
-
-  if (weekday === 'Wed' && hour === 10) {
-    return {
-      id: `${day}-daily`,
-      title: '제품팀 데일리',
-      timeLabel: '오전 10:00-오전 11:00',
-      segment: minute === 0 ? ('start' as const) : ('end' as const),
-    }
-  }
-
-  if (weekday === 'Thu' && hour === 14) {
-    return {
-      id: `${day}-partner-meeting`,
-      title: '파트너사 미팅',
-      timeLabel: '오후 2:00-오후 3:00',
+      id: `${day}-${event.id}`,
+      title: event.title,
+      timeLabel: event.timeLabel,
       segment: minute === 0 ? ('start' as const) : ('end' as const),
     }
   }
 
   return null
 }
+
+const simulatedCalendarEvents = [
+  {
+    weekday: 'Sun',
+    hour: 10,
+    id: 'daily',
+    title: '제품팀 데일리',
+    timeLabel: '오전 10:00-오전 11:00',
+  },
+  {
+    weekday: 'Sun',
+    hour: 14,
+    id: 'design-review',
+    title: '디자인 리뷰',
+    timeLabel: '오후 2:00-오후 3:00',
+  },
+  {
+    weekday: 'Mon',
+    hour: 10,
+    id: 'weekly-sync',
+    title: '팀 위클리',
+    timeLabel: '오전 10:00-오전 11:00',
+  },
+  {
+    weekday: 'Mon',
+    hour: 13,
+    id: 'research-share',
+    title: '리서치 공유',
+    timeLabel: '오후 1:00-오후 2:00',
+  },
+  {
+    weekday: 'Mon',
+    hour: 15,
+    id: 'partner-meeting',
+    title: '파트너사 미팅',
+    timeLabel: '오후 3:00-오후 4:00',
+  },
+  {
+    weekday: 'Tue',
+    hour: 10,
+    id: 'one-on-one',
+    title: '1:1 미팅',
+    timeLabel: '오전 10:00-오전 11:00',
+  },
+  {
+    weekday: 'Tue',
+    hour: 13,
+    id: 'sprint-review',
+    title: '스프린트 리뷰',
+    timeLabel: '오후 1:00-오후 2:00',
+  },
+] as const
 
 function isSimulatedCalendarBusy(slot: AvailabilitySlot) {
   return getSimulatedCalendarEvent(slot) != null

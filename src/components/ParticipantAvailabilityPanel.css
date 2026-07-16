@@ -126,7 +126,7 @@
 }
 
 .calendar-import-card__actions .ui-button[data-variant='primary'][data-size='action'] {
-  min-height: 46px;
+  min-height: 48px;
   padding-inline: 16px;
   white-space: nowrap;
 }
@@ -326,7 +326,6 @@
   .calendar-import-card__actions .ui-button[data-variant='primary'][data-size='action'],
   .calendar-import-card__actions .ui-button[data-variant='fieldAction'][data-size='action'] {
     width: 100%;
-    min-height: 48px;
   }
 }
 
@@ -621,7 +620,7 @@
   .response-panel--participant
   .calendar-import-card__actions
   .ui-button[data-variant='primary'][data-size='action'] {
-  min-height: 42px;
+  min-height: 48px;
 }
 
 @media (min-width: 761px) {
@@ -635,7 +634,7 @@
     .response-panel--participant
     .calendar-import-card__actions
     .ui-button[data-variant='fieldAction'][data-size='action'] {
-    min-height: 42px;
+    min-height: 48px;
     padding-inline: 14px;
     white-space: nowrap;
   }

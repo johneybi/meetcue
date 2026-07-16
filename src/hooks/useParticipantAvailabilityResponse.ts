@@ -21,25 +21,47 @@ export function useParticipantAvailabilityResponse({
   participant,
   isCalendarBusy,
 }: UseParticipantAvailabilityResponseOptions) {
+  const slots = deriveAvailabilitySlots(meeting.availabilityWindows, meeting.hostId)
+  const hasExistingResponse =
+    participant.responseStatus !== 'not_started' ||
+    meeting.availabilityWindows.some((window) => window.ownerId === participant.id)
   const [isSaveConfirmationOpen, setIsSaveConfirmationOpen] = useState(false)
   const [editorStatus, setEditorStatus] = useState<Participant['responseStatus']>(
     participant.responseStatus,
   )
-  const [draftWindows, setDraftWindows] = useState<AvailabilityWindow[]>(() =>
-    meeting.availabilityWindows
+  const [draftWindows, setDraftWindows] = useState<AvailabilityWindow[]>(() => {
+    const existingWindows = meeting.availabilityWindows
       .filter((window) => window.ownerId === participant.id)
-      .map((window) => ({ ...window })),
-  )
-  const [hasBaseline, setHasBaseline] = useState(
-    () => participant.responseStatus !== 'not_started' || draftWindows.length > 0,
-  )
+      .map((window) => ({ ...window }))
+
+    if (hasExistingResponse) return existingWindows
+
+    let calendarWindows = fillAvailabilitySlots(
+      existingWindows,
+      participant.id,
+      slots,
+      'available',
+      meeting.id,
+    )
+    slots.filter(isCalendarBusy).forEach((slot) => {
+      calendarWindows = replaceAvailabilitySlot(
+        calendarWindows,
+        participant.id,
+        slot,
+        'unavailable',
+        false,
+        meeting.id,
+      )
+    })
+    return calendarWindows
+  })
+  const [hasBaseline, setHasBaseline] = useState(true)
   const [inputSource, setInputSource] = useState<ParticipantInputSource | null>(() =>
-    participant.responseStatus !== 'not_started' || draftWindows.length > 0 ? 'existing' : null,
+    hasExistingResponse ? 'existing' : 'calendar',
   )
   const [manuallyEditedSlotStarts, setManuallyEditedSlotStarts] = useState<Set<string>>(
     () => new Set(),
   )
-  const slots = deriveAvailabilitySlots(meeting.availabilityWindows, meeting.hostId)
   const answeredCount = slots.filter(
     (slot) => getAvailabilityStateForSlot(draftWindows, participant.id, slot) != null,
   ).length

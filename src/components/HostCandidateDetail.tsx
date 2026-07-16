@@ -284,8 +284,8 @@ export function HostCandidateDetail({
               <div className="decision-optional-people">
                 {evaluation.optionalPendingPool.map((participant) => (
                   <span className="decision-optional-person" key={participant.id}>
-                    <Avatar name={participant.name} size="small" />
-                    {participant.name}
+                    <Avatar name={participant.name} />
+                    <strong>{participant.name}</strong>
                   </span>
                 ))}
               </div>

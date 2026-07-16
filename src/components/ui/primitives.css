@@ -10,7 +10,10 @@
   font-size: 15px;
   font-weight: var(--type-weight-semibold, 600);
   line-height: 22px;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .ui-button[data-variant='primary'] {
@@ -96,10 +99,10 @@
 }
 
 .ui-button[data-size='action'] {
-  min-height: 44px;
+  min-height: 48px;
   padding-inline: 16px;
   border: 0;
-  border-radius: var(--mc-radius-control);
+  border-radius: 9px;
   font-size: 15px;
   font-weight: var(--type-weight-semibold, 600);
   line-height: 22px;
@@ -109,7 +112,9 @@
 .ui-button[data-size='action'][data-variant='primary'] {
   background: var(--mc-color-accent);
   color: var(--mc-color-surface);
-  box-shadow: 0 10px 24px rgb(49 130 246 / 20%);
+  box-shadow:
+    0 9px 22px rgb(49 130 246 / 18%),
+    0 2px 6px rgb(31 111 235 / 12%);
 }
 
 .ui-button[data-size='action'][data-variant='primary']:hover:not(:disabled) {

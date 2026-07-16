@@ -295,24 +295,30 @@
 }
 
 .host-shell--decision .decision-optional-people {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mc-space-1-5);
-  padding: var(--mc-space-3) var(--mc-space-3-5) var(--mc-space-1);
+  display: grid;
+  padding: 0 var(--mc-space-3-5);
   box-shadow: none;
 }
 
 .host-shell--decision .decision-optional-person {
-  display: inline-flex;
+  min-height: 56px;
+  display: flex;
   align-items: center;
-  gap: var(--mc-space-1-5);
-  padding: var(--mc-space-1) var(--mc-space-2);
-  border-radius: var(--mc-radius-candidate-detail-label);
-  background: var(--mc-candidate-detail-person-surface);
-  color: var(--mc-color-text-secondary);
-  font-size: var(--mc-type-compact-size);
+  gap: var(--mc-space-2-5);
+  padding: var(--mc-space-2-5) 0;
+  color: var(--mc-color-text-primary);
+  font-size: var(--mc-type-body-small-size);
   font-weight: var(--type-weight-semibold);
-  line-height: var(--mc-type-compact-leading);
+  line-height: var(--mc-type-body-small-leading);
+}
+
+.host-shell--decision .decision-optional-person + .decision-optional-person {
+  border-top: 1px solid var(--mc-candidate-detail-group-divider);
+}
+
+.host-shell--decision .decision-optional-person .mc-avatar {
+  background: var(--mc-color-accent-soft);
+  color: var(--mc-color-accent-pressed);
 }
 
 .host-shell--decision .decision-pending-group > p,

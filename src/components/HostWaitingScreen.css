@@ -305,8 +305,6 @@
 }
 
 .host-shell--waiting .prototype-flow-action .ui-button[data-variant='primary'][data-size='action'] {
-  min-height: 44px;
-  border-radius: 9px;
   box-shadow: none;
 }
 
