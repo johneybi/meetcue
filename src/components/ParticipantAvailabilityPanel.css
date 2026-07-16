@@ -471,7 +471,7 @@
   body > .response-submit-bar .response-submit {
     position: static;
     width: min(100%, 760px);
-    min-height: 52px;
+    min-height: var(--mc-mobile-action-button-height);
     display: block;
     margin: 0 auto;
     box-shadow: 0 8px 22px rgb(49 130 246 / 20%);

@@ -378,6 +378,6 @@
   }
 
   .share-card__footer .ui-button[data-variant='primary'][data-size='action'] {
-    min-height: 56px;
+    min-height: var(--mc-mobile-action-button-height);
   }
 }

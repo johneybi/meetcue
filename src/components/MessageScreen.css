@@ -240,6 +240,6 @@
   }
 
   .message-panel__actions .ui-button[data-variant='primary'] {
-    min-height: 56px;
+    min-height: var(--mc-mobile-action-button-height);
   }
 }

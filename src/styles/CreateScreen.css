@@ -294,7 +294,7 @@
 
   .create-actions .ui-button[data-variant='primary'][data-size='action'] {
     width: 100%;
-    min-height: 56px;
+    min-height: var(--mc-mobile-action-button-height);
   }
 
   .create-primary-action--desktop {
@@ -804,7 +804,7 @@
   }
 
   .host-shell--create .create-actions .ui-button[data-variant='primary'][data-size='action'] {
-    min-height: 56px;
+    min-height: var(--mc-mobile-action-button-height);
   }
 }
 

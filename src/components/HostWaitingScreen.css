@@ -961,7 +961,7 @@
   }
 
   .waiting-demo-footer .ui-button {
-    min-height: 56px;
+    min-height: var(--mc-mobile-action-button-height);
   }
 
   .host-shell--waiting:not(:has(.waiting-demo-footer)) {

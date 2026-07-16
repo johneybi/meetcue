@@ -579,6 +579,13 @@
 
   .mobile-surface-preview
     .host-shell--decision
+    .decision-action-footer
+    > .ui-button[data-variant='primary'][data-size='action'] {
+    min-height: var(--mc-mobile-action-button-height);
+  }
+
+  .mobile-surface-preview
+    .host-shell--decision
     :is(.decision-pending-groups, .decision-impossible-guide)
     .ui-button {
     display: none;
