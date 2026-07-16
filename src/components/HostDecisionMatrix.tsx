@@ -28,8 +28,9 @@ export function HostDecisionMatrix({
     >
       <summary>
         <div>
-          <span>참석 가능 현황</span>
-          <strong>전체 후보 비교</strong>
+          <span className="decision-matrix-heading-default">참석 가능 현황</span>
+          <strong className="decision-matrix-heading-default">전체 후보 비교</strong>
+          <strong className="decision-matrix-heading-mobile">전체 후보 한눈에 보기</strong>
           <small>{groups.length}개 결과 범위로 묶어 보여드려요</small>
         </div>
         <span className="decision-matrix-disclosure__affordance">

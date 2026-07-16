@@ -1,4 +1,5 @@
-import { CalendarDays, Check, Clock3 } from 'lucide-react'
+import { useState } from 'react'
+import { CalendarDays, Check, CheckCircle2, ChevronDown, Clock3, X } from 'lucide-react'
 import type { CandidateEvaluation } from '../domain/evaluation'
 import {
   candidateStatusLabels,
@@ -31,6 +32,7 @@ export function HostCandidateDetail({
   onSelectCandidate,
   onReviewCriteria,
 }: HostCandidateDetailProps) {
+  const [showParticipantResponses, setShowParticipantResponses] = useState(false)
   const canConfirm = evaluation.status === 'ready'
   const selectedPendingCount = evaluation.responseDetails.filter(
     (detail) => detail.state === 'unknown',
@@ -57,12 +59,99 @@ export function HostCandidateDetail({
     evaluation.status === 'ready'
       ? `필수 참석자 조건과 최소 ${meeting.minAttendeeCount}명 기준을 충족했어요.`
       : evaluation.reasons.join(' ')
+  const requiredCount = meeting.participants.filter(
+    (participant) => participant.role === 'required',
+  ).length
+  const mobileReasons =
+    evaluation.status === 'ready'
+      ? [
+          `필수 참석자 ${requiredCount}명 모두 가능해요`,
+          adjustmentParticipants.length > 0
+            ? `${formatParticipantSummary(adjustmentParticipants)} 일정 조정 후 참석해요`
+            : '일정 조정 없이 참석할 수 있어요',
+        ]
+      : evaluation.reasons.slice(0, 2)
 
   return (
     <section
       className={`decision-reference-detail is-${getStatusTone(evaluation.status)}`}
       aria-labelledby="selected-time-title"
     >
+      <section className="decision-mobile-focus" aria-labelledby="mobile-selected-time-title">
+        <div className="decision-mobile-focus__status">
+          {evaluation.status === 'ready' ? (
+            <CheckCircle2 aria-hidden="true" size={18} />
+          ) : evaluation.status === 'pending' ? (
+            <Clock3 aria-hidden="true" size={18} />
+          ) : (
+            <X aria-hidden="true" size={18} />
+          )}
+          <span>{candidateStatusLabels[evaluation.status]}</span>
+        </div>
+
+        <h2 id="mobile-selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
+
+        <button
+          className="decision-mobile-response-toggle"
+          type="button"
+          aria-expanded={showParticipantResponses}
+          aria-controls="mobile-participant-responses"
+          onClick={() => setShowParticipantResponses((isOpen) => !isOpen)}
+        >
+          <span className="is-positive">
+            <strong>{evaluation.availableCount}명</strong>
+            <small>참석 가능</small>
+          </span>
+          <span className="is-unknown">
+            <strong>{selectedPendingCount}명</strong>
+            <small>응답 전</small>
+          </span>
+          <ChevronDown aria-hidden="true" size={18} />
+        </button>
+
+        <div
+          className="decision-mobile-participants"
+          id="mobile-participant-responses"
+          hidden={!showParticipantResponses}
+        >
+          {evaluation.responseDetails.map((detail) => (
+            <div className="decision-mobile-participant" key={detail.participant.id}>
+              <span className="decision-mobile-participant__identity">
+                <Avatar name={detail.participant.name} size="small" />
+                <strong>{detail.participant.name}</strong>
+                {detail.participant.role === 'required' ? <small>필수</small> : null}
+              </span>
+              <span className={`decision-mobile-participant__state is-${detail.state}`}>
+                {detail.state === 'available' ? (
+                  <CheckCircle2 aria-hidden="true" size={15} />
+                ) : detail.state === 'adjustment_commit' ? (
+                  <CalendarDays aria-hidden="true" size={15} />
+                ) : detail.state === 'unavailable' ? (
+                  <X aria-hidden="true" size={15} />
+                ) : (
+                  <Clock3 aria-hidden="true" size={15} />
+                )}
+                {getParticipantStateLabel(detail.state)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="decision-mobile-reasons">
+          <strong>확정할 수 있는 이유</strong>
+          {mobileReasons.map((reason, index) => (
+            <div key={reason}>
+              {index === 0 ? (
+                <CheckCircle2 aria-hidden="true" size={17} />
+              ) : (
+                <CalendarDays aria-hidden="true" size={17} />
+              )}
+              <span>{reason}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <header className="decision-state-panel__time">
         <div>
           <span className="decision-state-panel__time-label-default">선택한 후보</span>
@@ -234,4 +323,11 @@ function getStatusTone(status: CandidateEvaluation['status']) {
 function formatParticipantSummary(participants: Participant[]) {
   if (participants.length === 1) return `${participants[0].name} 님은`
   return `${participants[0].name} 님 외 ${participants.length - 1}명이`
+}
+
+function getParticipantStateLabel(state: CandidateEvaluation['responseDetails'][number]['state']) {
+  if (state === 'available') return '가능'
+  if (state === 'adjustment_commit') return '일정 조정'
+  if (state === 'unavailable') return '참석 어려움'
+  return '응답 전'
 }

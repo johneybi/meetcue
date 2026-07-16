@@ -264,3 +264,6 @@
     padding-block: var(--mc-space-3);
   }
 }
+.decision-matrix-heading-mobile {
+  display: none;
+}

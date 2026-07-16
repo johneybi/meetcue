@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Check, Info, Star } from 'lucide-react'
+import { Check, ChevronDown, Info, Star } from 'lucide-react'
 import { hasSameRecommendationPriority, type CandidateEvaluation } from '../domain/evaluation'
 import { candidateStatusLabels, formatCandidateTime, type Meeting } from '../domain/meeting'
 import { Button } from './ui/button'
@@ -29,6 +29,7 @@ export function HostCandidateShortlist({
   const canConfirm = selectedEvaluation.status === 'ready'
   const listRef = useRef<HTMLDivElement>(null)
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: true })
+  const [showMobileAlternatives, setShowMobileAlternatives] = useState(false)
 
   const updateScrollEdges = useCallback((list: HTMLDivElement) => {
     const nextEdges = {
@@ -74,14 +75,26 @@ export function HostCandidateShortlist({
       data-can-scroll-left={scrollEdges.left}
       data-can-scroll-right={scrollEdges.right}
     >
+      <button
+        className="decision-reference-candidates__mobile-toggle"
+        type="button"
+        aria-expanded={showMobileAlternatives}
+        aria-controls="mobile-alternative-candidates"
+        onClick={() => setShowMobileAlternatives((isOpen) => !isOpen)}
+      >
+        <span>다른 후보 {Math.max(0, evaluations.length - 1)}개 보기</span>
+        <ChevronDown aria-hidden="true" size={18} />
+      </button>
       <span className="decision-reference-candidates__mobile-label">
         <span className="decision-reference-candidates__label-default">후보 시간</span>
         <span className="decision-reference-candidates__label-alternatives">다른 후보</span>
       </span>
       <div
+        id="mobile-alternative-candidates"
         ref={listRef}
         className="decision-reference-candidates"
         aria-label="후보 시간 목록"
+        data-mobile-expanded={showMobileAlternatives}
         onScroll={(event) => {
           updateScrollEdges(event.currentTarget)
         }}

@@ -8,6 +8,10 @@
   display: none;
 }
 
+.host-shell--decision .decision-reference-candidates__mobile-toggle {
+  display: none;
+}
+
 .host-shell--decision .decision-reference-candidates__label-alternatives {
   display: none;
 }

@@ -1,3 +1,7 @@
+.host-shell--decision .decision-mobile-focus {
+  display: none;
+}
+
 .host-shell--decision .decision-reference-detail {
   grid-area: detail;
   align-self: start;
