@@ -58,7 +58,7 @@ export function HostDecisionScreen({
       evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
       evaluation.status === 'ready',
   )
-  const shouldStartMatrixOpen = !isMobileSurfacePreview()
+  const shouldStartMatrixOpen = !isMobileViewport()
   return (
     <div className="decision-board">
       <section className="decision-candidate-workspace" aria-labelledby="decision-candidates-title">
@@ -159,11 +159,8 @@ export function HostDecisionScreen({
   )
 }
 
-function isMobileSurfacePreview() {
+function isMobileViewport() {
   if (typeof window === 'undefined') return false
 
-  return (
-    new URLSearchParams(window.location.search).get('surface') === 'fullbleed' &&
-    window.matchMedia('(max-width: 760px)').matches
-  )
+  return window.matchMedia('(max-width: 760px)').matches
 }

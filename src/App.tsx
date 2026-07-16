@@ -23,8 +23,6 @@ import './styles/CreateScreen.css'
 import './styles/MobileSurfacePreview.css'
 
 const isTossDemoPath = /(?:^|\/)toss\/?$/.test(window.location.pathname)
-const isMobileSurfacePreview =
-  new URLSearchParams(window.location.search).get('surface') === 'fullbleed'
 
 function App() {
   const {
@@ -71,7 +69,7 @@ function App() {
   } = useMeetCueController()
 
   return (
-    <div className={isMobileSurfacePreview ? 'mobile-surface-preview' : undefined}>
+    <div className="mobile-surface-preview">
       <div>
         {audience === 'account' ? (
           <AccountShell
