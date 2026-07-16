@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Check, ChevronDown, Clock3, Triangle, X } from 'lucide-react'
 import type { CandidateEvaluationGroup } from '../domain/evaluation'
 import type { Candidate, Meeting } from '../domain/meeting'
@@ -8,15 +9,23 @@ type HostDecisionMatrixProps = {
   meeting: Meeting
   groups: CandidateEvaluationGroup[]
   selectedCandidateId: string
+  defaultOpen?: boolean
 }
 
 export function HostDecisionMatrix({
   meeting,
   groups,
   selectedCandidateId,
+  defaultOpen = true,
 }: HostDecisionMatrixProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
   return (
-    <details className="decision-matrix-disclosure" open>
+    <details
+      className="decision-matrix-disclosure"
+      open={isOpen}
+      onToggle={(event) => setIsOpen(event.currentTarget.open)}
+    >
       <summary>
         <div>
           <span>참석 가능 현황</span>
@@ -72,9 +81,8 @@ export function HostDecisionMatrix({
                 </th>
                 {groups.map((group) => {
                   const evaluation =
-                    group.evaluations.find(
-                      (item) => item.candidate.id === selectedCandidateId,
-                    ) ?? group.evaluations[0]
+                    group.evaluations.find((item) => item.candidate.id === selectedCandidateId) ??
+                    group.evaluations[0]
                   const isSelected = group.evaluations.some(
                     (item) => item.candidate.id === selectedCandidateId,
                   )
@@ -91,15 +99,19 @@ export function HostDecisionMatrix({
                           ? '가능'
                           : state === 'adjustment_commit'
                             ? '조정 시 가능'
-                          : state === 'unavailable'
-                            ? '참석 어려움'
-                            : '응답 전'
+                            : state === 'unavailable'
+                              ? '참석 어려움'
+                              : '응답 전'
                       }
                     >
                       {state === 'available' ? (
                         <Check size={16} />
                       ) : state === 'adjustment_commit' ? (
-                        <Triangle className="decision-matrix__adjustment" aria-hidden="true" size={15} />
+                        <Triangle
+                          className="decision-matrix__adjustment"
+                          aria-hidden="true"
+                          size={15}
+                        />
                       ) : state === 'unavailable' ? (
                         <X size={16} />
                       ) : (

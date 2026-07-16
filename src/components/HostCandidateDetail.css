@@ -35,6 +35,10 @@
   line-height: var(--mc-type-compact-leading);
 }
 
+.host-shell--decision .decision-state-panel__time-label-mobile {
+  display: none;
+}
+
 .host-shell--decision .decision-state-panel__time h2 {
   margin: 0;
   color: var(--mc-color-text-primary);

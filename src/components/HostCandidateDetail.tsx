@@ -65,7 +65,10 @@ export function HostCandidateDetail({
     >
       <header className="decision-state-panel__time">
         <div>
-          <span>선택한 후보</span>
+          <span className="decision-state-panel__time-label-default">선택한 후보</span>
+          <span className="decision-state-panel__time-label-mobile">
+            {isSystemRecommendation ? '추천 시간' : '선택한 시간'}
+          </span>
           <h2 id="selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
         </div>
         {isSystemRecommendation ? <strong>시스템 추천</strong> : null}

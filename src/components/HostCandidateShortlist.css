@@ -8,6 +8,10 @@
   display: none;
 }
 
+.host-shell--decision .decision-reference-candidates__label-alternatives {
+  display: none;
+}
+
 .host-shell--decision .decision-reference-candidates {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

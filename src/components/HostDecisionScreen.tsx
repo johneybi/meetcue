@@ -58,6 +58,7 @@ export function HostDecisionScreen({
       evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
       evaluation.status === 'ready',
   )
+  const shouldStartMatrixOpen = !isMobileSurfacePreview()
   return (
     <div className="decision-board">
       <section className="decision-candidate-workspace" aria-labelledby="decision-candidates-title">
@@ -84,6 +85,17 @@ export function HostDecisionScreen({
           </div>
         </header>
 
+        <HostCandidateDetail
+          meeting={meeting}
+          evaluation={recommendedEvaluation}
+          isSystemRecommendation={isSystemRecommendation}
+          fallbackEvaluation={fallbackEvaluation}
+          onConfirm={onConfirm}
+          onRequest={setRequestCandidateId}
+          onSelectCandidate={onSelectCandidate}
+          onReviewCriteria={onReviewCriteria}
+        />
+
         <HostCandidateShortlist
           meeting={meeting}
           evaluations={shortlistEvaluations}
@@ -101,23 +113,13 @@ export function HostDecisionScreen({
               : onReviewCriteria()
           }
         />
-
-        <HostCandidateDetail
-          meeting={meeting}
-          evaluation={recommendedEvaluation}
-          isSystemRecommendation={isSystemRecommendation}
-          fallbackEvaluation={fallbackEvaluation}
-          onConfirm={onConfirm}
-          onRequest={setRequestCandidateId}
-          onSelectCandidate={onSelectCandidate}
-          onReviewCriteria={onReviewCriteria}
-        />
       </section>
 
       <HostDecisionMatrix
         meeting={meeting}
         groups={comparisonGroups}
         selectedCandidateId={recommendedEvaluation.candidate.id}
+        defaultOpen={shouldStartMatrixOpen}
       />
 
       {requestCandidateId === recommendedEvaluation.candidate.id ? (
@@ -141,10 +143,7 @@ export function HostDecisionScreen({
               <strong>{requestedParticipant.name}님의 응답이 오면 결과를 다시 계산해요</strong>
             </div>
           </div>
-          <Button
-            size="action"
-            onClick={() => onOpenRequestedParticipant(requestedParticipant)}
-          >
+          <Button size="action" onClick={() => onOpenRequestedParticipant(requestedParticipant)}>
             {requestedParticipant.name}님 응답 이어보기
           </Button>
         </div>
@@ -157,5 +156,14 @@ export function HostDecisionScreen({
         </div>
       ) : null}
     </div>
+  )
+}
+
+function isMobileSurfacePreview() {
+  if (typeof window === 'undefined') return false
+
+  return (
+    new URLSearchParams(window.location.search).get('surface') === 'fullbleed' &&
+    window.matchMedia('(max-width: 760px)').matches
   )
 }

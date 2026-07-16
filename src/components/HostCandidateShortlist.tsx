@@ -74,7 +74,10 @@ export function HostCandidateShortlist({
       data-can-scroll-left={scrollEdges.left}
       data-can-scroll-right={scrollEdges.right}
     >
-      <span className="decision-reference-candidates__mobile-label">후보 시간</span>
+      <span className="decision-reference-candidates__mobile-label">
+        <span className="decision-reference-candidates__label-default">후보 시간</span>
+        <span className="decision-reference-candidates__label-alternatives">다른 후보</span>
+      </span>
       <div
         ref={listRef}
         className="decision-reference-candidates"

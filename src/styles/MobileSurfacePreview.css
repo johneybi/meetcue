@@ -133,33 +133,82 @@
 
   .mobile-surface-preview .host-shell--decision .decision-candidate-head {
     min-height: 0;
-    gap: 8px;
-    padding: 12px 20px 14px;
+    gap: 6px;
+    padding: 12px 20px;
     background: transparent;
   }
 
+  .mobile-surface-preview .host-shell--decision .decision-meeting-criteria {
+    grid-template-columns: minmax(0, 1fr) 32px;
+    column-gap: 6px;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-meeting-criteria > span {
+    display: none;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-meeting-criteria > strong {
+    color: var(--mc-color-text-secondary);
+    font-size: var(--mc-type-caption-size);
+    line-height: var(--mc-type-caption-leading);
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-meeting-criteria > button {
+    grid-row: 1;
+    width: 32px;
+    min-height: 32px;
+  }
+
   .mobile-surface-preview .host-shell--decision .decision-reference-detail {
-    display: contents;
+    order: 1;
+    width: 100%;
+    display: grid;
+    margin: 0;
+    padding: 20px;
+    border: 0;
+    border-top: 8px solid var(--mc-host-decision-canvas);
+    border-bottom: 1px solid var(--mc-host-decision-divider);
+    border-radius: 0;
+    background: var(--mc-color-surface);
+    box-shadow: none;
   }
 
   .mobile-surface-preview .host-shell--decision .decision-state-panel__time {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    margin: 0;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--mc-candidate-detail-divider);
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-state-panel__time-label-default {
+    display: none;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-state-panel__time-label-mobile {
+    display: inline;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-state-panel__time h2 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-state-panel__time > strong {
+    display: none;
   }
 
   .mobile-surface-preview .host-shell--decision .decision-reference-candidates-viewport {
-    order: 1;
+    order: 2;
     width: 100%;
     margin: 0;
-    padding-top: 18px;
+    padding-top: 16px;
+    border-top: 8px solid var(--mc-host-decision-canvas);
     background: var(--mc-color-surface);
   }
 
@@ -172,6 +221,14 @@
     line-height: var(--mc-type-caption-leading);
   }
 
+  .mobile-surface-preview .host-shell--decision .decision-reference-candidates__label-default {
+    display: none;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-reference-candidates__label-alternatives {
+    display: inline;
+  }
+
   .mobile-surface-preview .host-shell--decision .decision-reference-candidates {
     gap: 10px;
     padding: 3px 48px 12px 20px;
@@ -181,10 +238,14 @@
   }
 
   .mobile-surface-preview .host-shell--decision .decision-reference-card {
-    flex-basis: clamp(272px, 80vw, 304px);
-    min-height: 94px;
+    flex-basis: clamp(236px, 72vw, 272px);
+    min-height: 86px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-reference-card.is-selected {
+    display: none;
   }
 
   .mobile-surface-preview .host-shell--decision .decision-reference-card.is-selected {
@@ -247,19 +308,21 @@
   }
 
   .mobile-surface-preview .host-shell--decision .decision-state-panel {
-    order: 2;
-    gap: 20px;
-    padding: 24px 20px 20px;
-    border-top: 1px solid var(--mc-host-decision-divider);
-    background: var(--mc-color-surface);
+    gap: 16px;
+    padding: 16px 0 0;
+    background: transparent;
+  }
+
+  .mobile-surface-preview .host-shell--decision .decision-state-panel h3 {
+    font-size: 21px;
+    line-height: 30px;
   }
 
   .mobile-surface-preview
     .host-shell--decision
     :is(.decision-pending-groups, .decision-impossible-guide) {
-    order: 3;
     margin: 0;
-    padding: 0 20px 20px;
+    padding: 16px 0 0;
     background: var(--mc-color-surface);
   }
 
@@ -347,11 +410,7 @@
     column-gap: 14px;
   }
 
-  .mobile-surface-preview
-    .host-shell--decision
-    .decision-matrix-disclosure
-    > footer
-    .is-required {
+  .mobile-surface-preview .host-shell--decision .decision-matrix-disclosure > footer .is-required {
     display: inline-flex;
     align-items: center;
     gap: 4px;
