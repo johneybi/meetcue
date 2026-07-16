@@ -367,7 +367,8 @@
     min-height: var(--mc-mobile-action-bar-height);
     display: flex;
     align-items: flex-start;
-    padding: 12px var(--mc-shell-gutter) calc(20px + env(safe-area-inset-bottom));
+    padding: var(--mc-mobile-action-padding-top) var(--mc-shell-gutter)
+      calc(var(--mc-mobile-action-padding-bottom) + env(safe-area-inset-bottom));
     border-top: 1px solid var(--mc-color-border);
     background: rgb(255 255 255 / 96%);
   }
