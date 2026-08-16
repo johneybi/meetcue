@@ -4,7 +4,26 @@ This directory preserves both the current product specification and the decision
 Documents are not required to use the same product name or describe the same model when they belong
 to different points in the product's history.
 
-## Current implementation basis
+## Post-challenge evidence reset
+
+- `post-challenge-retrospective-v1.md`: current retrospective. Separates confirmed facts, likely evaluation gaps, strengths, and unknowns without claiming an official rejection reason.
+- `post-challenge-retrospective-v2.md`: deep postmortem of the submitted answers, product contract, demo flow, review process, schedule, and the causal chain that made the application copy weak.
+- `post-challenge-retrospective-evidence-v2.md`: audit trail for v2. Separates official criteria, file evidence, current-run observations, Git timing, implementation checks, inferences, and unknowns.
+- `user-evidence-log-v1.md`: accumulating log of concrete scheduling incidents. Keeps raw events, user-reported frustration, interpretations, hypothesis impact, and open questions separate.
+- `meeting-cue-public-incident-log-v1.md`: source-linked public incident log covering nonresponse, required attendees, stale calendars, repeated rescheduling, and failed meetings.
+- `meeting-cue-hypothesis-evidence-synthesis-v1.md`: compares U01 and the vetted public incidents against H1-H5, introduces H6-H8, and narrows the defensible problem definition.
+- `meeting-cue-product-thinking-revision-log-v1.md`: chronological product-thinking record. Preserves what was believed, which evidence challenged it, what was revised or withdrawn, and what could change the decision again.
+- `meeting-cue-participant-input-interaction-audit-v1.md`: focused interaction-risk inspection of the participant time grid. Separates observed behavior, contract drift, usability hypotheses, and evidence limits.
+- `meeting-cue-participant-input-comparison-test-plan-v1.md`: counterbalanced A/B task plan for cyclic state input versus direct state selection, including fixtures, measures, stop conditions, and decision gates.
+- `evidence-led-validation-plan-v1.md`: superseded pre-change validation plan. Preserved for history.
+- `evidence-led-validation-plan-v2.md`: current validation plan. Starts with U01 and vetted public incidents as product scenarios, then separates state-model checks from direct user validation.
+- `meeting-cue-scenario-coverage-audit-v1.md`: current S1-S5 prototype audit. Identifies supported judgment rules, missing failure-lifecycle states, false-ready risks, and the next state-model changes.
+- `meeting-cue-s1-state-model-and-fixture-v1.md`: current S1 product contract. Defines the minimum states, U01-based fixture, copy, scope boundary, and acceptance conditions for required-attendee nonresponse and failed follow-up.
+- `application-answer-revision-brief-v1.md`: preserves the submitted v6 answers and defines the evidence required before drafting v7.
+
+These documents govern what to learn next. They do not retroactively change the submitted product or claim that the rejection reason is known.
+
+## Current implementation basis (submission product)
 
 - `toss-product-designer-challenge-success-framework-v1.md`: hiring-oriented success framework; connects Toss evaluation criteria, evidence levels, product proof, visual quality, application answers, and submission gates.
 - `p0-submission-scope-lock-v2.10.md`: highest-priority submission boundary; only creation, participant response, host judgment, one-person re-request, re-evaluation, and confirmation are P0.
@@ -27,6 +46,7 @@ to different points in the product's history.
   language was developed; it is not the source of current product requirements.
 - `../DESIGN-DECISIONS.md`: adopted and rejected decisions from TDS, ASTRYX, OMD, moodboards, and prior visual artifacts.
 - `../DESIGN-REFACTOR-BASELINE.md`: preservation, normalization, migration, and screen-order contract for the post-submission refactor.
+- `../docs/design-consistency-improvement.md`: current visual and interaction decision log. D-001 through D-052 preserve observations, alternatives, tradeoffs, implementation scope, QA, and release checkpoints; it complements but does not replace the PRD.
 
 ## Previous working history
 
@@ -49,6 +69,17 @@ to different points in the product's history.
 - Final naming is outside the current P0 decision-coherence sprint.
 
 ## Reading order
+
+For post-challenge planning, read:
+
+1. `post-challenge-retrospective-v2.md`
+2. `post-challenge-retrospective-evidence-v2.md`
+3. `post-challenge-retrospective-v1.md`
+4. `user-evidence-log-v1.md`
+5. `meeting-cue-product-thinking-revision-log-v1.md`
+6. `evidence-led-validation-plan-v2.md`
+7. `application-answer-revision-brief-v1.md`
+8. the current prototype and the submission-product documents below
 
 For implementation work, read:
 
