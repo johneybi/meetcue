@@ -8,9 +8,9 @@
 
 이 문서는 제품 기능, 화면 목록, 사용자 흐름, 정보 구조를 결정하지 않는다.
 
-- 제품 범위와 요구사항: `.local-docs/prd-v1.5.md`
-- UX 구조와 반응형 동작: `UX-ARCHITECTURE.md`
-- 시각 언어와 컴포넌트 표현: `DESIGN.md`
+- 제품 범위와 요구사항: [`../product/prd.md`](../product/prd.md)
+- UX 구조와 반응형 동작: [`architecture.md`](architecture.md)
+- 시각 언어와 컴포넌트 표현: 이 문서
 
 PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그것을 어떤 위계, 밀도, 색상, 타이포그래피, 간격, 상태 표현으로 보여줄지 결정한다.
 
@@ -120,17 +120,17 @@ Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif
 
 타입 스케일:
 
-| 역할 | 크기 / 행간 | 굵기 |
-| --- | --- | --- |
-| Display | 32 / 42 | 700~800 |
-| Page title | 26 / 36 | 700~800 |
-| Section title | 20 / 30 | 700 |
-| Card title | 17 / 26 | 700 |
-| Body | 15 / 24 | 500 |
-| Body strong | 15 / 24 | 700 |
-| Body small | 14 / 22 | 500 |
-| Caption | 13 / 18 | 500 |
-| Label | 12 / 16 | 700 |
+| 역할          | 크기 / 행간 | 굵기    |
+| ------------- | ----------- | ------- |
+| Display       | 32 / 42     | 700~800 |
+| Page title    | 26 / 36     | 700~800 |
+| Section title | 20 / 30     | 700     |
+| Card title    | 17 / 26     | 700     |
+| Body          | 15 / 24     | 500     |
+| Body strong   | 15 / 24     | 700     |
+| Body small    | 14 / 22     | 500     |
+| Caption       | 13 / 18     | 500     |
+| Label         | 12 / 16     | 700     |
 
 규칙:
 

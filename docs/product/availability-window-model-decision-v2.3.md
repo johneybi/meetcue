@@ -3,10 +3,10 @@
 - 상태: 설계 방향 채택 / 프로토타입 검증 전
 - 결정일: 2026-07-11
 - 적용 범위: 확정보드 P0의 주최자 시간 입력, 참석자 응답, 후보 생성
-- 선행 결정: `.local-docs/host-time-model-decision-v2.0.md`
-- 유지 결정: `.local-docs/meeting-time-reservation-decision-v2.1.md`, `.local-docs/time-quantum-decision-v2.2.md`
-- 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v1.5.md`
+- 선행 결정: [`host-time-model-decision-v2.0.md`](host-time-model-decision-v2.0.md)
+- 유지 결정: [`meeting-time-reservation-decision-v2.1.md`](meeting-time-reservation-decision-v2.1.md), [`time-quantum-decision-v2.2.md`](time-quantum-decision-v2.2.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
+- 제품 명세: [`prd.md`](prd.md)
 
 ## 1. 결정 요약
 
@@ -265,11 +265,7 @@ v2.3에서는 기본 모델을 다음과 같이 바꾼다.
 현재 구현은 `meeting.candidates`와 후보별 `Response`를 생성·응답·판정의 단일 원본으로 사용한다. v2.3을 구현하려면 최소한 다음 개념을 분리해야 한다.
 
 ```ts
-type AvailabilityState =
-  | 'AVAILABLE'
-  | 'ADJUSTABLE'
-  | 'UNAVAILABLE'
-  | 'UNANSWERED'
+type AvailabilityState = 'AVAILABLE' | 'ADJUSTABLE' | 'UNAVAILABLE' | 'UNANSWERED'
 
 type AvailabilityWindow = {
   id: string
@@ -300,15 +296,15 @@ type DerivedCandidate = {
 
 기본 생성 화면에서 다음 표현을 바꾼다.
 
-| 기존 | v2.3 |
-| --- | --- |
-| 후보 시간을 골라주세요 | 회의를 잡아도 되는 시간대를 알려주세요 |
-| 후보 시간 고르기 | 가능한 시간대 고르기 |
-| N개 후보로 계속 | 시간대 선택 완료 |
-| 선택한 시간 | 가능한 시간대 |
-| `TimeCandidatePicker` | `AvailabilityWindowPicker` |
-| `SelectedCandidateList` | `SelectedAvailabilitySummary` |
-| 참석자 후보 카드 | 참석자 가용시간 그리드 |
+| 기존                    | v2.3                                   |
+| ----------------------- | -------------------------------------- |
+| 후보 시간을 골라주세요  | 회의를 잡아도 되는 시간대를 알려주세요 |
+| 후보 시간 고르기        | 가능한 시간대 고르기                   |
+| N개 후보로 계속         | 시간대 선택 완료                       |
+| 선택한 시간             | 가능한 시간대                          |
+| `TimeCandidatePicker`   | `AvailabilityWindowPicker`             |
+| `SelectedCandidateList` | `SelectedAvailabilitySummary`          |
+| 참석자 후보 카드        | 참석자 가용시간 그리드                 |
 
 `후보`라는 단어는 응답 이후 주최자 판단 화면에서만 사용한다.
 

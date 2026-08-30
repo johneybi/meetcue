@@ -10,13 +10,13 @@
 
 충돌 시 우선순위는 다음과 같다.
 
-1. `.local-docs/prd-v1.5.md`: 제품 목표, 사용자, P0 범위
-2. `.local-docs/availability-window-model-decision-v2.3.md`: P0 시간 입력, 참석자 응답, 후보 생성의 후속 계약
-3. `UX-ARCHITECTURE.md`: IA, 화면 구조, 상태, 내비게이션, 반응형 동작
-4. `DESIGN.md`: TDS 기반 시각 언어, 컴포넌트 표현, UX 라이팅
+1. [`../product/prd.md`](../product/prd.md): 제품 목표, 사용자, P0 범위
+2. [`../product/availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md): P0 시간 입력, 참석자 응답, 후보 생성의 후속 계약
+3. 이 문서: IA, 화면 구조, 상태, 내비게이션, 반응형 동작
+4. [`visual-system.md`](visual-system.md): TDS 기반 시각 언어, 컴포넌트 표현, UX 라이팅
 5. 코드: 위 문서를 구현한 결과
 
-`.local-docs/host-time-model-decision-v2.0.md`는 주최자 역할과 초기 시간 구조의 결정 기록이다. `.local-docs/meeting-time-reservation-decision-v2.1.md`는 실제 종료와 일정 확보 시간을 구분하고, `.local-docs/time-quantum-decision-v2.2.md`는 P0의 30분 시간 최소 단위를 정한다. `.local-docs/availability-window-model-decision-v2.3.md`는 정확한 후보 직접 선택을 조율 가능 시간대 수집과 파생 후보 계산으로 대체한다. `.local-docs/ia-v1.md`, `create-*-v1.5~v1.9.md`, `meeting-invite-context-model.md`는 과거 의사결정 근거다. 현재 구현 규칙을 결정할 때 직접 조합하지 않는다. 이 문서에 채택된 결론만 실행 기준으로 사용한다.
+[`../product/host-time-model-decision-v2.0.md`](../product/host-time-model-decision-v2.0.md)는 주최자 역할과 초기 시간 구조의 결정 기록이다. [`../product/meeting-time-reservation-decision-v2.1.md`](../product/meeting-time-reservation-decision-v2.1.md)는 실제 종료와 일정 확보 시간을 구분하고, [`../product/time-quantum-decision-v2.2.md`](../product/time-quantum-decision-v2.2.md)는 P0의 30분 시간 최소 단위를 정한다. [`../product/availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md)는 정확한 후보 직접 선택을 조율 가능 시간대 수집과 파생 후보 계산으로 대체한다. 보관된 과거 문서는 의사결정 근거이며, 현재 구현 규칙을 결정할 때 직접 조합하지 않는다. 이 문서에 채택된 결론만 실행 기준으로 사용한다.
 
 ## 현재 실행 상태
 
@@ -55,7 +55,7 @@
 - 카피가 길거나 짧다.
 - 특정 화면만 시각적으로 비어 보인다.
 
-이 문제들은 `DESIGN.md`, 컴포넌트, 토큰, 카피 단계에서 해결한다.
+이 문제들은 [`visual-system.md`](visual-system.md), 컴포넌트, 토큰, 카피 단계에서 해결한다.
 
 ## 3. 제품 경험 모델
 
@@ -505,26 +505,26 @@ PC와 모바일은 같은 상태와 데이터를 사용하지만 같은 화면�
 
 다음 컴포넌트가 화면별 임의 CSS보다 우선한다.
 
-| 컴포넌트                | 책임                                        |
-| ----------------------- | ------------------------------------------- |
-| `HostContextBar`        | 제품 정체성, 회의 맥락, 상태 기반 보조 행동 |
-| `TaskProgress`          | 현재 상위 단계와 전체 단계 수               |
-| `TaskSurface`           | 현재 판단 하나를 담는 단일 표면             |
-| `BottomActionBar`       | 모바일 현재 우선 행동과 safe area           |
-| `PeoplePicker`          | 검색, 최근 함께한 사람, 다중 선택           |
-| `SelectedPeopleSummary` | 선택 인원과 명단, 수정                      |
-| `AttendanceModeGroup`   | 모두 참석 여부 선택                         |
-| `TimeConstraintInput`   | 회의 가능 기간과 참석자가 확보할 시간       |
-| `AvailabilityWindowPicker` | 반응형 날짜 탐색과 주최자 가능 시간대 상태 |
-| `DesktopWeekGrid`       | PC 주간 그리드와 키보드 이동                |
-| `MobileAvailabilityEditor` | 모바일 날짜별 가능 시간대 입력            |
-| `SelectedAvailabilitySummary` | 선택 시간대 확인, 수정, 삭제            |
-| `ResponseDeadlineInput` | 참여자 응답 마감 확인                       |
-| `MeetingContext`        | 참석자에게 필요한 최소 회의 정보            |
-| `AvailabilityStateInput` | 시간대별 3가지 가용 상태 입력              |
-| `CandidateDecisionCard` | 후보 상태, 요약 근거, 후보 선택             |
-| `StateNotice`           | 기다림·확인·회복 상태의 결론                |
-| `CopyAction`            | 링크 또는 요청 문구 복사                    |
+| 컴포넌트                      | 책임                                        |
+| ----------------------------- | ------------------------------------------- |
+| `HostContextBar`              | 제품 정체성, 회의 맥락, 상태 기반 보조 행동 |
+| `TaskProgress`                | 현재 상위 단계와 전체 단계 수               |
+| `TaskSurface`                 | 현재 판단 하나를 담는 단일 표면             |
+| `BottomActionBar`             | 모바일 현재 우선 행동과 safe area           |
+| `PeoplePicker`                | 검색, 최근 함께한 사람, 다중 선택           |
+| `SelectedPeopleSummary`       | 선택 인원과 명단, 수정                      |
+| `AttendanceModeGroup`         | 모두 참석 여부 선택                         |
+| `TimeConstraintInput`         | 회의 가능 기간과 참석자가 확보할 시간       |
+| `AvailabilityWindowPicker`    | 반응형 날짜 탐색과 주최자 가능 시간대 상태  |
+| `DesktopWeekGrid`             | PC 주간 그리드와 키보드 이동                |
+| `MobileAvailabilityEditor`    | 모바일 날짜별 가능 시간대 입력              |
+| `SelectedAvailabilitySummary` | 선택 시간대 확인, 수정, 삭제                |
+| `ResponseDeadlineInput`       | 참여자 응답 마감 확인                       |
+| `MeetingContext`              | 참석자에게 필요한 최소 회의 정보            |
+| `AvailabilityStateInput`      | 시간대별 3가지 가용 상태 입력               |
+| `CandidateDecisionCard`       | 후보 상태, 요약 근거, 후보 선택             |
+| `StateNotice`                 | 기다림·확인·회복 상태의 결론                |
+| `CopyAction`                  | 링크 또는 요청 문구 복사                    |
 
 컴포넌트를 추가하는 조건:
 
@@ -598,7 +598,7 @@ PC와 모바일은 같은 상태와 데이터를 사용하지만 같은 화면�
 ### Gate 3. 시스템화
 
 1. 대표 화면에서 반복된 컴포넌트를 공통화한다.
-2. `DESIGN.md` 토큰과 상태 표현을 적용한다.
+2. [`visual-system.md`](visual-system.md) 토큰과 상태 표현을 적용한다.
 3. 나머지 화면에 같은 문법을 확장한다.
 
 ### Gate 4. 전체 플로우 QA
@@ -631,7 +631,7 @@ PC와 모바일은 같은 상태와 데이터를 사용하지만 같은 화면�
 
 - 제목, 본문, 입력, CTA의 정렬축이 설명 가능하다.
 - 카드 안에 페이지 섹션용 카드를 중첩하지 않는다.
-- 간격, radius, 타입 위계가 `DESIGN.md`와 일치한다.
+- 간격, radius, 타입 위계가 [`visual-system.md`](visual-system.md)와 일치한다.
 - 선택, 대기, 오류, 완료 상태가 구분된다.
 
 ### 반응형
