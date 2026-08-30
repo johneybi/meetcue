@@ -1,6 +1,6 @@
 # PRD v2.2 - 설명 가능한 회의 결정 지원
 
-> 보존 상태: 이 문서는 2026-07-11의 전체 초안이다. 현재 구현 기준은 `prd-v2.2.1.md`이며, 네이밍·마감 이후 응답·새 시간 범위·요청 대상 선택·P0 입력 실험의 충돌을 v2.2.1에서 교정했다.
+> 보존 상태: 이 문서는 2026-07-11의 전체 초안이다. 현재 구현 기준은 [`../product/prd-v2.2.1.md`](../product/prd-v2.2.1.md)이며, 네이밍·마감 이후 응답·새 시간 범위·요청 대상 선택·P0 입력 실험의 충돌을 v2.2.1에서 교정했다.
 
 - 제품명: 확정보드
 - 상태: 구현 기준안
@@ -1016,18 +1016,18 @@ v2.2 구현은 다음 조건을 모두 만족해야 한다.
 
 이 문서는 v2.2 제품 요구사항의 기준이다.
 
-- `research-internalized-thinking-v1.md`: 문제 정의와 가설의 사고 근거
-- `availability-window-model-decision-v2.3.md`: 연속 시간 입력과 파생 후보 결정 기록
-- `meeting-time-reservation-decision-v2.1.md`: 실제 종료와 일정 확보 시간의 구분
-- `time-quantum-decision-v2.2.md`: 30분 시간 단위 결정
-- `decision-model-v2.1.md`: 이전 판정 계약, v2.2 구현 기준으로 사용하지 않음
-- `UX-ARCHITECTURE.md`: 후속 IA 및 화면 상태 명세
-- `DESIGN.md`: 시각 디자인 원칙
+- [`research-internalized-thinking-v1.md`](research-internalized-thinking-v1.md): 문제 정의와 가설의 사고 근거
+- [`../product/availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md): 연속 시간 입력과 파생 후보 결정 기록
+- [`../product/meeting-time-reservation-decision-v2.1.md`](../product/meeting-time-reservation-decision-v2.1.md): 실제 종료와 일정 확보 시간의 구분
+- [`../product/time-quantum-decision-v2.2.md`](../product/time-quantum-decision-v2.2.md): 30분 시간 단위 결정
+- [`decision-model-v2.1.md`](decision-model-v2.1.md): 이전 판정 계약, v2.2 구현 기준으로 사용하지 않음
+- [`../design/architecture.md`](../design/architecture.md): 후속 IA 및 화면 상태 명세
+- [`../design/visual-system.md`](../design/visual-system.md): 시각 디자인 원칙
 
 후속 산출물은 다음 순서로 갱신한다.
 
 1. `decision-model-v2.2.md`: 12~15장의 계산과 설명 계약을 코드 수준으로 분리
-2. `UX-ARCHITECTURE.md`: v2.2 사용자 흐름과 결과 정보 구조 반영
+2. [`../design/architecture.md`](../design/architecture.md): v2.2 사용자 흐름과 결과 정보 구조 반영
 3. 코드의 도메인 모델과 fixture를 v2.2 계약으로 전환
 4. 핵심 화면 구현과 검증
 

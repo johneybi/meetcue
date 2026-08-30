@@ -2,8 +2,8 @@
 
 - 상태: 현재 최우선 실행 기준
 - 기준일: 2026-07-12
-- 상위 문제 정의: `research-internalized-thinking-v1.md`
-- 제품 계약: `prd-v2.2.1.md`, `decision-model-v2.2.md`
+- 상위 문제 정의: [`../archive/research-internalized-thinking-v1.md`](../archive/research-internalized-thinking-v1.md)
+- 제품 계약: [`prd-v2.2.1.md`](prd-v2.2.1.md), [`decision-model-v2.2.md`](decision-model-v2.2.md)
 
 ## 1. 완성 범위
 

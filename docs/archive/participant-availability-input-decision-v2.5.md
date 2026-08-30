@@ -3,9 +3,9 @@
 - 상태: 채택 / 프로토타입 구현 완료 / 사용성 검증 전
 - 결정일: 2026-07-11
 - 적용 범위: MeetCue P0의 참여자 응답 단계
-- 연계 결정: `host-search-scope-input-decision-v2.4.md`
-- 제품 명세: `prd-v2.2.1.md`
-- 실행 명세: `../UX-ARCHITECTURE.md`
+- 연계 결정: [`../product/host-search-scope-input-decision-v2.4.md`](../product/host-search-scope-input-decision-v2.4.md)
+- 제품 명세: [`../product/prd-v2.2.1.md`](../product/prd-v2.2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
 ## 1. 결정 요약
 

@@ -466,4 +466,4 @@ copy_updates:
 
 | 적용일 | ID 범위 | 적용 파일 | 검증 방법 | 비고 |
 | --- | --- | --- | --- | --- |
-| 2026-07-12 | T, C, S, R, F, H, W, D, Q, P, M | `src/App.tsx`, `src/domain/meeting.ts`, `src/domain/evaluation.ts`, `src/components/ParticipantTimeGrid.tsx`, `DESIGN.md` | 타입 검사, 도메인 테스트 24개, ESLint, 프로덕션 빌드 | 계정 기반 내부 요청·알림 정책으로 적용 |
+| 2026-07-12 | T, C, S, R, F, H, W, D, Q, P, M | `src/App.tsx`, `src/domain/meeting.ts`, `src/domain/evaluation.ts`, `src/components/ParticipantTimeGrid.tsx`, `docs/design/visual-system.md` | 타입 검사, 도메인 테스트 24개, ESLint, 프로덕션 빌드 | 계정 기반 내부 요청·알림 정책으로 적용 |

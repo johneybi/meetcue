@@ -3,6 +3,7 @@
 여러 사람의 가능한 시간을 모으는 데서 끝나지 않고, 지금 회의를 확정해도 되는지 판단할 수 있도록 돕는 일정 조율 도구예요.
 
 [데모 체험하기](https://johneybi.github.io/meetcue/toss)
+· [Case Study 읽기](CASE-STUDY.md)
 
 > 문제 정의와 UX 설계부터 인터랙션 디자인, React 구현, 배포까지 직접 진행한 개인 프로젝트예요.
 
@@ -56,17 +57,12 @@ MeetCue는 응답을 수집하는 화면보다 **확정할 수 있는 상태를 
 
 ## 구현 환경
 
-- React 19
-- Vite
-- TypeScript
-- `@astryxdesign/core`
-- `@astryxdesign/theme-neutral`
-- `@astryxdesign/cli`
-- `react-aria-components`
-- `@internationalized/date`
-- `lucide-react`
-- ESLint
-- Prettier
+- React 19 + TypeScript 6 + Vite 8
+- Tailwind CSS 4 + `class-variance-authority` + `tailwind-merge`
+- `react-aria-components` + `@internationalized/date`
+- `lucide-react` + `sonner`
+- Node.js test runner 기반 도메인 테스트
+- ESLint 10 + Prettier 3
 
 ## 로컬에서 실행하기
 
@@ -84,18 +80,20 @@ npm run lint
 npm run build
 ```
 
+`tests/`에는 가용시간 파생, 판단 상태, 라우트, 계정 시나리오, 프로토타입 상태를 검증하는 도메인 테스트가 있습니다. GitHub Actions는 Pull Request와 `main` 배포 전에 타입 검사, 테스트, lint, production build를 실행합니다.
+
 <details>
 <summary>제품·설계 문서 보기</summary>
 
 ### 문서를 보는 순서
 
-`.local-docs/README.md`에서 문서의 관계와 변경 이력을 확인할 수 있어요. 현재 구현을 이해할 때는 아래 문서를 순서대로 보면 돼요.
+[`docs/README.md`](docs/README.md)에서 문서의 관계와 변경 이력을 확인할 수 있어요. 현재 구현을 이해할 때는 아래 문서를 순서대로 보면 돼요.
 
-1. `.local-docs/sprint-decision-coherence-v2.2.1.md` — 현재 목표와 완료 조건
-2. `.local-docs/prd-v2.2.1.md` — 제품 범위와 사용자 계약, 인수 조건
-3. `.local-docs/decision-model-v2.2.md` — 후보 시간의 상태와 설명 규칙
-4. `UX-ARCHITECTURE.md` — 정보 구조, 상태, 화면 구조, 반응형 동작
-5. `DESIGN.md` — TDS에서 영감을 받은 시각 언어와 컴포넌트 원칙
+1. [`docs/product/sprint-decision-coherence-v2.2.1.md`](docs/product/sprint-decision-coherence-v2.2.1.md) — 현재 목표와 완료 조건
+2. [`docs/product/prd-v2.2.1.md`](docs/product/prd-v2.2.1.md) — 제품 범위와 사용자 계약, 인수 조건
+3. [`docs/product/decision-model-v2.2.md`](docs/product/decision-model-v2.2.md) — 후보 시간의 상태와 설명 규칙
+4. [`docs/design/architecture.md`](docs/design/architecture.md) — 정보 구조, 상태, 화면 구조, 반응형 동작
+5. [`docs/design/visual-system.md`](docs/design/visual-system.md) — 시각 언어와 컴포넌트 원칙
 
 그 외 IA, 생성 흐름, 레이아웃 전략, 리서치, QA 문서는 현재 구현에 이르기까지의 판단 기록이에요.
 
@@ -111,25 +109,11 @@ npm run build
 
 ### 세부 의사결정 기록
 
-- `.local-docs/availability-window-model-decision-v2.3.md`
-- `.local-docs/host-time-model-decision-v2.0.md`
-- `.local-docs/host-search-scope-input-decision-v2.4.md`
-- `.local-docs/participant-availability-input-decision-v2.6.md`
-- `.local-docs/meeting-time-reservation-decision-v2.1.md`
-- `.local-docs/time-quantum-decision-v2.2.md`
-
-</details>
-
-<details>
-<summary>ASTRYX 개발 참고사항 보기</summary>
-
-ASTRYX는 프런트엔드 런타임과 구현 프리미티브를 제공해요. 시각적 기준은 `DESIGN.md`를 따라요. 익숙하지 않은 컴포넌트를 추가하기 전에는 아래 명령으로 먼저 확인해요.
-
-```bash
-npx astryx build
-npx astryx search <query>
-npx astryx component <ComponentName>
-npx astryx docs tokens
-```
+- [`조율 가능 시간대 모델 v2.3`](docs/product/availability-window-model-decision-v2.3.md)
+- [`주최자 시간 모델 v2.0`](docs/product/host-time-model-decision-v2.0.md)
+- [`주최자 탐색 범위 입력 v2.4`](docs/product/host-search-scope-input-decision-v2.4.md)
+- [`참석자 가용시간 입력 v2.6`](docs/product/participant-availability-input-decision-v2.6.md)
+- [`일정 확보 시간 v2.1`](docs/product/meeting-time-reservation-decision-v2.1.md)
+- [`30분 시간 단위 v2.2`](docs/product/time-quantum-decision-v2.2.md)
 
 </details>

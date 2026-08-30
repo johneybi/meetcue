@@ -10,12 +10,12 @@
 
 이 문서는 제품 기능, 화면 목록, 사용자 흐름, 정보 구조를 결정하지 않는다.
 
-- 제출 범위: `.local-docs/p0-submission-scope-lock-v2.10.md`
-- 제품 범위와 요구사항: `.local-docs/prd-v2.2.1.md`
-- UX 구조와 반응형 동작: `UX-ARCHITECTURE.md`
-- 시각 언어와 컴포넌트 표현: `DESIGN.md`
-- 과거 디자인 방향의 채택·폐기 기록: `DESIGN-DECISIONS.md`
-- 리팩터링 중 보존·정상화 기준: `DESIGN-REFACTOR-BASELINE.md`
+- 제출 범위: [`../product/p0-submission-scope-lock-v2.10.md`](../product/p0-submission-scope-lock-v2.10.md)
+- 제품 범위와 요구사항: [`../product/prd-v2.2.1.md`](../product/prd-v2.2.1.md)
+- UX 구조와 반응형 동작: [`architecture.md`](architecture.md)
+- 시각 언어와 컴포넌트 표현: `visual-system.md`
+- 과거 디자인 방향의 채택·폐기 기록: [`../../DESIGN-DECISIONS.md`](../../DESIGN-DECISIONS.md)
+- 리팩터링 중 보존·정상화 기준: [`../../DESIGN-REFACTOR-BASELINE.md`](../../DESIGN-REFACTOR-BASELINE.md)
 
 PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그것을 어떤 위계, 밀도, 색상, 타이포그래피, 간격, 상태 표현으로 보여줄지 결정한다.
 
@@ -35,8 +35,8 @@ PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그
 
 1. 사용자가 승인한 현재 제품 결정
 2. 이 문서
-3. `UX-ARCHITECTURE.md`의 정보 위계와 반응형 계약
-4. `DESIGN-REFACTOR-BASELINE.md`에서 보존 대상으로 판정한 현재 화면
+3. [`architecture.md`](architecture.md)의 정보 위계와 반응형 계약
+4. [`../../DESIGN-REFACTOR-BASELINE.md`](../../DESIGN-REFACTOR-BASELINE.md)에서 보존 대상으로 판정한 현재 화면
 5. TDS에서 확인한 일반 원칙
 6. OMD, Creative Production 무드보드, Figma, 과거 QA 산출물
 
@@ -155,20 +155,20 @@ PRD와 UX Architecture가 무엇을 보여줄지 결정한다. 이 문서는 그
 
 타입 스케일:
 
-| 역할 | 크기 / 행간 | 굵기 |
-| --- | --- | --- |
-| Display | 32 / 42 | 700 |
-| Page title | 26 / 36 | 700 |
-| Decision title | 24 / 34 | 600 |
-| Section title | 20 / 30 | 600 |
-| Card title | 17 / 26 | 600 |
-| Body | 15 / 24 | 400~500 |
-| Body strong | 15 / 24 | 600 |
-| Body small | 14 / 22 | 400~500 |
-| Caption | 13 / 20 | 400~500 |
-| Label | 13 / 20 | 500~600 |
-| Compact label | 12 / 18 | 500~600 |
-| Dense axis | 11 / 17 | 500~600 |
+| 역할           | 크기 / 행간 | 굵기    |
+| -------------- | ----------- | ------- |
+| Display        | 32 / 42     | 700     |
+| Page title     | 26 / 36     | 700     |
+| Decision title | 24 / 34     | 600     |
+| Section title  | 20 / 30     | 600     |
+| Card title     | 17 / 26     | 600     |
+| Body           | 15 / 24     | 400~500 |
+| Body strong    | 15 / 24     | 600     |
+| Body small     | 14 / 22     | 400~500 |
+| Caption        | 13 / 20     | 400~500 |
+| Label          | 13 / 20     | 500~600 |
+| Compact label  | 12 / 18     | 500~600 |
+| Dense axis     | 11 / 17     | 500~600 |
 
 규칙:
 

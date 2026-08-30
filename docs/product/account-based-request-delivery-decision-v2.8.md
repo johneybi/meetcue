@@ -3,9 +3,9 @@
 - 상태: 채택 / 프로토타입 반영 / 실제 연동 제외
 - 결정일: 2026-07-12
 - 적용 범위: MeetCue P0의 최초 요청, 재알림, 확정 알림, 참여자 식별
-- 대체 결정: `personal-invite-identity-decision-v2.7.md`
-- 제품 명세: `prd-v2.2.1.md`
-- 실행 명세: `../UX-ARCHITECTURE.md`
+- 대체 결정: [`personal-invite-identity-decision-v2.7.md`](personal-invite-identity-decision-v2.7.md)
+- 제품 명세: [`prd-v2.2.1.md`](prd-v2.2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
 ## 1. 문제
 

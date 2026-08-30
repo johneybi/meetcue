@@ -30,6 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Type check
+        run: npm run check
+
+      - name: Run domain tests
+        run: npm run test:domain
+
+      - name: Lint
+        run: npm run lint
+
       - name: Build
         run: npm run build
 

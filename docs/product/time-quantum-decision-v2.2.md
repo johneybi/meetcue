@@ -3,11 +3,11 @@
 - 상태: P0 프로토타입 채택
 - 결정일: 2026-07-10
 - 적용 범위: 확정보드의 후보 생성, 시간 블록, 향후 가용시간 그리드
-- 선행 결정: `.local-docs/meeting-time-reservation-decision-v2.1.md`
-- 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v2.0.md`
+- 선행 결정: [`meeting-time-reservation-decision-v2.1.md`](meeting-time-reservation-decision-v2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
+- 제품 명세: [`../archive/prd-v2.0.md`](../archive/prd-v2.0.md)
 
-> 후속 결정: `.local-docs/availability-window-model-decision-v2.3.md`가 이 문서에서 열어둔 후보 응답형과 가용시간 수집형 중 가용시간 수집형을 채택했다. 30분 최소 단위는 유지된다.
+> 후속 결정: [`availability-window-model-decision-v2.3.md`](availability-window-model-decision-v2.3.md)가 이 문서에서 열어둔 후보 응답형과 가용시간 수집형 중 가용시간 수집형을 채택했다. 30분 최소 단위는 유지된다.
 
 ## 1. 문제 제기
 
@@ -158,7 +158,7 @@ reservedDurationMinutes >= TIME_QUANTUM_MINUTES
 
 ## 12. 기존 결정과의 관계
 
-이 문서는 `.local-docs/meeting-time-reservation-decision-v2.1.md`의 일정 확보 시간 의미를 유지하면서 입력 가능 단위만 구체화하고 대체한다.
+이 문서는 [`meeting-time-reservation-decision-v2.1.md`](meeting-time-reservation-decision-v2.1.md)의 일정 확보 시간 의미를 유지하면서 입력 가능 단위만 구체화하고 대체한다.
 
 유지되는 결정은 다음과 같다.
 

@@ -3,11 +3,11 @@
 - 상태: 채택 / 문서 반영 완료 / 구현 전
 - 결정일: 2026-07-11
 - 적용 범위: MeetCue P0의 주최자 시간 생성 단계
-- 선행 결정: `availability-window-model-decision-v2.3.md`
-- 제품 명세: `prd-v2.2.1.md`
-- 실행 명세: `../UX-ARCHITECTURE.md`
+- 선행 결정: [`availability-window-model-decision-v2.3.md`](availability-window-model-decision-v2.3.md)
+- 제품 명세: [`prd-v2.2.1.md`](prd-v2.2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
-> 참여자 입력 후속 결정: `participant-availability-input-decision-v2.5.md`가 참여자의 반복 3버튼 입력을 `일반 패턴 선택 + 3상태 예외 편집`으로 구체화한다. 주최자 입력을 줄인 비용을 참여자에게 이전하지 않는 짝 결정이다.
+> 참여자 입력 후속 결정: [`participant-availability-input-decision-v2.5.md`](../archive/participant-availability-input-decision-v2.5.md)가 참여자의 반복 3버튼 입력을 `일반 패턴 선택 + 3상태 예외 편집`으로 구체화한다. 주최자 입력을 줄인 비용을 참여자에게 이전하지 않는 짝 결정이다.
 
 ## 1. 결정 요약
 
