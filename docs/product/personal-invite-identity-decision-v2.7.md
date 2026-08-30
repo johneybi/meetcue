@@ -1,10 +1,10 @@
 # 개인 초대 링크와 참여자 식별 결정 기록 v2.7
 
-- 상태: 대체됨 / `account-based-request-delivery-decision-v2.8.md`가 현재 계약
+- 상태: 대체됨 / [`account-based-request-delivery-decision-v2.8.md`](account-based-request-delivery-decision-v2.8.md)가 현재 계약
 - 결정일: 2026-07-12
 - 적용 범위: MeetCue P0의 초대 링크 공유, 참여자 진입, 응답 수정
-- 제품 명세: `prd-v2.2.1.md`
-- 실행 명세: `../UX-ARCHITECTURE.md`
+- 제품 명세: [`prd-v2.2.1.md`](prd-v2.2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
 ## 1. 문제
 

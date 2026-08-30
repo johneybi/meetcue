@@ -3,12 +3,12 @@
 - 상태: 채택 / 프로토타입 구현 완료 / 사용성 검증 전
 - 결정일: 2026-07-11
 - 적용 범위: 확정보드 P0의 주최자 시간 입력, 참석자 응답, 후보 생성
-- 선행 결정: `.local-docs/host-time-model-decision-v2.0.md`
-- 유지 결정: `.local-docs/meeting-time-reservation-decision-v2.1.md`, `.local-docs/time-quantum-decision-v2.2.md`
-- 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v2.0.md`
+- 선행 결정: [`host-time-model-decision-v2.0.md`](host-time-model-decision-v2.0.md)
+- 유지 결정: [`meeting-time-reservation-decision-v2.1.md`](meeting-time-reservation-decision-v2.1.md), [`time-quantum-decision-v2.2.md`](time-quantum-decision-v2.2.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
+- 제품 명세: [`../archive/prd-v2.0.md`](../archive/prd-v2.0.md)
 
-> 후속 결정: `.local-docs/host-search-scope-input-decision-v2.4.md`가 이 문서의 주최자 빈 그리드 필수 입력을 `기본 탐색 범위 + 예외 편집`으로 대체한다. 참석자 3상태 응답과 파생 후보 모델은 유지된다.
+> 후속 결정: [`host-search-scope-input-decision-v2.4.md`](host-search-scope-input-decision-v2.4.md)가 이 문서의 주최자 빈 그리드 필수 입력을 `기본 탐색 범위 + 예외 편집`으로 대체한다. 참석자 3상태 응답과 파생 후보 모델은 유지된다.
 
 ## 1. 결정 요약
 

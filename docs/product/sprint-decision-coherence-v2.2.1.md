@@ -4,7 +4,7 @@
 - 기준일: 2026-07-11
 - 제품 UI명: MeetCue
 - 과거 기획명: 확정보드
-- 최우선 범위 잠금: `p0-submission-scope-lock-v2.10.md`
+- 최우선 범위 잠금: [`p0-submission-scope-lock-v2.10.md`](p0-submission-scope-lock-v2.10.md)
 
 ## 1. 목적
 
@@ -57,9 +57,9 @@
 
 ## 4. 스프린트 산출물
 
-1. `prd-v2.2.1.md`: 모순을 제거한 현재 P0 계약
-2. `decision-model-v2.2.md`: 순수 판정 계약
-3. `UX-ARCHITECTURE.md`: 세 상태 결과와 P0 라우트 계약
+1. [`prd-v2.2.1.md`](prd-v2.2.1.md): 모순을 제거한 현재 P0 계약
+2. [`decision-model-v2.2.md`](decision-model-v2.2.md): 순수 판정 계약
+3. [`../design/architecture.md`](../design/architecture.md): 세 상태 결과와 P0 라우트 계약
 4. 제출 상태와 시간 칸 원본을 분리한 도메인 코드
 5. 통합 결과 보드와 응답 대상 선택 UI
 6. 대표 시나리오 자동화 테스트

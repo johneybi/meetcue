@@ -10,20 +10,20 @@
 
 충돌 시 우선순위는 다음과 같다.
 
-1. `.local-docs/p0-submission-scope-lock-v2.10.md`: 제출 범위, 보류 범위, 대표 시연 순서
-2. `.local-docs/sprint-decision-coherence-v2.2.1.md`: 스프린트 목표와 완료 게이트
-3. `.local-docs/prd-v2.2.1.md`: 제품 목표, 사용자, P0 범위, 검증 계약
-4. `.local-docs/decision-model-v2.2.md`: 후보 판정, 정렬, 설명, 다음 행동 규칙
-5. `.local-docs/availability-window-model-decision-v2.3.md`: 참석자 응답과 후보 생성 계약
-6. `.local-docs/host-search-scope-input-decision-v2.4.md`: 주최자 기본 탐색 범위와 예외 편집 계약
-7. `.local-docs/participant-availability-input-decision-v2.6.md`: 참여자 더미 캘린더, 타임테이블과 예외 편집 계약
-8. `UX-ARCHITECTURE.md`: IA, 화면 구조, 상태, 내비게이션, 반응형 동작
-9. `DESIGN.md`: MeetCue 시각 언어, 컴포넌트 표현, UX 라이팅
-10. `DESIGN-DECISIONS.md`: 과거 디자인 소스에서 채택·폐기한 판단
-11. `DESIGN-REFACTOR-BASELINE.md`: 리팩터링 중 보존·정상화·격리 기준
-10. 코드: 위 문서를 구현한 결과
+1. [`p0-submission-scope-lock-v2.10.md`](../product/p0-submission-scope-lock-v2.10.md): 제출 범위, 보류 범위, 대표 시연 순서
+2. [`sprint-decision-coherence-v2.2.1.md`](../product/sprint-decision-coherence-v2.2.1.md): 스프린트 목표와 완료 게이트
+3. [`prd-v2.2.1.md`](../product/prd-v2.2.1.md): 제품 목표, 사용자, P0 범위, 검증 계약
+4. [`decision-model-v2.2.md`](../product/decision-model-v2.2.md): 후보 판정, 정렬, 설명, 다음 행동 규칙
+5. [`availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md): 참석자 응답과 후보 생성 계약
+6. [`host-search-scope-input-decision-v2.4.md`](../product/host-search-scope-input-decision-v2.4.md): 주최자 기본 탐색 범위와 예외 편집 계약
+7. [`participant-availability-input-decision-v2.6.md`](../product/participant-availability-input-decision-v2.6.md): 참여자 더미 캘린더, 타임테이블과 예외 편집 계약
+8. `architecture.md`: IA, 화면 구조, 상태, 내비게이션, 반응형 동작
+9. [`visual-system.md`](visual-system.md): MeetCue 시각 언어, 컴포넌트 표현, UX 라이팅
+10. [`../../DESIGN-DECISIONS.md`](../../DESIGN-DECISIONS.md): 과거 디자인 소스에서 채택·폐기한 판단
+11. [`../../DESIGN-REFACTOR-BASELINE.md`](../../DESIGN-REFACTOR-BASELINE.md): 리팩터링 중 보존·정상화·격리 기준
+12. 코드: 위 문서를 구현한 결과
 
-`.local-docs/host-time-model-decision-v2.0.md`는 주최자 역할과 초기 시간 구조의 결정 기록이다. `.local-docs/meeting-time-reservation-decision-v2.1.md`는 실제 종료와 일정 확보 시간을 구분하고, `.local-docs/time-quantum-decision-v2.2.md`는 P0의 30분 시간 최소 단위를 정한다. `.local-docs/availability-window-model-decision-v2.3.md`는 정확한 후보 직접 선택을 가용시간 수집과 파생 후보 계산으로 대체한다. `.local-docs/host-search-scope-input-decision-v2.4.md`는 주최자가 빈 그리드를 필수로 칠하는 구조를 제품이 제안한 탐색 범위의 예외 편집으로 대체한다. `.local-docs/participant-availability-input-decision-v2.6.md`는 더미 캘린더 자동 채움과 역할별 타임테이블 예외 편집을 채택한다. v2.7~v2.9의 개인 링크, 조직 계정 전달, 계정 내비게이션은 후속 제품 탐색 기록이며 P0 완료 게이트에 직접 조합하지 않는다. 현재 구현 규칙은 `.local-docs/p0-submission-scope-lock-v2.10.md`에 채택된 결론을 우선한다.
+[`../product/host-time-model-decision-v2.0.md`](../product/host-time-model-decision-v2.0.md)는 주최자 역할과 초기 시간 구조의 결정 기록이다. [`../product/meeting-time-reservation-decision-v2.1.md`](../product/meeting-time-reservation-decision-v2.1.md)는 실제 종료와 일정 확보 시간을 구분하고, [`../product/time-quantum-decision-v2.2.md`](../product/time-quantum-decision-v2.2.md)는 P0의 30분 시간 최소 단위를 정한다. [`../product/availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md)는 정확한 후보 직접 선택을 가용시간 수집과 파생 후보 계산으로 대체한다. [`../product/host-search-scope-input-decision-v2.4.md`](../product/host-search-scope-input-decision-v2.4.md)는 주최자가 빈 그리드를 필수로 칠하는 구조를 제품이 제안한 탐색 범위의 예외 편집으로 대체한다. [`../product/participant-availability-input-decision-v2.6.md`](../product/participant-availability-input-decision-v2.6.md)는 더미 캘린더 자동 채움과 역할별 타임테이블 예외 편집을 채택한다. v2.7~v2.9의 개인 링크, 조직 계정 전달, 계정 내비게이션은 후속 제품 탐색 기록이며 P0 완료 게이트에 직접 조합하지 않는다. 현재 구현 규칙은 [`../product/p0-submission-scope-lock-v2.10.md`](../product/p0-submission-scope-lock-v2.10.md)에 채택된 결론을 우선한다.
 
 ## 현재 실행 상태
 
@@ -66,7 +66,7 @@
 - 카피가 길거나 짧다.
 - 특정 화면만 시각적으로 비어 보인다.
 
-이 문제들은 `DESIGN.md`, 컴포넌트, 토큰, 카피 단계에서 해결한다.
+이 문제들은 [`visual-system.md`](visual-system.md), 컴포넌트, 토큰, 카피 단계에서 해결한다.
 
 ## 3. 제품 경험 모델
 
@@ -660,7 +660,7 @@ PC와 모바일은 같은 상태와 데이터를 사용하지만 같은 화면�
 ### Gate 3. 시스템화
 
 1. 대표 화면에서 반복된 컴포넌트를 공통화한다.
-2. `DESIGN.md` 토큰과 상태 표현을 적용한다.
+2. [`visual-system.md`](visual-system.md) 토큰과 상태 표현을 적용한다.
 3. 나머지 화면에 같은 문법을 확장한다.
 
 ### Gate 4. 전체 플로우 QA
@@ -694,7 +694,7 @@ PC와 모바일은 같은 상태와 데이터를 사용하지만 같은 화면�
 
 - 제목, 본문, 입력, CTA의 정렬축이 설명 가능하다.
 - 카드 안에 페이지 섹션용 카드를 중첩하지 않는다.
-- 간격, radius, 타입 위계가 `DESIGN.md`와 일치한다.
+- 간격, radius, 타입 위계가 [`visual-system.md`](visual-system.md)와 일치한다.
 - 선택, 대기, 오류, 완료 상태가 구분된다.
 
 ### 반응형

@@ -3,9 +3,9 @@
 - 상태: 채택 / 프로토타입 구현 완료 / 사용성 검증 전
 - 결정일: 2026-07-11
 - 적용 범위: MeetCue P0의 참여자 응답 단계
-- 대체 결정: `participant-availability-input-decision-v2.5.md`
-- 제품 명세: `prd-v2.2.1.md`
-- 실행 명세: `../UX-ARCHITECTURE.md`
+- 대체 결정: [`../archive/participant-availability-input-decision-v2.5.md`](../archive/participant-availability-input-decision-v2.5.md)
+- 제품 명세: [`prd-v2.2.1.md`](prd-v2.2.1.md)
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
 ## 1. 전제 수정
 

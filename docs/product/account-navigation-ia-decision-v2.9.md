@@ -2,7 +2,7 @@
 
 - 상태: 현재 구현 기준
 - 기준일: 2026-07-12
-- 상위 계약: `prd-v2.2.1.md`, `account-based-request-delivery-decision-v2.8.md`
+- 상위 계약: [`prd-v2.2.1.md`](prd-v2.2.1.md), [`account-based-request-delivery-decision-v2.8.md`](account-based-request-delivery-decision-v2.8.md)
 - 적용 범위: 백엔드 없는 조직 계정형 프로토타입
 
 ## 1. 문제

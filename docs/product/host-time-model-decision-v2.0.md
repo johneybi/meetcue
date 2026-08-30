@@ -3,10 +3,10 @@
 - 상태: 채택
 - 결정일: 2026-07-10
 - 적용 범위: 확정보드 P0
-- 실행 명세: `UX-ARCHITECTURE.md`
-- 제품 명세: `.local-docs/prd-v2.0.md`
+- 실행 명세: [`../design/architecture.md`](../design/architecture.md)
+- 제품 명세: [`../archive/prd-v2.0.md`](../archive/prd-v2.0.md)
 
-> 후속 결정: `.local-docs/availability-window-model-decision-v2.3.md`가 주최자의 정확한 후보 직접 선택과 참석자의 후보별 응답 계약을 대체한다. 주최자가 항상 참석하고 최종 결정을 내린다는 역할 계약은 유지된다.
+> 후속 결정: [`availability-window-model-decision-v2.3.md`](availability-window-model-decision-v2.3.md)가 주최자의 정확한 후보 직접 선택과 참석자의 후보별 응답 계약을 대체한다. 주최자가 항상 참석하고 최종 결정을 내린다는 역할 계약은 유지된다.
 
 ## 1. 결정 배경
 
@@ -76,7 +76,7 @@ P0에서는 A를 선택한다.
 
 ### 회의 길이
 
-> 이 절의 `회의 길이` 의미는 `.local-docs/meeting-time-reservation-decision-v2.1.md`에서 `일정 확보 시간`으로 구체화되었다. 실제 회의의 정확한 종료 시간을 뜻하지 않는다. 입력 가능 단위와 프리셋은 `.local-docs/time-quantum-decision-v2.2.md`의 30분 단위 결정으로 대체되었다.
+> 이 절의 `회의 길이` 의미는 [`meeting-time-reservation-decision-v2.1.md`](meeting-time-reservation-decision-v2.1.md)에서 `일정 확보 시간`으로 구체화되었다. 실제 회의의 정확한 종료 시간을 뜻하지 않는다. 입력 가능 단위와 프리셋은 [`time-quantum-decision-v2.2.md`](time-quantum-decision-v2.2.md)의 30분 단위 결정으로 대체되었다.
 
 후보 하나가 차지하는 시간이다. P0은 자주 쓰는 길이를 빠르게 고를 수 있도록 30분, 45분, 60분, 90분 프리셋을 제공한다. 프리셋에 맞지 않는 회의는 15~240분 범위에서 5분 단위로 직접 입력할 수 있다.
 
@@ -147,9 +147,9 @@ P0에서는 A를 선택한다.
 - `create-attendee-flow-design-v1.6.md`: `나도 참석해요`를 기본 선택으로 제공하는 방향
 - `create-attendee-selection-redesign-v1.7.md`: 요청자와 참석 여부를 토글로 분리하는 방향
 - `prd-v1.4.md`: 후보 시간 최대 5개 입력을 P0 하드 제한으로 둔 방향
-- 기존 `UX-ARCHITECTURE.md`: 후보 최대 5개 계약
+- 기존 [`../design/architecture.md`](../design/architecture.md): 후보 최대 5개 계약
 
-과거 문서는 사고 이력을 위해 보존한다. 실행 시에는 `prd-v2.0.md`와 갱신된 `UX-ARCHITECTURE.md`를 따른다.
+과거 문서는 사고 이력을 위해 보존한다. 실행 시에는 [`../archive/prd-v2.0.md`](../archive/prd-v2.0.md)와 갱신된 [`../design/architecture.md`](../design/architecture.md)를 따른다.
 
 ## 12. 아직 확정하지 않은 문제
 

@@ -5,9 +5,9 @@
 - 제품 UI명: MeetCue
 - 과거 기획명: 확정보드
 - 구현 조건: 백엔드 없는 반응형 P0 프로토타입
-- 최우선 범위 잠금: `p0-submission-scope-lock-v2.10.md`
-- 상위 문서: `research-internalized-thinking-v1.md`
-- 상세 판정 계약: `decision-model-v2.2.md`
+- 최우선 범위 잠금: [`p0-submission-scope-lock-v2.10.md`](p0-submission-scope-lock-v2.10.md)
+- 상위 문서: [`../archive/research-internalized-thinking-v1.md`](../archive/research-internalized-thinking-v1.md)
+- 상세 판정 계약: [`decision-model-v2.2.md`](decision-model-v2.2.md)
 
 ## 1. 이번 버전에서 증명할 것
 
@@ -77,7 +77,7 @@
 
 ## 4. 판정과 결과 계약
 
-후보 판정은 `decision-model-v2.2.md`를 따른다.
+후보 판정은 [`decision-model-v2.2.md`](decision-model-v2.2.md)를 따른다.
 
 - `READY`: 필수 참석자가 모두 확약했고 최소 인원을 충족한다.
 - `PENDING`: 아직 가능 응답 조건이 남았지만 성립 가능성이 있다.

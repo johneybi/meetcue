@@ -4,9 +4,9 @@
 
 - 상태: P0 실행 기준
 - 기준일: 2026-07-11
-- 대체 문서: `.local-docs/prd-v1.5.md`
-- 시간 모델 결정: `.local-docs/availability-window-model-decision-v2.3.md`
-- UX 실행 명세: `UX-ARCHITECTURE.md`
+- 대체 문서: [`prd-v1.5.md`](prd-v1.5.md)
+- 시간 모델 결정: [`../product/availability-window-model-decision-v2.3.md`](../product/availability-window-model-decision-v2.3.md)
+- UX 실행 명세: [`../design/architecture.md`](../design/architecture.md)
 
 ## 0. 한 줄 정의
 
