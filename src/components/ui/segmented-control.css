@@ -1,0 +1,47 @@
+/* Choice uses the same outlined, pale selection as other controls. Solid blue belongs to the primary action. */
+.ui-segmented {
+  display: flex;
+  gap: 8px;
+}
+.ui-segmented > button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--mc-soft-border);
+  border-radius: var(--mc-radius-control);
+  background: var(--mc-soft-fill);
+  color: var(--mc-color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background var(--mc-motion-feedback),
+    border-color var(--mc-motion-feedback);
+}
+.ui-segmented > button:hover {
+  background: var(--mc-soft-hover-fill);
+}
+.ui-segmented > button[aria-checked='true'] {
+  background: var(--mc-soft-selected-fill);
+  border-color: var(--mc-soft-selected-border);
+  color: var(--mc-color-accent-pressed);
+  box-shadow: inset 0 0 0 1px var(--mc-soft-selected-border);
+}
+.ui-segmented__check {
+  visibility: hidden;
+}
+.ui-segmented > button[aria-checked='true'] .ui-segmented__check {
+  visibility: visible;
+}
+.ui-segmented > button:focus-visible {
+  outline: 2px solid var(--mc-color-accent);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-segmented > button {
+    transition: none;
+  }
+}

@@ -1,9 +1,11 @@
 :root {
-  --mc-color-canvas: #f6f8fb;
+  --mc-color-canvas: #f3f5f8;
+  --mc-fill-canvas: linear-gradient(180deg, #ffffff, #fcfdff 280px);
   --mc-color-surface: #ffffff;
+  --mc-color-scrim: rgb(21 27 36 / 16%);
   --mc-color-surface-subtle: #f4f7fb;
   --mc-color-surface-pressed: #e8edf4;
-  --mc-color-border: #e7ecf3;
+  --mc-color-border: #e0e5ec;
   --mc-color-border-strong: #cfd8e5;
 
   --mc-color-text-primary: #151b24;
@@ -13,8 +15,8 @@
   --mc-color-text-placeholder: #626d7c;
   --mc-color-disabled: #b0b8c1;
 
-  --mc-color-accent: #1f6feb;
-  --mc-color-accent-pressed: #1558c9;
+  --mc-color-accent: #2675ed;
+  --mc-color-accent-pressed: #185bc3;
   --mc-color-accent-soft: #e8f3ff;
   --mc-color-accent-soft-strong: #c9e2ff;
 
@@ -25,9 +27,21 @@
   --mc-color-danger: #c23542;
   --mc-color-danger-soft: #ffecef;
 
-  --mc-radius-control: 0.5rem;
+  --mc-radius-control: 0.625rem;
   --mc-radius-card: 0.75rem;
   --mc-radius-surface: 1rem;
+  /* Surface intent: neutral workspace, resting sheets, tactile controls. */
+  --mc-fill-surface: #fff;
+  --mc-fill-control: linear-gradient(180deg, #fff 0%, #f6f8fc 100%);
+  --mc-fill-selected: #edf4ff;
+  --mc-fill-primary: linear-gradient(180deg, #2471e3 0%, #1c64d8 100%);
+  --mc-fill-primary-hover: linear-gradient(180deg, #216ee0 0%, #185bc3 100%);
+  --mc-shadow-control: inset 0 1px 0 #fff, 0 1px 2px rgb(29 48 79 / 6%);
+  --mc-shadow-selected: 0 0 0 1px var(--mc-color-accent);
+  --mc-shadow-primary:
+    inset 0 1px 0 rgb(255 255 255 / 24%), inset 0 -1px 0 rgb(16 56 124 / 22%),
+    0 3px 6px rgb(28 86 173 / 16%);
+  --mc-shadow-panel: 0 1px 3px rgb(29 48 79 / 4%);
   --mc-shadow-floating: 0 8px 24px rgb(25 31 40 / 8%);
 
   --mc-color-glass: rgb(255 255 255 / 78%);
@@ -143,20 +157,14 @@
   --mc-radius-candidate-detail-control: 8px;
   --mc-shadow-candidate-detail: 0 2px 6px rgb(31 52 83 / 4%), 0 12px 32px rgb(31 52 83 / 10%);
 
-  --mc-host-decision-canvas:
-    radial-gradient(circle at 18% 9%, rgb(232 243 255 / 86%) 0, transparent 34rem),
-    radial-gradient(circle at 82% 16%, rgb(230 248 243 / 76%) 0, transparent 30rem),
-    radial-gradient(circle at 50% 58%, rgb(232 243 255 / 42%) 0, transparent 34rem),
-    linear-gradient(180deg, #fbfcfe 0%, #f5f8fc 54%, #f8fafc 100%);
+  --mc-host-decision-canvas: var(--mc-color-canvas);
   --mc-host-decision-frame-width: 68.75rem;
   --mc-host-decision-rail-width: 16.875rem;
   --mc-host-decision-divider: #dfe6ed;
   --mc-host-decision-header-min-height: 42px;
   --mc-radius-host-decision-notice: 9px;
 
-  --mc-create-canvas:
-    radial-gradient(circle at 16% 10%, rgb(232 243 255 / 72%) 0, transparent 30rem),
-    radial-gradient(circle at 84% 18%, rgb(230 248 243 / 56%) 0, transparent 26rem), #f7f9fc;
+  --mc-create-canvas: var(--mc-color-canvas);
   --mc-create-frame-width: 70rem;
   --mc-create-surface-width: 51.25rem;
   --mc-shadow-create-panel: 0 6px 18px rgb(31 52 83 / 4%), inset 0 0 0 1px rgb(255 255 255 / 52%);

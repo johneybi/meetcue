@@ -16,7 +16,7 @@
     'Segoe UI', sans-serif;
   --font-brand: 'futura-100', Futura, 'Century Gothic', sans-serif;
   color: var(--mc-color-text-primary);
-  background: #f6f8fb;
+  background: var(--mc-fill-canvas);
   font-family: var(--font-ui);
   letter-spacing: 0;
   font-synthesis: none;
@@ -33,10 +33,7 @@ body {
   margin: 0;
   min-width: 20rem;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 18% 0%, rgb(232 243 255 / 72%), transparent 30rem),
-    radial-gradient(circle at 92% 14%, rgb(230 248 243 / 64%), transparent 26rem),
-    linear-gradient(180deg, #fbfcfe 0%, #f5f8fc 48%, #f7f9fb 100%);
+  background: var(--mc-fill-canvas);
   color: #151b24;
   letter-spacing: 0;
 }

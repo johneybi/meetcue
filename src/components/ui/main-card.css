@@ -2,7 +2,7 @@
   min-width: 0;
   border: 1px solid var(--mc-color-border);
   border-radius: var(--mc-radius-card);
-  background: var(--mc-color-surface);
+  background: var(--mc-fill-surface);
 }
 
 .main-card__header,

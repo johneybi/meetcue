@@ -2,11 +2,16 @@ import type { HTMLAttributes } from 'react'
 
 import { cn } from '../../lib/utils'
 
-type MainCardProps = HTMLAttributes<HTMLElement>
+type MainCardProps = HTMLAttributes<HTMLElement> & {
+  as?: 'section' | 'article'
+  material?: 'plain' | 'soft'
+  selected?: boolean
+  interactive?: boolean
+}
 type MainCardSectionProps = HTMLAttributes<HTMLDivElement>
 
-function MainCard({ className, ...props }: MainCardProps) {
-  return <section className={cn('main-card', className)} {...props} />
+function MainCard({ as: Tag = 'section', material = 'plain', selected = false, interactive = false, className, ...props }: MainCardProps) {
+  return <Tag className={cn('main-card', className)} data-material={material} data-selected={selected} data-interactive={interactive} {...props} />
 }
 
 function MainCardHeader({ className, ...props }: MainCardSectionProps) {
