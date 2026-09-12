@@ -182,6 +182,10 @@
 }
 
 @media (max-width: 680px) {
+  body:has(.response-save-confirmation) .demo-guide {
+    display: none;
+  }
+
   .demo-guide {
     right: 12px;
     bottom: calc(12px + env(safe-area-inset-bottom));

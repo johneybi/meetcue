@@ -58,7 +58,6 @@ export function HostDecisionScreen({
       evaluation.candidate.id !== recommendedEvaluation.candidate.id &&
       evaluation.status === 'ready',
   )
-  const shouldStartMatrixOpen = !isMobileViewport()
   return (
     <div className="decision-board">
       <section className="decision-candidate-workspace" aria-labelledby="decision-candidates-title">
@@ -115,11 +114,17 @@ export function HostDecisionScreen({
         />
       </section>
 
+      {meeting.participants.some((p) => p.responseScope === 'candidates') ? (
+        <p className="decision-response-scope-note">
+          후보에만 응답한 사람도 있어요. 다른 시간의 응답은 ‘이 시간 미확인’으로 표시해요.
+        </p>
+      ) : null}
+
       <HostDecisionMatrix
         meeting={meeting}
         groups={comparisonGroups}
         selectedCandidateId={recommendedEvaluation.candidate.id}
-        defaultOpen={shouldStartMatrixOpen}
+        defaultOpen={false}
       />
 
       {requestCandidateId === recommendedEvaluation.candidate.id ? (
@@ -139,8 +144,17 @@ export function HostDecisionScreen({
           <div className="prototype-flow-action__person">
             <Avatar name={requestedParticipant.name} />
             <div>
-              <span>요청이 전달됐어요</span>
-              <strong>{requestedParticipant.name}님의 응답이 오면 결과를 다시 계산해요</strong>
+              <span>
+                {requestedParticipant.responseStatus === 'submitted'
+                  ? '응답을 반영했어요'
+                  : '요청이 전달됐어요'}
+              </span>
+              <strong>
+                {requestedParticipant.name}님
+                {requestedParticipant.responseStatus === 'submitted'
+                  ? '의 응답으로 결과를 다시 계산했어요'
+                  : '의 응답이 오면 결과를 다시 계산해요'}
+              </strong>
             </div>
           </div>
           <Button size="action" onClick={() => onOpenRequestedParticipant(requestedParticipant)}>
@@ -151,16 +165,10 @@ export function HostDecisionScreen({
 
       {evaluations.some((evaluation) => evaluation.deadlinePassed) ? (
         <div className="decision-deadline-notice" role="status">
-          응답 마감이 지났지만, 아직 응답하지 않은 사람을 ‘참석하기 어려워요’로 처리하지 않았어요.
-          늦게 온 응답도 반영해 결과를 다시 계산해요.
+          응답 마감이 지났지만, 이 시간에 아직 응답하지 않은 사람을 ‘참석하기 어려워요’로 처리하지
+          않았어요. 늦게 온 응답도 반영해 결과를 다시 계산해요.
         </div>
       ) : null}
     </div>
   )
-}
-
-function isMobileViewport() {
-  if (typeof window === 'undefined') return false
-
-  return window.matchMedia('(max-width: 760px)').matches
 }

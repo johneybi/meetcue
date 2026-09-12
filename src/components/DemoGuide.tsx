@@ -15,15 +15,15 @@ const demoGuideSteps: Array<DevScreen & { title: string; description: string }> 
   },
   {
     label: '2',
-    title: '추가 응답 요청하기',
-    description: '아직 정할 수 없는 이유를 보고 필요한 사람에게 요청해요.',
+    title: '기다릴지 결정하기',
+    description: '지금 정할 수 있는 다른 시간과, 추가 응답이 필요한 시간을 비교해요.',
     route: 'host',
     fixture: 'pending',
   },
   {
     label: '3',
     title: '참석자 응답',
-    description: '수진이 캘린더를 확인하고 가능한 시간을 제출해요.',
+    description: '후보 3개에 먼저 응답하고, 필요하면 전체 시간표를 열어요.',
     route: 'invite',
     fixture: 'pending',
     participantToken: 'token-p-sujin',
@@ -31,7 +31,7 @@ const demoGuideSteps: Array<DevScreen & { title: string; description: string }> 
   {
     label: '4',
     title: '바뀐 결과 확인',
-    description: '새 응답으로 달라진 결과와 판단 근거를 확인해요.',
+    description: '같은 시간에 수진의 가능 응답이 더해진 결과를 확인해요.',
     route: 'host',
     fixture: 'responded',
   },
@@ -76,7 +76,9 @@ export function DemoGuide({
               <span>약 3분</span>
               <strong>MeetCue 둘러보기</strong>
             </div>
-            <p>원하는 장면부터 확인해도 흐름이 이어져요.</p>
+            <p>
+              예시 데이터로 각 장면을 열어요. 2번에서는 기다리지 않고 다른 시간을 정할 수도 있어요.
+            </p>
           </header>
           <ol className="demo-guide__steps">
             {demoGuideSteps.map((step, index) => {

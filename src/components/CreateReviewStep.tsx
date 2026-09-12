@@ -46,7 +46,9 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
         <div className="create-review-facts">
           <ReviewFactRow label="회의" value={meeting.title} />
           <ReviewIdentityRow label="요청자" name={host?.name ?? meeting.hostLabel} />
-          <ReviewFactRow label="정할 내용" value={meeting.purpose.trim()} />
+          {meeting.purpose.trim() ? (
+            <ReviewFactRow label="정할 내용" value={meeting.purpose.trim()} />
+          ) : null}
           {referenceMaterial ? <ReviewFactRow label="참고 출처" value={referenceMaterial} /> : null}
         </div>
       </section>
@@ -68,10 +70,7 @@ export function CreateReviewStep({ meeting, attendanceMode }: CreateReviewStepPr
             }
           />
           {attendanceMode === 'required' && requiredParticipants.length > 0 ? (
-            <ReviewPeopleRow
-              label="꼭 필요한 사람"
-              participants={requiredParticipants}
-            />
+            <ReviewPeopleRow label="꼭 필요한 사람" participants={requiredParticipants} />
           ) : null}
         </div>
       </section>

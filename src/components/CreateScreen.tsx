@@ -88,7 +88,7 @@ export function CreateScreen({
   const hostAvailabilityWindows = meeting.availabilityWindows.filter(
     (window) => window.ownerId === meeting.hostId,
   )
-  const isMeetingComplete = meeting.title.trim() !== '' && meeting.purpose.trim() !== ''
+  const isMeetingComplete = meeting.title.trim() !== ''
   const todayInput = formatDateInput(createNow)
   const isDurationValid = isValidMeetingDuration(meeting.durationMinutes)
   const isSchedulingWindowValid =
@@ -255,7 +255,15 @@ export function CreateScreen({
       }`}
       currentStepIndex={currentStepIndex}
       stepCount={stepCount}
-      activeStep={activeCreateStep}
+      activeStep={
+        step === 'times' && timeStep === 'candidates'
+          ? {
+              ...activeCreateStep,
+              title: '회의 후보 시간을 정해주세요',
+              description: '참석자는 이 범위 안에서 가능한 시간을 응답해요.',
+            }
+          : activeCreateStep
+      }
       isMeetingStep={step === 'meeting'}
       canContinue={canContinue}
       desktopPrimaryLabel={primaryActionLabel}

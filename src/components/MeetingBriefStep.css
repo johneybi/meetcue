@@ -129,3 +129,15 @@
   border-radius: 10px;
   background: rgb(248 250 253 / 64%);
 }
+
+.meeting-optional-description summary {
+  cursor: pointer;
+  padding: 16px 0;
+  font-weight: 600;
+  color: var(--mc-color-text-secondary);
+}
+.meeting-optional-description summary small {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--mc-color-text-muted);
+}

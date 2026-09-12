@@ -100,6 +100,8 @@ export function MeetingTimeConstraintsStep({
           <Input
             type="date"
             value={schedulingWindow.startDate}
+            aria-invalid={!isSchedulingWindowValid}
+            aria-describedby={!isSchedulingWindowValid ? 'time-window-error' : undefined}
             min={todayInput}
             max={schedulingWindow.endDate || undefined}
             onChange={(event) =>
@@ -114,6 +116,8 @@ export function MeetingTimeConstraintsStep({
           <Input
             type="date"
             value={schedulingWindow.endDate}
+            aria-invalid={!isSchedulingWindowValid}
+            aria-describedby={!isSchedulingWindowValid ? 'time-window-error' : undefined}
             min={schedulingWindow.startDate || todayInput}
             onChange={(event) =>
               onSchedulingWindowChange({ ...schedulingWindow, endDate: event.target.value })
@@ -125,12 +129,46 @@ export function MeetingTimeConstraintsStep({
       <fieldset className="meeting-duration-fieldset">
         <legend>참석자들이 얼마 동안 시간을 비워두면 될까요?</legend>
         {!isCustomOpen ? (
-          <div className="meeting-duration-options" role="radiogroup">
+          <div
+            className="meeting-duration-options"
+            role="radiogroup"
+            aria-label="회의 길이"
+            onKeyDown={(event) => {
+              if (
+                !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(
+                  event.key,
+                )
+              )
+                return
+              event.preventDefault()
+              const options = Array.from(
+                event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]'),
+              )
+              const current = options.indexOf(document.activeElement as HTMLButtonElement)
+              const next =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? options.length - 1
+                    : (current +
+                        (['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1) +
+                        options.length) %
+                      options.length
+              options[next]?.focus()
+              options[next]?.click()
+            }}
+          >
             {MEETING_DURATION_PRESETS.map((duration) => (
               <SelectableCard
                 key={duration}
                 isSelected={durationMinutes === duration}
                 role="radio"
+                tabIndex={
+                  durationMinutes === duration ||
+                  (durationMinutes == null && duration === MEETING_DURATION_PRESETS[0])
+                    ? 0
+                    : -1
+                }
                 aria-checked={durationMinutes === duration}
                 onClick={() => selectPresetDuration(duration)}
               >
@@ -143,6 +181,7 @@ export function MeetingTimeConstraintsStep({
               isSelected={false}
               role="radio"
               aria-checked="false"
+              tabIndex={-1}
               onClick={() => {
                 const initialDuration = durationMinutes ?? MEETING_DURATION_MIN
                 setIsCustomOpen(true)
@@ -196,6 +235,7 @@ export function MeetingTimeConstraintsStep({
                   step={MEETING_DURATION_STEP}
                   value={customInput}
                   aria-describedby="custom-duration-help"
+                  aria-invalid={customInput !== '' && !isCustomInputValid}
                   autoFocus
                   onChange={(event) => updateCustomInput(event.target.value)}
                 />
@@ -223,7 +263,7 @@ export function MeetingTimeConstraintsStep({
       </fieldset>
 
       {!isSchedulingWindowValid ? (
-        <p className="time-create-stage__error" role="alert">
+        <p id="time-window-error" className="time-create-stage__error" role="alert">
           오늘 이후의 시작일과 마지막 날을 순서대로 정해주세요.
         </p>
       ) : null}

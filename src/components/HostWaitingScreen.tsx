@@ -7,7 +7,8 @@ import {
   type Participant,
 } from '../domain/meeting'
 import { Button } from './ui/button'
-import { Avatar } from './ui/avatar'
+import { PersonIdentity } from './PersonIdentity'
+import { MainCard } from './ui/main-card'
 import './HostWaitingScreen.css'
 
 export function HostWaitingScreen({
@@ -37,7 +38,7 @@ export function HostWaitingScreen({
 
   return (
     <div className="waiting-workspace">
-      <section className="waiting-card">
+      <MainCard material="soft" className="waiting-card">
         <header className="waiting-header">
           <div className="waiting-header__meta">
             <span className="waiting-header__eyebrow">응답 수집 중</span>
@@ -87,13 +88,10 @@ export function HostWaitingScreen({
                   className={`waiting-response-row${isComplete ? ' is-complete' : ''}`}
                   key={participant.id}
                 >
-                  <div className="waiting-response-row__person">
-                    <Avatar name={participant.name} size="small" />
-                    <div>
-                      <strong>{participant.name}</strong>
-                      <small>{participantRoleLabels[participant.role]}</small>
-                    </div>
-                  </div>
+                  <PersonIdentity
+                    name={participant.name}
+                    detail={participantRoleLabels[participant.role]}
+                  />
                   <span className={`waiting-response-state${isComplete ? ' is-complete' : ''}`}>
                     {isComplete ? (
                       <Check size={15} aria-hidden="true" />
@@ -142,7 +140,7 @@ export function HostWaitingScreen({
             </Button>
           </footer>
         ) : null}
-      </section>
+      </MainCard>
     </div>
   )
 }

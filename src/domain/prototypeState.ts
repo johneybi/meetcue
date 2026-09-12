@@ -69,6 +69,9 @@ export function createPendingPrototypeState(meeting: Meeting) {
     }
 
     candidateResponses.forEach((value, participantId) => {
+      // A new participant must start with their calendar, not hidden answers
+      // copied from a different demo scene.
+      if (participantId === pendingTarget?.id) return
       responses.push({
         id: `response-${participantId}-${candidate.id}`,
         participantId,
@@ -97,6 +100,8 @@ export function createPendingPrototypeState(meeting: Meeting) {
           ? participant
           : {
               ...participant,
+              responseScope: undefined,
+              responseCandidateIds: undefined,
               responseStatus:
                 participant.id === pendingTarget?.id
                   ? ('not_started' as const)
@@ -129,7 +134,12 @@ export function createRespondedPrototypeState(meeting: Meeting) {
       ...pendingState.meeting,
       participants: pendingState.meeting.participants.map((participant) =>
         participant.id === target.id
-          ? { ...participant, responseStatus: 'submitted' as const }
+          ? {
+              ...participant,
+              responseStatus: 'submitted' as const,
+              responseScope: 'candidates' as const,
+              responseCandidateIds: [candidate.id],
+            }
           : participant,
       ),
       availabilityWindows: [

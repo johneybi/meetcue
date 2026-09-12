@@ -31,18 +31,15 @@ const routeHashes: Record<AppRoute, string> = {
   'invite-done': '#/invite/done',
 }
 
-export function parseRouteHash(
-  hash = window.location.hash,
-  enableAccountRoutes = import.meta.env.DEV,
-): AppRoute {
-  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
+export function parseRouteHash(hash = window.location.hash): AppRoute {
+  const parts = hash.split('?')[0].replace(/^#\/?/, '').split('/').filter(Boolean)
   const [first, second, third] = parts
 
-  if (first == null) return 'create'
-  if (enableAccountRoutes && first === 'home') return 'home'
-  if (enableAccountRoutes && first === 'meetings') return 'meetings'
-  if (enableAccountRoutes && first === 'requests') return 'requests'
-  if (enableAccountRoutes && first === 'notifications') return 'notifications'
+  if (first == null) return 'home'
+  if (first === 'home') return 'home'
+  if (first === 'meetings') return 'meetings'
+  if (first === 'requests') return 'requests'
+  if (first === 'notifications') return 'notifications'
   if (first === 'results' || first === 'host') return 'host'
   if (first === 'explore' || first === 'recover') return 'host'
   if (first === 'create') return 'create'
@@ -58,11 +55,11 @@ export function parseRouteHash(
     return 'invite'
   }
 
-  return 'create'
+  return 'home'
 }
 
 export function getInviteTokenFromHash(hash = window.location.hash) {
-  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
+  const parts = hash.split('?')[0].replace(/^#\/?/, '').split('/').filter(Boolean)
   return parts[0] === 'invite' && parts[1]?.startsWith('token-') ? parts[1] : undefined
 }
 
@@ -80,19 +77,32 @@ export function getAudience(route: AppRoute): Audience {
   return 'host'
 }
 
-export function buildRouteHash(route: AppRoute, participantToken?: string) {
+export function buildRouteHash(route: AppRoute, participantToken?: string, meetingId?: string) {
   const participantSuffix = route === 'invite-edit' ? 'edit' : route === 'invite-done' ? 'done' : ''
-  return route.startsWith('invite') && participantToken
-    ? `#/invite/${participantToken}${participantSuffix ? `/${participantSuffix}` : ''}`
-    : routeHashes[route]
+  const hash =
+    route.startsWith('invite') && participantToken
+      ? `#/invite/${participantToken}${participantSuffix ? `/${participantSuffix}` : ''}`
+      : routeHashes[route]
+  return meetingId && getAudience(route) !== 'account'
+    ? `${hash}?meeting=${encodeURIComponent(meetingId)}`
+    : hash
 }
 
-export function updateRouteHash(route: AppRoute, replace = false, participantToken?: string) {
-  const nextHash = buildRouteHash(route, participantToken)
+export function updateRouteHash(
+  route: AppRoute,
+  replace = false,
+  participantToken?: string,
+  meetingId?: string,
+) {
+  const nextHash = buildRouteHash(route, participantToken, meetingId)
   if (window.location.hash === nextHash) return
   if (replace) {
     window.history.replaceState(null, '', nextHash)
     return
   }
   window.history.pushState(null, '', nextHash)
+}
+
+export function getMeetingIdFromHash(hash = window.location.hash) {
+  return new URLSearchParams(hash.split('?')[1] ?? '').get('meeting') ?? undefined
 }

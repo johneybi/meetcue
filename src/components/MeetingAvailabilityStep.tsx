@@ -34,12 +34,9 @@ export function MeetingAvailabilityStep({
         value={`${formatSchedulingWindow(meeting.schedulingWindow)} · ${formatMeetingDuration(meeting.durationMinutes)}`}
         onEdit={onEditConstraints}
       />
-      <header className="time-create-stage__header">
-        <h2 id="time-candidates-title" tabIndex={-1}>
-          이 시간 안에서 찾아볼게요
-        </h2>
-        <p>평일 오전 9시부터 오후 6시까지 기본으로 열어뒀어요. 안 되는 시간만 빼주세요.</p>
-      </header>
+      <h2 id="time-candidates-title" className="sr-only" tabIndex={-1}>
+        참석자에게 물어볼 시간
+      </h2>
       <AvailabilityWindowPicker
         meeting={{ ...meeting, availabilityWindows }}
         onAvailabilityWindowsChange={onAvailabilityWindowsChange}

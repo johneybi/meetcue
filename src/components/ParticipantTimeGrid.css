@@ -4,6 +4,15 @@
   gap: 20px;
 }
 
+.participant-adjustment-help {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--mc-color-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
 .participant-state-guide {
   min-width: 0;
   display: flex;

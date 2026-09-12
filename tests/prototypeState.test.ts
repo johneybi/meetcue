@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createPrototypeMeeting } from '../src/domain/mockMeeting.ts'
-import { createPendingPrototypeState } from '../src/domain/prototypeState.ts'
+import {
+  createPendingPrototypeState,
+  createRespondedPrototypeState,
+} from '../src/domain/prototypeState.ts'
+import { evaluateCandidates } from '../src/domain/evaluation.ts'
 
 test('creates a pending demo state with one actionable non-host attendee', () => {
   const source = createPrototypeMeeting()
@@ -32,4 +36,45 @@ test('keeps host availability and replaces attendee fixture responses', () => {
   assert.ok(result.meeting.availabilityWindows.some((window) => window.ownerId === source.hostId))
   assert.ok(result.meeting.responses.length > 0)
   assert.ok(result.meeting.responses.every((response) => response.updateSource === 'initial'))
+})
+
+test('new demo participant has no hidden draft so calendar initialization can run', () => {
+  const { meeting, target } = createPendingPrototypeState(createPrototypeMeeting())
+  assert.ok(target)
+  assert.equal(
+    meeting.availabilityWindows.some((window) => window.ownerId === target.id),
+    false,
+  )
+  assert.equal(
+    meeting.responses.some((response) => response.participantId === target.id),
+    false,
+  )
+})
+
+test('demo preserves a ready alternative and the same candidate changes after one response', () => {
+  const source = createPrototypeMeeting()
+  const before = createPendingPrototypeState(source)
+  const after = createRespondedPrototypeState(source)
+  const beforeEvaluations = evaluateCandidates(before.meeting, new Date())
+  const afterEvaluations = evaluateCandidates(after.meeting, new Date())
+  assert.equal(before.pendingCandidateId, after.pendingCandidateId)
+  assert.ok(beforeEvaluations.some((evaluation) => evaluation.status === 'ready'))
+  assert.equal(
+    beforeEvaluations.find((e) => e.candidate.id === before.pendingCandidateId)?.status,
+    'pending',
+  )
+  assert.equal(
+    afterEvaluations.find((e) => e.candidate.id === before.pendingCandidateId)?.status,
+    'ready',
+  )
+  assert.deepEqual(
+    before.meeting.responses.map((response) => [
+      response.participantId,
+      response.candidateId,
+      response.value,
+    ]),
+    after.meeting.responses
+      .filter((response) => response.participantId !== before.target?.id)
+      .map((response) => [response.participantId, response.candidateId, response.value]),
+  )
 })

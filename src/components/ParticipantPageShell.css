@@ -1,9 +1,6 @@
 .respond-app {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 16% 4%, rgb(232 243 255 / 84%), transparent 31rem),
-    radial-gradient(circle at 86% 12%, rgb(230 248 243 / 72%), transparent 27rem),
-    linear-gradient(180deg, #fbfcfe 0%, #f4f7fb 54%, #f8fafc 100%);
+  background: var(--mc-fill-canvas);
   color: var(--mc-color-text-primary);
   font-family: var(--font-ui);
   letter-spacing: 0;

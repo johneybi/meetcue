@@ -190,3 +190,10 @@
   display: grid;
   gap: var(--mc-space-1);
 }
+
+.decision-response-scope-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--mc-color-text-muted);
+}

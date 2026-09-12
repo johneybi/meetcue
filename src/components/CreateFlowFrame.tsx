@@ -82,6 +82,7 @@ export function CreateFlowFrame({
           <div className="create-task__surface">
             <div className="create-task__layout">
               <MainCard
+                material="soft"
                 className={`create-main-panel${isMeetingStep ? ' create-main-panel--meeting' : ''}`}
               >
                 <MainCardHeader className="create-task__header">

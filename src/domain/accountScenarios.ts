@@ -3,7 +3,29 @@ import { createPrototypeMeeting } from './mockMeeting.ts'
 export type AccountScenarioId = 'product-review' | 'onboarding' | 'quarterly-goals' | 'design-qa'
 
 export function createAccountScenarioMeeting(scenarioId: AccountScenarioId) {
-  const fixture = createPrototypeMeeting()
+  const source = createPrototypeMeeting()
+  const id = scenarioId === 'product-review' ? source.id : `meeting-${scenarioId}`
+  const fixture = {
+    ...source,
+    id,
+    participants: source.participants.map((p) => ({
+      ...p,
+      meetingId: id,
+      name:
+        p.id === source.hostId
+          ? scenarioId === 'onboarding'
+            ? '지우'
+            : scenarioId === 'design-qa'
+              ? '서연'
+              : p.name
+          : p.name,
+      responseToken:
+        scenarioId === 'product-review' ? p.responseToken : `${p.responseToken}-${scenarioId}`,
+    })),
+    candidates: source.candidates.map((c) => ({ ...c, meetingId: id })),
+    availabilityWindows: source.availabilityWindows.map((w) => ({ ...w, meetingId: id })),
+    changeLogs: source.changeLogs.map((c) => ({ ...c, meetingId: id })),
+  }
   if (scenarioId === 'onboarding') {
     return {
       ...fixture,

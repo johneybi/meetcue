@@ -102,7 +102,7 @@ export function HostDecisionMatrix({
                             ? '조정 시 가능'
                             : state === 'unavailable'
                               ? '참석 어려움'
-                              : '응답 전'
+                              : '이 시간 미확인'
                       }
                     >
                       {state === 'available' ? (
@@ -133,7 +133,7 @@ export function HostDecisionMatrix({
         <span className="is-positive">가능</span>
         <span className="is-adjustment">조정 시 가능</span>
         <span className="is-negative">참석 어려움</span>
-        <span className="is-unknown">응답 전</span>
+        <span className="is-unknown">이 시간 미확인</span>
       </footer>
     </details>
   )

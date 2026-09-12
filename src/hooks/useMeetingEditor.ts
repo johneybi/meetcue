@@ -1,9 +1,7 @@
+import { applyParticipantSubmission, type ResponseSubmission } from '../domain/participantResponse'
 import { useState } from 'react'
 import {
-  deriveAvailabilitySlots,
   deriveCandidatesFromAvailabilityWindows,
-  deriveParticipantResponses,
-  getAvailabilityStateForSlot,
   mergeAvailabilityWindows,
 } from '../domain/availability'
 import type {
@@ -44,6 +42,7 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
       return {
         ...current,
         schedulingWindow,
+        responseProposalIds: undefined,
         availabilityWindows,
         candidates: deriveCandidatesFromAvailabilityWindows(
           current.id,
@@ -59,6 +58,7 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
     setMeeting((current) => ({
       ...current,
       durationMinutes,
+      responseProposalIds: undefined,
       candidates: deriveCandidatesFromAvailabilityWindows(
         current.id,
         current.hostId,
@@ -92,6 +92,7 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
         ...current,
         availabilityWindows: mergedWindows,
         candidates,
+        responseProposalIds: undefined,
         responses: current.responses.filter((response) => candidateIds.has(response.candidateId)),
         confirmedCandidateId:
           current.confirmedCandidateId != null && candidateIds.has(current.confirmedCandidateId)
@@ -236,52 +237,17 @@ export function useMeetingEditor(initialMeeting: () => Meeting) {
   function submitParticipantAvailability(
     participantId: string,
     draftWindows: AvailabilityWindow[],
+    submission: ResponseSubmission = { scope: 'range' },
   ) {
     setMeeting((current) => {
-      const slots = deriveAvailabilitySlots(current.availabilityWindows, current.hostId)
-      const unansweredWindows = slots
-        .filter((slot) => getAvailabilityStateForSlot(draftWindows, participantId, slot) == null)
-        .map((slot) => ({
-          id: `aw-${participantId}-${new Date(slot.startAt).getTime()}`,
-          meetingId: current.id,
-          ownerId: participantId,
-          startAt: slot.startAt,
-          endAt: slot.endAt,
-          state: 'unavailable' as const,
-        }))
-      const availabilityWindows = mergeAvailabilityWindows([
-        ...current.availabilityWindows.filter((window) => window.ownerId !== participantId),
-        ...draftWindows,
-        ...unansweredWindows,
-      ])
-      const responses = deriveParticipantResponses(
+      const next = applyParticipantSubmission(current, participantId, draftWindows, submission)
+      const participant = current.participants.find((item) => item.id === participantId)!
+      const changeLog = createChangeLog(current, {
+        type: 'response_updated',
         participantId,
-        current.candidates,
-        availabilityWindows,
-        new Date().toISOString(),
-      )
-      const participant = current.participants.find((item) => item.id === participantId)
-      const changeLog =
-        participant == null
-          ? undefined
-          : createChangeLog(current, {
-              type: 'response_updated',
-              participantId,
-              description: `${participant.name}님이 가능한 시간과 응답을 저장했어요.`,
-            })
-      return {
-        ...current,
-        availabilityWindows,
-        participants: current.participants.map((item) =>
-          item.id === participantId ? { ...item, responseStatus: 'submitted' as const } : item,
-        ),
-        responses: [
-          ...current.responses.filter((response) => response.participantId !== participantId),
-          ...responses,
-        ],
-        changeLogs:
-          changeLog == null ? current.changeLogs : [changeLog, ...current.changeLogs].slice(0, 6),
-      }
+        description: `${participant.name}님이 ${submission.scope === 'candidates' ? '확인한 후보에' : '전체 시간에'} 응답했어요.`,
+      })
+      return { ...next, changeLogs: [changeLog, ...current.changeLogs].slice(0, 6) }
     })
   }
 

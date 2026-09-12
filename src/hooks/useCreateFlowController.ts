@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { createDefaultHostAvailabilityWindows } from '../domain/availability'
+import {
+  createDefaultHostAvailabilityWindows,
+  deriveCandidatesFromAvailabilityWindows,
+} from '../domain/availability'
 import type { AvailabilityWindow, Meeting } from '../domain/meeting'
 import type { AttendeeDecisionMode } from '../components/AttendanceCriteriaStep'
 
@@ -89,6 +92,13 @@ export function useCreateFlowController({
     CREATE_STEPS.findIndex((item) => item.id === step),
   )
   const hostScopeKey = `${meeting.schedulingWindow.startDate}:${meeting.schedulingWindow.endDate}:${meeting.durationMinutes ?? 'unset'}`
+  const hasMeetingTime =
+    deriveCandidatesFromAvailabilityWindows(
+      meeting.id,
+      meeting.hostId,
+      hostAvailabilityWindows,
+      meeting.durationMinutes,
+    ).length > 0
   const canGoNext =
     step === 'meeting'
       ? isMeetingComplete
@@ -102,7 +112,7 @@ export function useCreateFlowController({
           ? timeStep === 'constraints'
             ? isTimeConstraintComplete
             : timeStep === 'candidates'
-              ? hostAvailabilityWindows.length > 0
+              ? hasMeetingTime
               : isResponseDeadlineValid
           : true
   const isChoosingAttendees = step === 'attendees' && !areAttendeesFinalized
@@ -126,9 +136,9 @@ export function useCreateFlowController({
           ? timeStep === 'constraints'
             ? '가능한 시간대 고르기'
             : timeStep === 'candidates'
-              ? hostAvailabilityWindows.length > 0
+              ? hasMeetingTime
                 ? '이 시간대로 계속'
-                : '시간 범위를 남겨 주세요'
+                : '회의 길이만큼 시간을 남겨 주세요'
               : '요청 내용 확인하기'
           : '응답 요청 보내기'
   const canContinue = isChoosingAttendees ? hasInvitee : canGoNext
@@ -139,9 +149,7 @@ export function useCreateFlowController({
     previousCreateStepRef.current = step
     const frame = window.requestAnimationFrame(() => {
       const workflow = workflowRef.current
-      const activePhase = workflow?.querySelector<HTMLElement>(
-        '.create-task[aria-current="step"]',
-      )
+      const activePhase = workflow?.querySelector<HTMLElement>('.create-task[aria-current="step"]')
       const heading = activePhase?.querySelector<HTMLElement>('h1')
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -200,7 +208,7 @@ export function useCreateFlowController({
     if (step === 'times' && timeStep === 'constraints') {
       if (meeting.durationMinutes == null) return
 
-      if (initializedHostScopeKey !== hostScopeKey) {
+      if (initializedHostScopeKey == null && hostAvailabilityWindows.length === 0) {
         onAvailabilityWindowsChange(
           createDefaultHostAvailabilityWindows({
             meetingId: meeting.id,
@@ -209,8 +217,8 @@ export function useCreateFlowController({
             endDate: meeting.schedulingWindow.endDate,
           }),
         )
-        setInitializedHostScopeKey(hostScopeKey)
       }
+      setInitializedHostScopeKey(hostScopeKey)
 
       setTimeStep('candidates')
       return

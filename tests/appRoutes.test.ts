@@ -8,15 +8,15 @@ import {
 } from '../src/lib/appRoutes.ts'
 
 test('parses host and participant hash aliases', () => {
-  assert.equal(parseRouteHash('#/results/detail', false), 'host')
-  assert.equal(parseRouteHash('#/invite/token-p-sujin/edit', false), 'invite-edit')
-  assert.equal(parseRouteHash('#/invite/token-p-sujin/done', false), 'invite-done')
+  assert.equal(parseRouteHash('#/results/detail'), 'host')
+  assert.equal(parseRouteHash('#/invite/token-p-sujin/edit'), 'invite-edit')
+  assert.equal(parseRouteHash('#/invite/token-p-sujin/done'), 'invite-done')
   assert.equal(getInviteTokenFromHash('#/invite/token-p-sujin/edit'), 'token-p-sujin')
 })
 
-test('keeps account routes behind the development route flag', () => {
-  assert.equal(parseRouteHash('#/home', true), 'home')
-  assert.equal(parseRouteHash('#/home', false), 'create')
+test('exposes account navigation in the service', () => {
+  assert.equal(parseRouteHash('#/home'), 'home')
+  assert.equal(parseRouteHash('#/requests'), 'requests')
   assert.equal(getAudience('home'), 'account')
   assert.equal(getAudience('invite'), 'participant')
   assert.equal(getAudience('host'), 'host')

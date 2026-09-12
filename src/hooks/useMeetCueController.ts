@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { createAccountScenarioMeeting, type AccountScenarioId } from '../domain/accountScenarios'
+import {
+  createWorkspace,
+  createWorkspaceDraft,
+  decodeWorkspace,
+  upsertEntry,
+  WORKSPACE_STORAGE_KEY,
+} from '../domain/workspace'
 import { evaluateCandidates, type CandidateEvaluation } from '../domain/evaluation'
 import { createChangeLog } from '../domain/meetingChanges'
-import { createDraftMeeting, createPrototypeMeeting } from '../domain/mockMeeting'
+import { createPrototypeMeeting } from '../domain/mockMeeting'
 import {
   createPendingPrototypeState,
   createRespondedPrototypeState,
@@ -14,6 +20,7 @@ import type { HostCoordinationState } from '../components/HostShell'
 import type { ParticipantCoordinationState } from '../components/ParticipantShell'
 import {
   getAudience,
+  getMeetingIdFromHash,
   getInviteTokenFromHash,
   parseRouteHash,
   updateRouteHash,
@@ -22,14 +29,49 @@ import {
 import { useMeetingEditor } from './useMeetingEditor'
 
 export function useMeetCueController() {
-  const [route, setRoute] = useState<AppRoute>(() => parseRouteHash())
+  const [rawRoute, setRoute] = useState<AppRoute>(() => parseRouteHash())
+  const [routeMeetingId, setRouteMeetingId] = useState(() => getMeetingIdFromHash())
   const [inviteToken, setInviteToken] = useState<string | undefined>(() => getInviteTokenFromHash())
-  const editor = useMeetingEditor(() =>
-    parseRouteHash() === 'create' ? createDraftMeeting() : createPrototypeMeeting(),
+  const [initialWorkspace] = useState(() => {
+    try {
+      return decodeWorkspace(localStorage.getItem(WORKSPACE_STORAGE_KEY)) ?? createWorkspace()
+    } catch {
+      return createWorkspace()
+    }
+  })
+  const [entries, setEntries] = useState(initialWorkspace.entries)
+  const [readNotificationIds, setReadNotificationIds] = useState(
+    initialWorkspace.readNotificationIds,
   )
+  const editor = useMeetingEditor(() => {
+    const id = getMeetingIdFromHash()
+    const token = getInviteTokenFromHash()
+    const match = initialWorkspace.entries.find((e) =>
+      id
+        ? e.meeting.id === id
+        : token
+          ? e.meeting.participants.some((p) => p.responseToken === token)
+          : e.meeting.id === initialWorkspace.activeMeetingId,
+    )
+    if (parseRouteHash() === 'create')
+      return (
+        (match?.meeting.status === 'draft'
+          ? match.meeting
+          : initialWorkspace.entries.find((e) => e.meeting.status === 'draft')?.meeting) ??
+        createWorkspaceDraft(`meeting-${crypto.randomUUID()}`)
+      )
+    return match?.meeting ?? initialWorkspace.entries[0].meeting
+  })
   const { meeting, setMeeting } = editor
+  const route =
+    (rawRoute === 'criteria' && meeting.status === 'confirmed') ||
+    (rawRoute === 'create' && meeting.status !== 'draft')
+      ? 'host'
+      : rawRoute
   const [evaluationNow, setEvaluationNow] = useState(() => new Date())
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>()
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>(
+    initialWorkspace.selectedCandidateId,
+  )
   const [requestedParticipantId, setRequestedParticipantId] = useState<string | undefined>()
 
   const evaluations = useMemo(
@@ -50,15 +92,58 @@ export function useMeetCueController() {
     ? getParticipantState(meeting, route, selectedParticipant)
     : 'PARTICIPANT_NEW'
   const createMeeting = useMemo(() => getCreateMeeting(meeting, route), [meeting, route])
-  const accountMeeting = useMemo(
-    () => (meeting.status === 'draft' ? createPrototypeMeeting() : meeting),
-    [meeting],
+  const accountEntries = useMemo(() => upsertEntry(entries, meeting), [entries, meeting])
+
+  const missingMeeting =
+    getAudience(route) !== 'account' &&
+    routeMeetingId != null &&
+    !accountEntries.some((entry) => entry.meeting.id === routeMeetingId)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        WORKSPACE_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          entries: accountEntries,
+          activeMeetingId: meeting.id,
+          selectedCandidateId,
+          readNotificationIds,
+        }),
+      )
+    } catch {
+      toast.error('이 브라우저에 저장할 공간이 부족해요. 현재 탭에서는 계속 사용할 수 있어요.', {
+        id: 'storage-error',
+      })
+    }
+  }, [accountEntries, meeting.id, readNotificationIds, selectedCandidateId])
+
+  const switchMeeting = useCallback(
+    (next: Meeting) => {
+      setEntries((current) => upsertEntry(current, meeting))
+      setMeeting(next)
+      setSelectedCandidateId(next.confirmedCandidateId)
+      setRequestedParticipantId(undefined)
+    },
+    [meeting, setMeeting],
   )
 
   useEffect(() => {
-    if (!window.location.hash) updateRouteHash('create', true)
+    if (!window.location.hash) updateRouteHash('home', true)
     function handleRouteChange() {
-      setRoute(parseRouteHash())
+      const nextRoute = parseRouteHash()
+      const nextId = getMeetingIdFromHash()
+      setRouteMeetingId(nextId)
+      const token = getInviteTokenFromHash()
+      const target = accountEntries.find((entry) =>
+        nextId
+          ? entry.meeting.id === nextId
+          : token
+            ? entry.meeting.participants.some((p) => p.responseToken === token)
+            : nextRoute === 'create' && entry.meeting.status === 'draft',
+      )
+      if (target && target.meeting.id !== meeting.id) switchMeeting(target.meeting)
+      setRoute(nextRoute)
       setInviteToken(getInviteTokenFromHash())
     }
     window.addEventListener('hashchange', handleRouteChange)
@@ -67,10 +152,33 @@ export function useMeetCueController() {
       window.removeEventListener('hashchange', handleRouteChange)
       window.removeEventListener('popstate', handleRouteChange)
     }
-  }, [])
+  }, [accountEntries, meeting.id, switchMeeting])
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    const titles: Partial<Record<AppRoute, string>> = {
+      home: '홈',
+      meetings: '내 회의',
+      requests: '받은 요청',
+      notifications: '알림',
+      create: '새 회의',
+      host: '회의 결과',
+      share: '응답 현황',
+      message: '회의 확정',
+      criteria: '참석 기준',
+      invite: '시간 응답',
+      'invite-edit': '응답 수정',
+      'invite-done': '응답 완료',
+    }
+    document.title = `${titles[route] ?? '홈'} · MeetCue`
+    const frame = requestAnimationFrame(() => {
+      const heading = document.querySelector<HTMLElement>('main h1')
+      if (heading && document.activeElement?.tagName !== 'INPUT') {
+        heading.tabIndex = -1
+        heading.focus({ preventScroll: true })
+      }
+    })
+    return () => cancelAnimationFrame(frame)
   }, [inviteToken, route])
 
   useEffect(() => {
@@ -78,15 +186,19 @@ export function useMeetCueController() {
     return () => window.clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    if (route === 'criteria' && meeting.status === 'confirmed') navigateTo('host', true)
-  }, [hostState, meeting.status, route])
+  const navigateTo = useCallback(
+    (nextRoute: AppRoute, replace = false, participantToken?: string, meetingId = meeting.id) => {
+      setRoute(nextRoute)
+      setRouteMeetingId(meetingId)
+      setInviteToken(participantToken)
+      updateRouteHash(nextRoute, replace, participantToken, meetingId)
+    },
+    [meeting.id],
+  )
 
-  function navigateTo(nextRoute: AppRoute, replace = false, participantToken?: string) {
-    setRoute(nextRoute)
-    setInviteToken(participantToken)
-    updateRouteHash(nextRoute, replace, participantToken)
-  }
+  useEffect(() => {
+    if (rawRoute !== route && route === 'host') updateRouteHash('host', true, undefined, meeting.id)
+  }, [rawRoute, route, meeting.id])
 
   function remindParticipant(participant: Participant) {
     toast.success(`${participant.name}님에게 응답을 다시 요청했어요`, {
@@ -124,37 +236,43 @@ export function useMeetCueController() {
       confirmedCandidateId: candidateId,
     }))
     setSelectedCandidateId(candidateId)
-    toast.success('회의를 확정하고 참석자에게 알렸어요', {
+    toast.success('회의 시간을 확정했어요', {
       id: 'confirmation-notification',
     })
   }
 
   function startNewMeeting() {
     toast.dismiss()
-    setMeeting(createDraftMeeting())
-    setSelectedCandidateId(undefined)
-    setRequestedParticipantId(undefined)
-    navigateTo('create')
+    const draft =
+      accountEntries.find((entry) => entry.meeting.status === 'draft')?.meeting ??
+      createWorkspaceDraft(`meeting-${crypto.randomUUID()}`)
+    switchMeeting(draft)
+    navigateTo('create', false, undefined, draft.id)
   }
 
-  function openAccountMeeting(scenarioId: AccountScenarioId = 'product-review') {
-    const scenarioMeeting =
-      scenarioId === 'product-review' && meeting.title === accountMeeting.title
-        ? accountMeeting
-        : createAccountScenarioMeeting(scenarioId)
-    setMeeting(scenarioMeeting)
-    setSelectedCandidateId(scenarioMeeting.confirmedCandidateId)
-    navigateTo('host')
+  function openAccountMeeting(id: string) {
+    const target = accountEntries.find((entry) => entry.meeting.id === id)
+    if (!target) return
+    switchMeeting(target.meeting)
+    navigateTo(target.meeting.status === 'draft' ? 'create' : 'host', false, undefined, id)
   }
 
-  function openAccountRequest(
-    scenarioId: AccountScenarioId = 'onboarding',
-    responseState: 'new' | 'done' = 'new',
-  ) {
-    const scenarioMeeting = createAccountScenarioMeeting(scenarioId)
-    const participantToken = responseState === 'done' ? 'token-p-minsu' : 'token-p-sujin'
-    setMeeting(scenarioMeeting)
-    navigateTo(responseState === 'done' ? 'invite-done' : 'invite', false, participantToken)
+  function openAccountRequest(id: string) {
+    const target = accountEntries.find((entry) => entry.meeting.id === id)
+    if (!target) return
+    const participant = target.meeting.participants.find((p) => p.id === target.participantId)
+    if (!participant) return
+    switchMeeting(target.meeting)
+    navigateTo(
+      participant.responseStatus === 'submitted' ? 'invite-done' : 'invite',
+      false,
+      participant.responseToken,
+      id,
+    )
+  }
+
+  function markNotificationsRead(ids: string[]) {
+    setReadNotificationIds((current) => [...new Set([...current, ...ids])])
   }
 
   function sendResponseRequest() {
@@ -179,19 +297,34 @@ export function useMeetCueController() {
         setSelectedCandidateId(findSujinPendingCandidate(fixture)?.candidate.id)
       }
       toast.dismiss()
-      navigateTo(screen.route, false, screen.participantToken)
+      navigateTo(
+        screen.route,
+        false,
+        screen.participantToken,
+        meeting.status === 'draft' ? 'meeting-product-review' : meeting.id,
+      )
       return
     }
 
     const fixture = createFixtureForScreen(screen)
     const pendingEvaluation =
-      screen.route === 'host' && (screen.fixture === 'collecting' || screen.fixture === 'pending')
+      (screen.route === 'host' || screen.route === 'invite') &&
+      (screen.fixture === 'collecting' || screen.fixture === 'pending')
         ? findSujinPendingCandidate(fixture)
         : undefined
-    setMeeting(fixture)
-    setSelectedCandidateId(pendingEvaluation?.candidate.id ?? fixture.confirmedCandidateId)
+    const respondedCandidateId =
+      screen.fixture === 'responded' ? fixture.candidates[0]?.id : undefined
+    switchMeeting(fixture)
+    setSelectedCandidateId(
+      pendingEvaluation?.candidate.id ?? respondedCandidateId ?? fixture.confirmedCandidateId,
+    )
+    setRequestedParticipantId(
+      screen.route === 'invite'
+        ? fixture.participants.find((p) => p.responseToken === screen.participantToken)?.id
+        : undefined,
+    )
     toast.dismiss()
-    navigateTo(screen.route, false, screen.participantToken)
+    navigateTo(screen.route, false, screen.participantToken, fixture.id)
   }
 
   return {
@@ -206,7 +339,10 @@ export function useMeetCueController() {
     selectedParticipant,
     participantState,
     createMeeting,
-    accountMeeting,
+    accountEntries,
+    missingMeeting,
+    readNotificationIds,
+    markNotificationsRead,
     selectedCandidateId,
     setSelectedCandidateId,
     requestedParticipantId,
@@ -282,7 +418,10 @@ function findSujinPendingCandidate(meeting: Meeting) {
 }
 
 function createFixtureForScreen(screen: DevScreen) {
-  const fixture = screen.fixture === 'draft' ? createDraftMeeting() : createPrototypeMeeting()
+  const fixture =
+    screen.fixture === 'draft'
+      ? createWorkspaceDraft('meeting-demo-draft')
+      : createPrototypeMeeting()
   if (screen.fixture === 'pending') {
     return createPendingPrototypeState(fixture).meeting
   }

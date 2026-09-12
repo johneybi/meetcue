@@ -46,6 +46,7 @@ export interface Meeting {
   referenceMaterial?: string
   participants: Participant[]
   availabilityWindows: AvailabilityWindow[]
+  responseProposalIds?: string[]
   candidates: Candidate[]
   responses: Response[]
   changeLogs: ChangeLog[]
@@ -73,6 +74,8 @@ export interface Participant {
   role: ParticipantRole
   responseToken: string
   responseStatus: ParticipantResponseStatus
+  responseScope?: 'candidates' | 'range'
+  responseCandidateIds?: string[]
 }
 
 export interface Candidate {

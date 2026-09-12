@@ -4,6 +4,8 @@ import { hasSameRecommendationPriority, type CandidateEvaluation } from '../doma
 import { candidateStatusLabels, formatCandidateTime, type Meeting } from '../domain/meeting'
 import { Button } from './ui/button'
 import './HostCandidateShortlist.css'
+import { MainCard } from './ui/main-card'
+import { CalendarDate, TimeRange } from './ui/calendar-date'
 
 type HostCandidateShortlistProps = {
   meeting: Meeting
@@ -82,7 +84,14 @@ export function HostCandidateShortlist({
         aria-controls="mobile-alternative-candidates"
         onClick={() => setShowMobileAlternatives((isOpen) => !isOpen)}
       >
-        <span>다른 후보 {Math.max(0, evaluations.length - 1)}개 보기</span>
+        <span>
+          다른 후보{' '}
+          {
+            evaluations.filter((item) => item.candidate.id !== selectedEvaluation.candidate.id)
+              .length
+          }
+          개 보기
+        </span>
         <ChevronDown aria-hidden="true" size={18} />
       </button>
       <span className="decision-reference-candidates__mobile-label">
@@ -120,7 +129,7 @@ export function HostCandidateShortlist({
           const isSelected = evaluation.candidate.id === selectedEvaluation.candidate.id
 
           return (
-            <article
+            <MainCard as="article" material="soft" selected={isSelected} interactive
               className={`decision-reference-card is-${getStatusTone(evaluation.status)}${isSelected ? ' is-selected' : ''}`}
               key={evaluation.candidate.id}
             >
@@ -128,10 +137,12 @@ export function HostCandidateShortlist({
                 className="decision-reference-card__select"
                 type="button"
                 aria-pressed={isSelected}
+                aria-label={`${formatCandidateTime(evaluation.candidate)} ${candidateStatusLabels[evaluation.status]} ${evaluation.availableCount}/${meeting.participants.length}명 가능`}
                 onClick={() => onSelect(evaluation)}
               >
+                <CalendarDate compact value={evaluation.candidate.startAt} />
                 <span className="decision-reference-card__copy">
-                  <strong>{formatCandidateTime(evaluation.candidate)}</strong>
+                  <strong><TimeRange start={evaluation.candidate.startAt} end={evaluation.candidate.endAt} /></strong>
                   <span>
                     <small>{candidateStatusLabels[evaluation.status]}</small>
                   </span>
@@ -160,7 +171,11 @@ export function HostCandidateShortlist({
                     이 시간으로 정하기
                   </Button>
                 ) : evaluation.status === 'pending' ? (
-                  <Button size="action" onClick={() => onRequest(evaluation.candidate.id)}>
+                  <Button
+                    variant="secondary"
+                    size="action"
+                    onClick={() => onRequest(evaluation.candidate.id)}
+                  >
                     응답 요청하기
                   </Button>
                 ) : (
@@ -169,7 +184,7 @@ export function HostCandidateShortlist({
                   </Button>
                 )
               ) : null}
-            </article>
+            </MainCard>
           )
         })}
       </div>

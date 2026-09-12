@@ -52,11 +52,7 @@
 }
 
 .meeting-duration-options .ui-selectable-card[data-selected='true'] {
-  background: linear-gradient(180deg, #f7fbff 0%, #e8f3ff 100%);
   color: var(--mc-color-accent-pressed);
-  box-shadow:
-    inset 0 0 0 1px rgb(49 130 246 / 48%),
-    0 12px 28px rgb(49 130 246 / 12%);
 }
 
 .meeting-duration-custom > button:focus-visible {

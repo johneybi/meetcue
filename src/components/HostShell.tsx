@@ -1,5 +1,6 @@
+import { ChevronLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { formatMeetingDuration, type Meeting } from '../domain/meeting'
+import { type Meeting } from '../domain/meeting'
 import { GlobalAccountHeader } from './AccountScreens'
 import type { AppRoute } from '../lib/appRoutes'
 import { Badge } from './ui/badge'
@@ -32,27 +33,24 @@ const hostStateCopy: Record<HostCoordinationState, { title: string; description:
 }
 
 export function HostShell({
-  meeting,
   state,
   route,
   onNavigate,
   onCreate,
   children,
+  unreadCount,
 }: {
   meeting: Meeting
   state: HostCoordinationState
   route: AppRoute
   onNavigate: (route: AppRoute) => void
   onCreate: () => void
+  unreadCount: number
   children: ReactNode
 }) {
   const copy = hostStateCopy[state]
   const navigationItems = getHostNavigationItems(route)
   const isWaiting = state === 'HOST_WAITING_EMPTY'
-  const contextDescription =
-    route === 'create'
-      ? '회의 요청을 만드는 중'
-      : `${meeting.participants.filter((participant) => participant.id !== meeting.hostId).length}명에게 ${formatMeetingDuration(meeting.durationMinutes)} 회의 시간을 묻는 중`
 
   return (
     <div className="account-shell host-account-shell">
@@ -61,6 +59,7 @@ export function HostShell({
         onNavigate={onNavigate}
         onCreate={onCreate}
         mode="focused"
+        unreadCount={unreadCount}
       />
       <div
         className={`tds-app host-shell${route === 'create' ? ' host-shell--create' : ''}${
@@ -71,26 +70,32 @@ export function HostShell({
           route === 'criteria' ? ' host-shell--criteria' : ''
         }`}
       >
-        <header className="host-context-bar" aria-label="회의 조율 상태">
-          <div className="host-context-main">
-            <strong>{meeting.title || '새 회의 만들기'}</strong>
-            <span>{contextDescription}</span>
+        <nav className="service-breadcrumb" aria-label="현재 위치">
+          <a href="#/meetings">
+            <ChevronLeft size={16} aria-hidden="true" />내 회의
+          </a>
+          <span>/</span>
+          <span aria-current="page">
+            {route === 'create'
+              ? '새 회의 만들기'
+              : route === 'criteria'
+                ? '참석 기준 수정'
+                : route === 'message'
+                  ? '일정 확인'
+                  : route === 'share'
+                    ? '초대와 응답 현황'
+                    : state === 'HOST_CONFIRMED'
+                      ? '확정된 일정'
+                      : '회의 결과'}
+          </span>
+          <div className="service-breadcrumb__actions">
+            {navigationItems.map((item) => (
+              <button type="button" key={item.route} onClick={() => onNavigate(item.route)}>
+                {item.label}
+              </button>
+            ))}
           </div>
-          {navigationItems.length > 0 ? (
-            <div className="host-context-actions">
-              {navigationItems.map((item) => (
-                <button
-                  key={item.route}
-                  className={route === item.route ? 'is-active' : ''}
-                  type="button"
-                  onClick={() => onNavigate(item.route)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </header>
+        </nav>
 
         <main className={`host-stage${route === 'create' ? ' host-stage--create' : ''}`}>
           {route !== 'create' &&
@@ -118,11 +123,11 @@ export function HostShell({
 function getHostNavigationItems(route: AppRoute) {
   if (route === 'create') return []
   if (route === 'share') {
-    return [{ route: 'host' as const, label: '응답 현황 보기' }]
+    return [{ route: 'host' as const, label: '회의 결과 보기' }]
   }
   if (route === 'criteria') return []
   if (route === 'message') return [{ route: 'host' as const, label: '회의 결과 보기' }]
-  return [{ route: 'share' as const, label: '응답 현황 보기' }]
+  return [{ route: 'share' as const, label: '초대와 응답 현황' }]
 }
 
 function getHostStateLabel(state: HostCoordinationState) {

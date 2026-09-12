@@ -104,6 +104,28 @@ export function useParticipantAvailabilityResponse({
     setIsSaveConfirmationOpen(false)
   }
 
+  function fillRemainingFromCalendar() {
+    setDraftWindows((currentWindows) => {
+      let nextWindows = currentWindows
+      slots
+        .filter((slot) => getAvailabilityStateForSlot(currentWindows, participant.id, slot) == null)
+        .forEach((slot) => {
+          nextWindows = replaceAvailabilitySlot(
+            nextWindows,
+            participant.id,
+            slot,
+            isCalendarBusy(slot) ? 'unavailable' : 'available',
+            false,
+            meeting.id,
+          )
+        })
+      return nextWindows
+    })
+    setInputSource('calendar')
+    setEditorStatus('draft')
+    setIsSaveConfirmationOpen(false)
+  }
+
   function paintSlot(slot: AvailabilitySlot, state: ResponseValue) {
     setDraftWindows((currentWindows) =>
       replaceAvailabilitySlot(currentWindows, participant.id, slot, state, false, meeting.id),
@@ -135,6 +157,7 @@ export function useParticipantAvailabilityResponse({
     isSaveConfirmationOpen,
     startManualEntry,
     applyCalendar,
+    fillRemainingFromCalendar,
     paintSlot,
     resetBaseline,
     openSaveConfirmation: () => setIsSaveConfirmationOpen(true),

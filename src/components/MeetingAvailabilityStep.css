@@ -1,3 +1,32 @@
-.time-create-stage--candidates {
+.time-create-stage.time-create-stage--candidates {
   width: 100%;
+  gap: 12px;
+}
+.time-create-stage--candidates .time-step-summary {
+  background: transparent;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--mc-soft-border);
+  border-radius: 0;
+}
+.time-create-stage--candidates .time-step-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.time-create-stage--candidates .time-step-summary strong {
+  font-size: 15px;
+}
+.time-create-stage--candidates .availability-picker {
+  gap: 12px;
+}
+.time-create-stage--candidates .time-picker__toolbar {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* Shared frame typography, scoped to the candidate selection task. */
+.create-workflow--time-candidates {
+  --create-title-size: clamp(24px, 3vw, 28px);
+  --create-description-size: 15px;
 }

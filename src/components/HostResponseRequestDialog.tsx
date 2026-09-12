@@ -116,7 +116,7 @@ export function HostResponseRequestDialog({
               받아야 해요
             </legend>
             {evaluation.optionalPendingPool.map((participant) =>
-              renderParticipantOption(participant, '아직 응답하지 않은 사람'),
+              renderParticipantOption(participant, '이 시간에 아직 응답하지 않은 사람'),
             )}
           </fieldset>
         ) : null}

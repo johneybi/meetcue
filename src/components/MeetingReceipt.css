@@ -1,0 +1,105 @@
+.meeting-receipt.main-card {
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: 32px;
+  display: grid;
+  gap: 28px;
+}
+.meeting-receipt__header {
+  display: grid;
+  gap: 8px;
+}
+.meeting-receipt__header h1 {
+  margin: 0;
+  font-size: 27px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+  word-break: keep-all;
+}
+.meeting-receipt__header p {
+  margin: 0;
+  color: var(--mc-soft-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.meeting-receipt__state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--mc-color-accent-pressed);
+}
+.meeting-receipt__state[data-confirmed='true'] {
+  color: var(--mc-soft-positive-ink);
+}
+.meeting-schedule {
+  display: grid;
+  gap: 8px;
+  padding-block: 24px;
+  border-block: 1px solid var(--mc-soft-border);
+}
+.meeting-schedule h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.meeting-schedule__date {
+  font-size: 17px;
+  color: var(--mc-soft-ink);
+}
+.meeting-schedule__time {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.2;
+  letter-spacing: -1.5px;
+  color: var(--mc-soft-ink);
+  font-weight: 600;
+}
+.meeting-schedule__time .mc-time-range__separator {
+  color: #98acc6;
+}
+.meeting-schedule__zone {
+  font-size: 12px;
+  color: var(--mc-soft-muted);
+}
+.meeting-receipt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.meeting-receipt__actions > .ui-button {
+  min-width: 200px;
+}
+.meeting-receipt__people {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.meeting-receipt__people summary {
+  cursor: pointer;
+  color: var(--mc-soft-ink);
+}
+.meeting-receipt__people p {
+  color: var(--mc-soft-muted);
+  margin: 10px 0 0;
+}
+.meeting-receipt__people summary:focus-visible {
+  outline: 2px solid var(--mc-color-accent);
+  outline-offset: 4px;
+}
+@media (max-width: 760px) {
+  .meeting-receipt.main-card {
+    padding: 24px 20px;
+    gap: 24px;
+  }
+  .meeting-receipt__header h1 {
+    font-size: 23px;
+  }
+  .meeting-receipt__actions {
+    display: grid;
+  }
+  .meeting-receipt__actions > .ui-button {
+    width: 100%;
+  }
+}

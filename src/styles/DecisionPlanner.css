@@ -1,0 +1,119 @@
+/* Results share a bright canvas and one surface treatment; type establishes hierarchy. */
+body:has(.host-shell--decision),
+.account-shell:has(.host-shell--decision) {
+  --mc-color-canvas: var(--mc-soft-canvas);
+  --mc-fill-canvas: var(--mc-soft-canvas);
+  --mc-host-decision-canvas: var(--mc-soft-canvas);
+  background: var(--mc-soft-canvas);
+}
+.account-shell .host-shell--decision .decision-candidate-head {
+  padding-block: 4px 20px;
+  margin-bottom: 4px;
+}
+.account-shell .host-shell--decision .decision-candidate-head__title {
+  display: grid;
+  gap: 8px;
+}
+.account-shell .host-shell--decision .decision-candidate-head__title h1 {
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -.8px;
+}
+.account-shell .host-shell--decision .decision-reference-detail {
+  padding: 28px;
+}
+.account-shell .host-shell--decision .decision-state-panel__time {
+  position: relative;
+  padding: 0 0 24px;
+  animation: planner-reveal 240ms ease-out;
+}
+.account-shell .host-shell--decision .decision-state-panel__time > strong {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  color: var(--mc-color-accent);
+  padding: 0;
+}
+.account-shell .host-shell--decision .decision-state-panel__time h2 .planner-date {
+  display: block;
+  color: var(--mc-soft-ink);
+  font-size: 20px;
+  font-weight: 500;
+  margin: 12px 0 8px;
+  line-height: 1.5;
+}
+.account-shell .host-shell--decision .decision-state-panel__time h2 .planner-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  color: var(--mc-soft-ink);
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: 550;
+  letter-spacing: -2.5px;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.account-shell .host-shell--decision .planner-time > .mc-time-range__separator {
+  font-size: .65em;
+  font-weight: 400;
+  color: #8099bb;
+}
+.account-shell .host-shell--decision .decision-state-panel {
+  background: transparent;
+  gap: 20px;
+  padding-top: 24px;
+}
+.account-shell .host-shell--decision .decision-state-panel h3 {
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.account-shell .host-shell--decision .decision-state-panel__label { display: none; }
+.account-shell .host-shell--decision .decision-reference-candidates { gap: 10px; }
+.account-shell .host-shell--decision .decision-reference-card__select {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 28px 12px 14px;
+}
+.account-shell .host-shell--decision .decision-reference-card__copy > strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+.account-shell .host-shell--decision .decision-reference-card__copy small { font-weight: 500; }
+.account-shell .host-shell--decision .decision-reference-card__copy em { font-size: 13px; }
+.account-shell .host-shell--decision .decision-reference-card__recommendation { right: 9px; top: 10px; }
+.account-shell .host-shell--decision .decision-action-footer > .ui-button {
+  border-radius: 14px;
+  min-height: 52px;
+}
+@keyframes planner-reveal {
+  from { opacity: .35; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 760px) {
+  .account-shell .host-shell--decision .decision-candidate-head { padding: 8px 0 18px; margin-bottom: 0; }
+  .account-shell .host-shell--decision .decision-candidate-head__title h1 { font-size: 21px; }
+  .account-shell .host-shell--decision .decision-reference-detail { padding: 24px 20px; }
+  .account-shell .host-shell--decision .mc-attendance__people { display: none; }
+  .account-shell .host-shell--decision .decision-mobile-focus__date { color: var(--mc-soft-ink); font-size: 17px; }
+  .account-shell .host-shell--decision .decision-mobile-focus__time { color: var(--mc-soft-ink); font-size: clamp(22px, 6vw, 30px); letter-spacing: -1px; }
+  .account-shell .host-shell--decision .decision-reference-card__select { gap: 14px; padding: 12px 32px 12px 12px; }
+  .account-shell .host-shell--decision .decision-state-panel { padding: 0; gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-shell .host-shell--decision .decision-reference-card,
+  .account-shell .host-shell--decision .decision-state-panel__time,
+  .account-shell .host-shell--decision .mc-attendance__people { animation: none; transition: none; transform: none; }
+}
+
+/* Keep the decision readable before expanding individual evidence. */
+.account-shell .host-shell--decision .decision-reference-card__copy small { font-size: 13px; line-height: 1.5; }
+.account-shell .host-shell--decision .decision-summary { gap: 8px; }
+.account-shell .host-shell--decision .decision-state-panel p,
+.account-shell .host-shell--decision .decision-burden-summary > div { font-size: 14px; line-height: 1.65; }
+.account-shell .host-shell--decision .decision-burden-summary { border: 0; padding: 0; }
+@media (max-width: 760px) {
+  .account-shell .host-shell--decision .mc-attendance { display: none; }
+}
+
+/* Candidate rows only select; the detail area owns follow-up actions. */
+.account-shell .host-shell--decision .decision-reference-card > .ui-button { display: none; }

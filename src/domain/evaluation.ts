@@ -332,7 +332,9 @@ function buildReasons(
   }
   if (decision.positiveResponsesNeededAfterRequiredYes > 0) {
     reasons.push(
-      `${participantNames(decision.optionalPendingPoolIds)}님 중 ${decision.positiveResponsesNeededAfterRequiredYes}명 이상도 가능해야 해요.`,
+      decision.optionalPendingPoolIds.length === 1
+        ? `${participantNames(decision.optionalPendingPoolIds)}님의 가능 응답이 필요해요.`
+        : `${participantNames(decision.optionalPendingPoolIds)}님 중 ${decision.positiveResponsesNeededAfterRequiredYes}명 이상이 가능해야 해요.`,
     )
   }
   if (decision.deadlinePassed) {

@@ -10,6 +10,9 @@ import {
 import { Button } from './ui/button'
 import { Avatar } from './ui/avatar'
 import './HostCandidateDetail.css'
+import { AttendanceSummary } from './AttendanceSummary'
+import { MainCard } from './ui/main-card'
+import { CalendarDate, TimeRange } from './ui/calendar-date'
 
 type HostCandidateDetailProps = {
   meeting: Meeting
@@ -47,11 +50,11 @@ export function HostCandidateDetail({
     .map((detail) => detail.participant)
   const statusTitle =
     evaluation.status === 'ready'
-      ? `${evaluation.availableCount}명 참석 가능, 지금 확정할 수 있어요`
+      ? '지금 확정할 수 있어요'
       : evaluation.status === 'pending'
         ? evaluation.requiredPending.length > 0
           ? `${evaluation.requiredPending.map((participant) => participant.name).join(', ')}님의 가능 응답이 필요해요`
-          : `아직 응답하지 않은 사람 중 ${evaluation.positiveResponsesNeededAfterRequiredYes}명의 ‘가능해요’ 응답이 필요해요`
+          : `${evaluation.positiveResponsesNeededAfterRequiredYes}명의 가능 응답이 더 필요해요`
         : evaluation.requiredUnavailable.length > 0
           ? '꼭 참석해야 하는 사람의 시간이 맞지 않아요'
           : `최소 ${meeting.minAttendeeCount}명을 채울 수 없어요`
@@ -73,7 +76,8 @@ export function HostCandidateDetail({
       : evaluation.reasons.slice(0, 2)
 
   return (
-    <section
+    <MainCard
+      material="soft"
       className={`decision-reference-detail is-${getStatusTone(evaluation.status)}`}
       aria-labelledby="selected-time-title"
     >
@@ -82,7 +86,29 @@ export function HostCandidateDetail({
           {isSystemRecommendation ? '가장 먼저 추천하는 시간' : '선택한 후보 시간'}
         </span>
 
-        <h2 id="mobile-selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
+        <h2 id="mobile-selected-time-title">
+          <span className="decision-mobile-focus__date">
+            {new Intl.DateTimeFormat('ko-KR', {
+              timeZone: 'Asia/Seoul',
+              month: 'long',
+              day: 'numeric',
+              weekday: 'short',
+            }).format(new Date(evaluation.candidate.startAt))}
+          </span>
+          <span className="decision-mobile-focus__time">
+            {new Intl.DateTimeFormat('ko-KR', {
+              timeZone: 'Asia/Seoul',
+              hour: 'numeric',
+              minute: '2-digit',
+            }).format(new Date(evaluation.candidate.startAt))}{' '}
+            –{' '}
+            {new Intl.DateTimeFormat('ko-KR', {
+              timeZone: 'Asia/Seoul',
+              hour: 'numeric',
+              minute: '2-digit',
+            }).format(new Date(evaluation.candidate.endAt))}
+          </span>
+        </h2>
 
         <div className="decision-mobile-focus__status">
           {evaluation.status === 'ready' ? (
@@ -108,7 +134,7 @@ export function HostCandidateDetail({
           </span>
           <span className="is-unknown">
             <strong>{selectedPendingCount}명</strong>
-            <small>응답 전</small>
+            <small>이 시간 미확인</small>
           </span>
           <ChevronDown aria-hidden="true" size={18} />
         </button>
@@ -142,7 +168,7 @@ export function HostCandidateDetail({
         </div>
 
         <div className="decision-mobile-reasons">
-          <strong>확정할 수 있는 이유</strong>
+          <strong>{canConfirm ? '확정할 수 있는 이유' : '이 시간을 아직 정할 수 없는 이유'}</strong>
           {mobileReasons.map((reason, index) => (
             <div key={reason}>
               {index === 0 ? (
@@ -156,13 +182,16 @@ export function HostCandidateDetail({
         </div>
       </section>
 
-      <header className="decision-state-panel__time">
+      <header className="decision-state-panel__time" key={evaluation.candidate.id}>
         <div>
           <span className="decision-state-panel__time-label-default">선택한 후보</span>
           <span className="decision-state-panel__time-label-mobile">
             {isSystemRecommendation ? '추천 시간' : '선택한 시간'}
           </span>
-          <h2 id="selected-time-title">{formatCandidateTime(evaluation.candidate)}</h2>
+          <h2 id="selected-time-title">
+            <CalendarDate value={evaluation.candidate.startAt} className="planner-date" />
+            <TimeRange start={evaluation.candidate.startAt} end={evaluation.candidate.endAt} className="planner-time" />
+          </h2>
         </div>
         {isSystemRecommendation ? <strong>시스템 추천</strong> : null}
       </header>
@@ -174,17 +203,7 @@ export function HostCandidateDetail({
           </span>
           <h3>{statusTitle}</h3>
           <p>{statusDescription}</p>
-          <div className="decision-state-counts" aria-label="선택한 후보 응답 현황">
-            <span className="is-positive" hidden={evaluation.availableCount === 0}>
-              <strong>{evaluation.availableCount}명</strong> 가능
-            </span>
-            <span className="is-negative" hidden={evaluation.unavailableCount === 0}>
-              <strong>{evaluation.unavailableCount}명</strong> 참석 어려움
-            </span>
-            <span className="is-unknown" hidden={selectedPendingCount === 0}>
-              <strong>{selectedPendingCount}명</strong> 응답 전
-            </span>
-          </div>
+
         </div>
         {evaluation.status === 'ready' ? (
           <div className="decision-burden-summary" aria-label="확정 전 확인할 일정 부담">
@@ -200,7 +219,7 @@ export function HostCandidateDetail({
                   : '일정 변경 없이 참석할 수 있어요.'}
               </span>
             </div>
-            <div className={avoidPreferredParticipants.length > 0 ? 'has-burden' : 'is-clear'}>
+            {avoidPreferredParticipants.length > 0 ? <div className="has-burden">
               {avoidPreferredParticipants.length > 0 ? (
                 <Clock3 aria-hidden="true" size={16} />
               ) : (
@@ -211,17 +230,25 @@ export function HostCandidateDetail({
                   ? `${formatParticipantSummary(avoidPreferredParticipants)} 가능하면 피하고 싶다고 표시했어요.`
                   : '피하고 싶은 표시가 없어요.'}
               </span>
-            </div>
+            </div> : null}
           </div>
         ) : null}
+        <AttendanceSummary evaluation={evaluation} key={evaluation.candidate.id} />
         <div className={`decision-action-footer is-${evaluation.status}`}>
           {canConfirm ? (
             <Button size="action" onClick={() => onConfirm(evaluation.candidate.id)}>
               {formatCandidateActionTime(evaluation.candidate.startAt)}로 확정하기
             </Button>
           ) : evaluation.status === 'pending' ? (
-            <Button size="action" onClick={() => onRequest(evaluation.candidate.id)}>
-              응답 요청하기
+            <Button
+              size="action"
+              onClick={() =>
+                fallbackEvaluation
+                  ? onSelectCandidate(fallbackEvaluation.candidate.id)
+                  : onRequest(evaluation.candidate.id)
+              }
+            >
+              {fallbackEvaluation ? '기다리지 않고 다른 시간 보기' : '응답 요청하기'}
             </Button>
           ) : (
             <Button
@@ -238,6 +265,27 @@ export function HostCandidateDetail({
         </div>
       </div>
 
+      {evaluation.status === 'pending' && fallbackEvaluation ? (
+        <div className="decision-ready-alternative">
+          <strong>응답을 기다리지 않고 정할 수 있는 다른 시간이 있어요</strong>
+          <p>
+            {formatCandidateTime(fallbackEvaluation.candidate)} ·{' '}
+            {fallbackEvaluation.availableCount}명 참석 가능
+          </p>
+          <Button size="action" onClick={() => onSelectCandidate(fallbackEvaluation.candidate.id)}>
+            지금 정할 수 있는 시간 보기
+          </Button>
+          <p>선택한 시간이 꼭 필요하다면 추가 응답을 요청할 수 있어요.</p>
+          <Button
+            variant="fieldAction"
+            size="action"
+            onClick={() => onRequest(evaluation.candidate.id)}
+          >
+            선택한 시간에 응답 요청하기
+          </Button>
+        </div>
+      ) : null}
+
       {evaluation.status === 'pending' ? (
         <div className="decision-pending-groups">
           {evaluation.requiredPending.length > 0 ? (
@@ -251,7 +299,7 @@ export function HostCandidateDetail({
                     <Avatar name={participant.name} size="small" />
                     <div>
                       <strong>{participant.name}</strong>
-                      <small>꼭 참석해야 하는 사람 · 응답 전</small>
+                      <small>꼭 참석해야 하는 사람 · 이 시간 미확인</small>
                     </div>
                   </div>
                   <Button
@@ -268,7 +316,9 @@ export function HostCandidateDetail({
           {evaluation.optionalPendingPool.length > 0 ? (
             <section className="decision-pending-group">
               <header>
-                <strong>아직 응답하지 않은 사람 · {evaluation.optionalPendingPool.length}명</strong>
+                <strong>
+                  이 시간의 응답이 필요한 사람 · {evaluation.optionalPendingPool.length}명
+                </strong>
                 {evaluation.positiveResponsesNeededAfterRequiredYes === 0 ? (
                   <span>추가 필요 없음</span>
                 ) : (
@@ -314,7 +364,7 @@ export function HostCandidateDetail({
           </Button>
         </div>
       ) : null}
-    </section>
+    </MainCard>
   )
 }
 
@@ -333,7 +383,7 @@ function getParticipantStateLabel(state: CandidateEvaluation['responseDetails'][
   if (state === 'available') return '가능'
   if (state === 'adjustment_commit') return '일정 조정'
   if (state === 'unavailable') return '참석 어려움'
-  return '응답 전'
+  return '이 시간 미확인'
 }
 
 function formatCandidateActionTime(startAt: string) {

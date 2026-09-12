@@ -37,8 +37,8 @@ export function MeetingBriefStep({
           className="create-title-field"
           label={
             <>
-            <strong className="create-field-label">회의 이름</strong>{' '}
-            <strong className="required-chip">필수</strong>
+              <strong className="create-field-label">회의 이름</strong>{' '}
+              <strong className="required-chip">필수</strong>
             </>
           }
           hint="무슨 일과 관련된 회의인지 이름 안에 드러나게 적어주세요."
@@ -52,24 +52,28 @@ export function MeetingBriefStep({
           />
         </Field>
 
-        <Field
-          className="create-purpose-field"
-          label={
-            <>
-            <strong className="create-field-label">이 회의에서 정할 일</strong>{' '}
-            <strong className="required-chip">필수</strong>
-            </>
-          }
-          hint="참석자가 어떤 회의인지 이해할 수 있을 만큼만 짧게 적어주세요."
-        >
-          <Textarea
-            value={purpose}
-            rows={3}
-            maxLength={120}
-            placeholder="예: 출시 전 리뷰 안건을 확인하고 최종 수정 범위를 정합니다."
-            onChange={(event) => onPurposeChange(event.target.value)}
-          />
-        </Field>
+        <details className="meeting-optional-description" open={purpose ? true : undefined}>
+          <summary>
+            회의 설명 추가 <small>선택</small>
+          </summary>
+          <Field
+            className="create-purpose-field"
+            label={
+              <>
+                <strong className="create-field-label">이 회의에서 정할 일</strong>
+              </>
+            }
+            hint="참석자가 어떤 회의인지 이해할 수 있을 만큼만 짧게 적어주세요."
+          >
+            <Textarea
+              value={purpose}
+              rows={3}
+              maxLength={120}
+              placeholder="예: 출시 전 리뷰 안건을 확인하고 최종 수정 범위를 정합니다."
+              onChange={(event) => onPurposeChange(event.target.value)}
+            />
+          </Field>
+        </details>
 
         <section className="reference-source-panel" aria-label="관련 자료">
           {referenceItems.length > 0 && !isReferenceOpen ? (
@@ -79,11 +83,7 @@ export function MeetingBriefStep({
                   <span key={item}>{item}</span>
                 ))}
               </div>
-              <Button
-                variant="quiet"
-                size="text"
-                onClick={() => setIsReferenceOpen(true)}
-              >
+              <Button variant="quiet" size="text" onClick={() => setIsReferenceOpen(true)}>
                 수정
               </Button>
             </div>
