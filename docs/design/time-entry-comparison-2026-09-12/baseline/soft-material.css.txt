@@ -1,0 +1,140 @@
+/* The account scope bridges existing screen selectors during incremental migration. */
+.main-card[data-material='soft'] {
+  border: 1px solid var(--mc-soft-border);
+  border-radius: var(--mc-soft-radius);
+  background: var(--mc-soft-fill);
+  box-shadow: var(--mc-soft-shadow);
+}
+.main-card[data-material='soft'][data-interactive='true'] {
+  transition:
+    background var(--mc-motion-feedback),
+    border-color var(--mc-motion-feedback),
+    box-shadow var(--mc-motion-feedback);
+}
+.main-card[data-material='soft'][data-selected='true'] {
+  border-color: var(--mc-soft-selected-border);
+  background: var(--mc-soft-selected-fill);
+  box-shadow: var(--mc-soft-selected-shadow);
+}
+.main-card[data-material='soft'][data-interactive='true']:hover:not([data-selected='true']) {
+  background: var(--mc-soft-hover-fill);
+  border-color: #bdcde3;
+}
+.mc-calendar-date {
+  flex: 0 0 48px;
+  display: grid;
+  justify-items: center;
+  padding: 6px 0;
+  border: 1px solid var(--mc-soft-border);
+  border-radius: 10px;
+  background: var(--mc-soft-fill);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 2px 4px rgb(34 59 95 / 5%);
+  color: var(--mc-soft-muted);
+}
+.mc-calendar-date small {
+  font-size: 10px;
+  line-height: 1.4;
+}
+.mc-calendar-date strong {
+  font-size: 27px;
+  font-weight: 550;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  color: var(--mc-soft-ink);
+}
+.mc-time-range {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mc-time-range__separator {
+  margin-inline: 0.3em;
+}
+.mc-attendance {
+  padding-block: 16px;
+  border-block: 1px solid var(--mc-soft-border);
+}
+.mc-attendance summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 14px;
+  color: var(--mc-soft-muted);
+}
+.mc-attendance summary::-webkit-details-marker {
+  display: none;
+}
+.mc-attendance summary strong {
+  color: var(--mc-soft-ink);
+  font-weight: 600;
+}
+.mc-attendance__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.mc-attendance[open] .mc-attendance__more svg {
+  transform: rotate(180deg);
+}
+.mc-attendance summary:focus-visible {
+  outline: 2px solid var(--mc-color-accent);
+  outline-offset: 5px;
+  border-radius: 3px;
+}
+.mc-attendance__people {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 12px;
+  margin-top: 20px;
+}
+.mc-attendance__person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mc-attendance__person > span:last-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.mc-attendance__person strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.mc-attendance__person small {
+  font-size: 13px;
+  color: var(--mc-soft-muted);
+}
+.mc-attendance__person .mc-avatar {
+  width: 34px;
+  height: 34px;
+}
+.mc-attendance__person[data-state='available'] .mc-avatar {
+  background: var(--mc-soft-positive-fill);
+  color: var(--mc-soft-positive-ink);
+}
+.mc-attendance__person[data-state='adjustment_commit'] .mc-avatar {
+  background: var(--mc-soft-adjust-fill);
+  color: var(--mc-soft-adjust-ink);
+}
+.mc-attendance__person[data-state='unavailable'] .mc-avatar {
+  background: var(--mc-soft-negative-fill);
+  color: var(--mc-soft-negative-ink);
+}
+@media (max-width: 480px) {
+  .mc-attendance__people {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-card[data-material='soft'][data-interactive='true'] {
+    transition: none;
+  }
+}

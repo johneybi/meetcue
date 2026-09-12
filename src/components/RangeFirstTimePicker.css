@@ -1,0 +1,108 @@
+.range-first {
+  color: var(--mc-color-text-primary);
+}
+.range-first h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.6px;
+  font-weight: 700;
+}
+.range-first p {
+  margin: 8px 0 0;
+  color: var(--mc-color-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.range-first__base {
+  max-width: 520px;
+  margin-inline: auto;
+}
+.range-first .time-range-date-options {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.range-first__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.range-first__actions {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0 16px;
+}
+.range-first__actions .ui-button {
+  white-space: nowrap;
+}
+.range-first__days {
+  margin: 0;
+}
+.range-first__days > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--mc-soft-border);
+}
+.range-first__days dt {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+}
+.range-first__days dt span {
+  color: var(--mc-color-text-muted);
+  font-size: 13px;
+}
+.range-first__days dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.range-first__empty {
+  color: var(--mc-color-text-muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+.range-first__grid {
+  margin-top: 24px;
+}
+.range-first__grid summary {
+  display: list-item;
+  cursor: pointer;
+  padding-block: 12px;
+  font-size: 14px;
+  color: var(--mc-color-text-muted);
+}
+.range-first__grid summary:focus-visible {
+  outline: 2px solid var(--mc-color-accent);
+  outline-offset: 3px;
+}
+.range-first .range-first__notice {
+  min-height: 24px;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .range-first h2 {
+    font-size: 20px;
+  }
+  .range-first__days > div {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .range-first__days dd {
+    font-size: 15px;
+  }
+}
+@media (max-width: 380px) {
+  .range-first__actions .ui-button {
+    padding-inline: 8px;
+    font-size: 13px;
+  }
+}
