@@ -1,0 +1,44 @@
+.design-review-nav {
+  padding: 12px 24px 0;
+  background: var(--mc-color-surface);
+  border-bottom: 1px solid var(--mc-soft-border);
+}
+.design-review-nav > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+.design-review-nav strong {
+  font-size: 13px;
+}
+.design-review-nav header span {
+  font-size: 12px;
+  color: var(--mc-color-text-muted);
+}
+.design-review-nav > div {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+.design-review-nav .ui-button {
+  flex-shrink: 0;
+  padding-inline: 12px;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--mc-color-text-muted);
+}
+.design-review-nav .ui-button[aria-pressed='true'] {
+  color: var(--mc-color-text-primary);
+  border-bottom-color: currentColor;
+}
+.design-review-notice {
+  padding: 12px 24px;
+  background: #edf8f3;
+  color: #256c58;
+}
+.review-response.response-flow {
+  display: block;
+  width: min(608px, calc(100% - 40px));
+  margin: 48px auto;
+}
