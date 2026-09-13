@@ -84,7 +84,9 @@ export function DesignReview() {
       ? '조율 다시 잇기'
       : new URLSearchParams(window.location.search).get('view') === 'time-comparison'
         ? '시간 입력 비교'
-        : '시간 선택',
+        : new URLSearchParams(window.location.search).get('view') === 'response'
+          ? '참석자 응답'
+          : '시간 선택',
   )
   const [meeting, setMeeting] = useState(makeExample)
   const [answers, setAnswers] = useState<Record<string, ResponseValue | undefined>>({})

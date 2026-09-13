@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { Check } from 'lucide-react'
 import type { Meeting, Participant } from '../domain/meeting'
 import { ParticipantPageShell } from './ParticipantPageShell'
 import { Button } from './ui/button'
 import './ParticipantDoneScreen.css'
+import { ResponseAnswerList } from './ResponseAnswerList'
 
 type ParticipantDoneScreenProps = {
   meeting: Meeting
@@ -19,6 +21,9 @@ export function ParticipantDoneScreen({
   onExit,
   showPrototypeReturn,
 }: ParticipantDoneScreenProps) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
   const responses = meeting.responses.filter((r) => r.participantId === participant.id)
   const available = responses.filter((r) => r.value === 'available').length
   const adjustable = responses.filter((r) => r.value === 'adjustable').length
@@ -37,46 +42,31 @@ export function ParticipantDoneScreen({
           <br />
           확정 전까지 내 응답을 바꿀 수 있어요.
         </p>
-        {intent > 0 && (
-          <p className="participant-receipt__note">
-            조정 검토 가능 {intent}개 · 아직 변경 동의가 아니에요. 요청을 받으면 결정해 주세요.
-          </p>
-        )}
-        {adjustable > 0 && (
-          <p className="participant-receipt__note">
-            이전 응답: 일정을 옮겨 참석 {adjustable}개 · 기존 약속을 유지해요.
-          </p>
-        )}
-        <dl className="participant-receipt__summary">
-          <div>
-            <dt>가능해요</dt>
-            <dd>
-              {available}
-              <span>개</span>
-            </dd>
+        <section className="participant-receipt__answers" aria-labelledby="sent-answers-title">
+          <div className="participant-receipt__section-heading">
+            <h2 id="sent-answers-title">전달한 응답</h2>
+            <span>시간 확정 전</span>
           </div>
-          <div>
-            <dt>조정 검토 가능</dt>
-            <dd>
-              {intent}
-              <span>개</span>
-            </dd>
+          <ResponseAnswerList
+            candidates={meeting.candidates}
+            answers={Object.fromEntries(responses.map((r) => [r.candidateId, r.value]))}
+          />
+          <div className="response-review-note">
+            <strong>
+              {intent > 0
+                ? '조정이 필요하면 다시 물어볼게요'
+                : '다음은 주최자가 시간을 정할 차례예요'}
+            </strong>
+            {intent > 0
+              ? '검토 가능으로 답한 시간은 아직 참석 약속이 아니에요. 변경 요청을 받으면 결정해 주세요.'
+              : '확정 전까지 내 응답을 수정할 수 있어요.'}
           </div>
-          <div>
-            <dt>어려워요</dt>
-            <dd>
-              {responses.filter((r) => r.value === 'unavailable').length}
-              <span>개</span>
-            </dd>
-          </div>
-        </dl>
-        {participant.responseScope === 'candidates' ? (
-          <p className="participant-receipt__note">
-            응답한 후보 {participant.responseCandidateIds?.length}개만 전달했어요.
-            <br />
-            다른 시간은 아직 확인하지 않은 상태예요.
-          </p>
-        ) : null}
+          {participant.responseScope === 'candidates' && (
+            <p className="participant-receipt__note">
+              응답한 후보만 전달했어요. 다른 시간은 미확인으로 남아요.
+            </p>
+          )}
+        </section>
         <div className="participant-receipt__actions">
           {showPrototypeReturn ? (
             <Button size="action" width="full" onClick={onExit}>

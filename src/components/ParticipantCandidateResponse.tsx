@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, ChevronRight, CalendarDays, X } from 'lucide-react'
 import type { Candidate, ResponseValue } from '../domain/meeting'
 import { CalendarDate, TimeRange } from './ui/calendar-date'
 import { Button } from './ui/button'
+import { ResponseAnswerList } from './ResponseAnswerList'
 
 type Props = {
   participantName: string
@@ -14,10 +15,10 @@ type Props = {
   onSubmit: () => void
   getCalendarHint: (candidate: Candidate) => string | null
 }
-const choices: { value: ResponseValue; label: string }[] = [
-  { value: 'available', label: '가능해요' },
-  { value: 'adjustment_intent', label: '조정 검토 가능' },
-  { value: 'unavailable', label: '어려워요' },
+const choices: { value: ResponseValue; label: string; detail: string }[] = [
+  { value: 'available', label: '가능해요', detail: '바로 참석 가능' },
+  { value: 'adjustment_intent', label: '조정 검토 가능', detail: '요청받으면 결정' },
+  { value: 'unavailable', label: '어려워요', detail: '이 시간은 불가' },
 ]
 const dateFormat = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -30,18 +31,6 @@ const timeFormat = new Intl.DateTimeFormat('ko-KR', {
   hour: 'numeric',
   minute: '2-digit',
 })
-
-function endTime(candidate: Candidate) {
-  const startPeriod = timeFormat
-    .formatToParts(new Date(candidate.startAt))
-    .find((p) => p.type === 'dayPeriod')?.value
-  return timeFormat
-    .formatToParts(new Date(candidate.endAt))
-    .filter((p) => p.type !== 'dayPeriod' || p.value !== startPeriod)
-    .map((p) => p.value)
-    .join('')
-    .trim()
-}
 
 export function ParticipantCandidateResponse({
   participantName,
@@ -71,8 +60,7 @@ export function ParticipantCandidateResponse({
   }, [confirmAdjustment])
 
   function submit() {
-    if (hasAdjustment) setConfirmAdjustment(true)
-    else onSubmit()
+    setConfirmAdjustment(true)
   }
 
   return (
@@ -146,11 +134,7 @@ export function ParticipantCandidateResponse({
                     약속은 유지돼요.
                   </p>
                 )}
-                <div
-                  className={`candidate-response-choices${selectedIndex < 0 ? ' is-empty' : ''}`}
-                  style={{ '--selected-index': Math.max(0, selectedIndex) } as CSSProperties}
-                >
-                  <span className="response-choice-indicator" aria-hidden="true" />
+                <div className="candidate-response-choices">
                   {choices.map((choice) => (
                     <label key={choice.value}>
                       <input
@@ -165,7 +149,10 @@ export function ParticipantCandidateResponse({
                         }
                         onChange={() => onAnswer(candidate, choice.value)}
                       />
-                      <span>{choice.label}</span>
+                      <span>
+                        <strong>{choice.label}</strong>
+                        <small>{choice.detail}</small>
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -193,7 +180,7 @@ export function ParticipantCandidateResponse({
             {allUnavailable
               ? '다른 시간 찾아보기'
               : complete
-                ? '응답 보내기'
+                ? '응답 확인하기'
                 : `${candidates.length - answered}개 시간에 더 응답해 주세요`}
           </span>
           {complete ? <ArrowRight size={18} aria-hidden="true" /> : null}
@@ -221,40 +208,32 @@ export function ParticipantCandidateResponse({
             variant="quiet"
             size="icon"
             className="response-adjustment-dialog__close"
-            aria-label="일정 조정 확인 닫기"
+            aria-label="응답 확인 닫기"
             onClick={() => setConfirmAdjustment(false)}
           >
             <X size={20} />
           </Button>
           <span className="response-flow-eyebrow">응답 보내기 전 확인</span>
-          <h2 id="response-adjustment-title">
-            일정 조정을 검토할
-            <br />수 있나요?
-          </h2>
+          <h2 id="response-adjustment-title">이렇게 답할게요</h2>
           <p id="response-adjustment-description">
-            아직 참석 동의로 계산하지 않아요. 주최자가 변경을 요청하면 그때 동의하거나 거절할 수
-            있어요.
+            주최자에게 전달할 응답이에요. 한국 시간 기준이에요.
           </p>
-          <ul>
-            {candidates
-              .filter((c) => answers[c.id] === 'adjustment_intent')
-              .map((c) => (
-                <li key={c.id}>
-                  <CalendarDays size={17} aria-hidden="true" />
-                  <span>
-                    {dateFormat.format(new Date(c.startAt))}
-                    <strong>
-                      {timeFormat.format(new Date(c.startAt))} – {endTime(c)}
-                    </strong>
-                  </span>
-                </li>
-              ))}
-          </ul>
+          <ResponseAnswerList candidates={candidates} answers={answers} />
+          <div className="response-review-note">
+            <strong>
+              {hasAdjustment
+                ? '조정 검토는 참석 약속이 아니에요'
+                : '응답을 보내도 회의가 확정되지는 않아요'}
+            </strong>
+            {hasAdjustment
+              ? '주최자가 일정 변경을 요청하면, 그때 동의하거나 거절할 수 있어요.'
+              : '주최자가 참석자들의 답을 확인한 뒤 회의 시간을 정해요.'}
+          </div>
           <Button width="full" onClick={onSubmit}>
             이대로 응답 보내기
           </Button>
           <Button variant="quiet" width="full" onClick={() => setConfirmAdjustment(false)}>
-            다시 확인하기
+            답 수정하기
           </Button>
         </div>
       </dialog>

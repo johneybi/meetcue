@@ -1,0 +1,52 @@
+.response-answer-list {
+  text-align: left;
+  border-block: 1px solid #e8edf3;
+}
+.response-answer-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+}
+.response-answer-list__row + .response-answer-list__row {
+  border-top: 1px solid #edf0f4;
+}
+.response-answer-list__row > div {
+  display: grid;
+  gap: 5px;
+}
+.response-answer-list__row > div > span {
+  font-size: 12px;
+  color: #687587;
+}
+.response-answer-list__row strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202632;
+}
+.response-answer-list__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #596575;
+  text-align: right;
+}
+.response-answer-list__value[data-value='adjustment_intent'] {
+  color: var(--mc-color-accent);
+}
+.response-review-note {
+  margin: 20px 0 24px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #f0f6ff;
+  color: #425773;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: left;
+}
+.response-review-note strong {
+  display: block;
+  color: #273d5d;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
