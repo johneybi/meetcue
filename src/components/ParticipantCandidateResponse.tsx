@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, ChevronRight, CalendarDays, X } from 'lucide-react'
+import { ArrowRight, ChevronRight, CalendarDays, X } from 'lucide-react'
 import type { Candidate, ResponseValue } from '../domain/meeting'
 import { CalendarDate, TimeRange } from './ui/calendar-date'
 import { Button } from './ui/button'
 import { ResponseAnswerList } from './ResponseAnswerList'
+import './ParticipantCandidateLayout.css'
 
 type Props = {
   participantName: string
@@ -15,10 +16,10 @@ type Props = {
   onSubmit: () => void
   getCalendarHint: (candidate: Candidate) => string | null
 }
-const choices: { value: ResponseValue; label: string; detail: string }[] = [
-  { value: 'available', label: '가능해요', detail: '바로 참석 가능' },
-  { value: 'adjustment_intent', label: '조정 검토 가능', detail: '요청받으면 결정' },
-  { value: 'unavailable', label: '어려워요', detail: '이 시간은 불가' },
+const choices: { value: ResponseValue; label: string }[] = [
+  { value: 'available', label: '가능해요' },
+  { value: 'adjustment_intent', label: '조정 검토 가능' },
+  { value: 'unavailable', label: '어려워요' },
 ]
 const dateFormat = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -70,7 +71,7 @@ export function ParticipantCandidateResponse({
           {participantName}님의 {isEditing ? '응답 수정' : '시간 응답'}
         </span>
         <h1 id="candidate-response-title" tabIndex={-1}>
-          {isEditing ? '달라진 일정을 알려주세요' : '참석 가능한 시간을 알려주세요'}
+          {isEditing ? '달라진 일정을 알려주세요' : '이 시간에 참석할 수 있나요?'}
         </h1>
         <p>
           {isEditing
@@ -78,6 +79,9 @@ export function ParticipantCandidateResponse({
             : `주최자가 가능한 ${candidates.length}개 시간이에요.`}
         </p>
       </header>
+      <p className="candidate-response-meaning" id="response-adjustment-meaning">
+        <strong>조정 검토 가능</strong>은 요청을 받은 뒤 참석 여부를 결정한다는 뜻이에요.
+      </p>
       <div className="response-selection-progress">
         <span>
           후보 시간 <small>한국 시간</small>
@@ -105,18 +109,12 @@ export function ParticipantCandidateResponse({
                 후보 {index + 1} · {dateFormat.format(new Date(candidate.startAt))}{' '}
                 {timeFormat.format(new Date(candidate.startAt))}
               </legend>
-              <CalendarDate compact value={candidate.startAt} className="response-date" />
+              <CalendarDate value={candidate.startAt} className="response-candidate-date" />
               <div className="response-time">
                 <div className="response-time__heading">
                   <h2>
                     <TimeRange start={candidate.startAt} end={candidate.endAt} />
                   </h2>
-                  <span
-                    className="response-row-check"
-                    aria-label={selectedIndex >= 0 ? '응답 선택됨' : undefined}
-                  >
-                    {selectedIndex >= 0 ? <Check size={16} aria-hidden="true" /> : null}
-                  </span>
                 </div>
                 <p className={`response-calendar-hint${conflict ? ' has-conflict' : ''}`}>
                   {conflict ? (
@@ -151,7 +149,6 @@ export function ParticipantCandidateResponse({
                       />
                       <span>
                         <strong>{choice.label}</strong>
-                        <small>{choice.detail}</small>
                       </span>
                     </label>
                   ))}
@@ -161,9 +158,6 @@ export function ParticipantCandidateResponse({
           )
         })}
       </div>
-      <p className="candidate-response-meaning" id="response-adjustment-meaning">
-        ‘조정 검토 가능’은 변경 약속이 아니에요. 요청을 받으면 실제로 옮길 수 있는지 결정해요.
-      </p>
       <button className="candidate-response-expand" onClick={onExpand} type="button">
         <span>{allUnavailable ? '모두 어렵다면, 다른 시간 찾아보기' : '다른 시간도 알려주기'}</span>
         <ChevronRight size={17} aria-hidden="true" />

@@ -1,0 +1,137 @@
+/* Candidate response composition: 8px spacing rhythm, one raised surface per candidate. */
+.candidate-response {
+  --candidate-space: 8px;
+}
+.candidate-response .response-flow-heading {
+  margin-bottom: 16px;
+}
+.candidate-response .response-flow-heading h1 {
+  font-size: 28px;
+  line-height: 1.35;
+  letter-spacing: -0.8px;
+  margin-bottom: 12px;
+}
+.candidate-response .response-flow-heading p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+.candidate-response .candidate-response-meaning {
+  margin: 0 0 28px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #596575;
+}
+.candidate-response-meaning strong {
+  font-weight: 600;
+  color: #35445a;
+}
+.candidate-response .response-selection-progress {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+.candidate-response .response-selection-progress__track {
+  display: none;
+}
+.candidate-response .candidate-response-list {
+  gap: 12px;
+}
+.candidate-response .candidate-response-row {
+  display: block;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e3e9f1;
+  box-shadow: 0 2px 6px rgb(28 53 88 / 3%);
+}
+.response-candidate-date {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #536176;
+  margin-bottom: 4px;
+}
+.candidate-response .response-time {
+  display: block;
+}
+.candidate-response .response-time h2 {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.candidate-response .response-calendar-hint {
+  margin: 4px 0 16px;
+  min-height: 18px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.candidate-response .response-calendar-hint.has-conflict {
+  color: #775a32;
+}
+.candidate-response .candidate-response-choices {
+  gap: 8px;
+  margin: 0;
+}
+.candidate-response .candidate-response-choices label > span {
+  min-height: 44px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 20px;
+  border-color: #dce4ee;
+  color: #46556a;
+  background: #fff;
+}
+.candidate-response .candidate-response-choices input:checked + span {
+  background: var(--mc-fill-selected);
+  border-color: var(--mc-color-accent);
+  color: var(--mc-color-accent);
+  box-shadow: inset 0 0 0 0.5px var(--mc-color-accent);
+}
+.candidate-response .candidate-response-expand {
+  margin: 16px 0 0;
+  padding: 12px 0;
+  font-size: 13px;
+}
+.candidate-response .response-flow-actions {
+  margin-top: 20px;
+}
+.candidate-response .response-flow-actions > p {
+  display: none;
+}
+.candidate-response .response-flow-privacy {
+  margin-top: 16px;
+  font-size: 11px;
+}
+@media (max-width: 800px) {
+  .candidate-response .response-flow-heading h1 {
+    font-size: 25px;
+    line-height: 1.4;
+  }
+  .candidate-response .candidate-response-meaning {
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .candidate-response .candidate-response-row {
+    padding: 16px;
+  }
+  .candidate-response .response-time h2 {
+    font-size: 21px;
+  }
+  .candidate-response .candidate-response-choices label > span {
+    font-size: 12px;
+  }
+  .candidate-response .response-flow-actions {
+    padding: 12px 0;
+  }
+}
+.response-flow:has(> .candidate-response) {
+  margin-top: 40px;
+}
+@media (max-width: 800px) {
+  .response-flow:has(> .candidate-response) {
+    margin-top: 28px;
+  }
+}
