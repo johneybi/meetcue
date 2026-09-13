@@ -1,10 +1,10 @@
 export type ParticipantRole = 'required' | 'optional'
 
-export type ResponseValue = 'available' | 'adjustable' | 'unavailable'
+export type ResponseValue = 'available' | 'adjustable' | 'adjustment_intent' | 'unavailable'
 
 export type ResponsePreferenceTag = 'avoid_if_possible'
 
-export type CandidateStatus = 'ready' | 'pending' | 'impossible'
+export type CandidateStatus = 'ready' | 'pending' | 'recovery' | 'impossible'
 
 export type ParticipantResponseStatus = 'not_started' | 'draft' | 'submitted'
 
@@ -112,12 +112,14 @@ export const participantRoleLabels: Record<ParticipantRole, string> = {
 
 export const responseValueLabels: Record<ResponseValue, string> = {
   available: '가능해요',
-  adjustable: '조정하면 가능해요',
+  adjustable: '옮겨서 참석 · 이전 응답',
+  adjustment_intent: '조정 검토 가능',
   unavailable: '참석하기 어려워요',
 }
 
 export const responseValueDescriptions: Record<ResponseValue, string> = {
   available: '현재 일정을 바꾸지 않고 참석할 수 있어요.',
+  adjustment_intent: '일정 조정을 검토할 수 있어요. 실제 변경 동의는 요청을 받은 뒤 결정해요.',
   adjustable: '이 시간으로 정해지면 다른 일정을 옮겨 참석해요.',
   unavailable: '이 시간에는 참석하기 어려워요.',
 }
@@ -129,6 +131,7 @@ export const responsePreferenceTagLabels: Record<ResponsePreferenceTag, string> 
 export const candidateStatusLabels: Record<CandidateStatus, string> = {
   ready: '지금 정할 수 있어요',
   pending: '응답이 더 필요해요',
+  recovery: '변경 동의가 필요해요',
   impossible: '다른 시간을 찾아야 해요',
 }
 

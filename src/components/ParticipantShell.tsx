@@ -40,7 +40,8 @@ type ParticipantShellProps = {
 
 const participantResponseLabels: Record<ResponseValue, string> = {
   available: '가능해요',
-  adjustable: '옮겨서 참석',
+  adjustable: '옮겨서 참석 · 이전 응답',
+  adjustment_intent: '조정 검토 가능',
   unavailable: '어려워요',
 }
 

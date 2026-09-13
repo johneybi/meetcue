@@ -194,6 +194,6 @@ export function HostCandidateShortlist({
 
 function getStatusTone(status: CandidateEvaluation['status']) {
   if (status === 'ready') return 'success'
-  if (status === 'pending') return 'info'
+  if (status === 'pending' || status === 'recovery') return 'info'
   return 'danger'
 }

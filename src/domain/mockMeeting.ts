@@ -84,7 +84,7 @@ function createHostAvailabilityWindows(referenceDate: Date): AvailabilityWindow[
 const responseFixtures: Response[] = [
   response('p-minsu', 'c-thu-1500', 'available'),
   response('p-seoyeon', 'c-thu-1500', 'available'),
-  response('p-junho', 'c-thu-1500', 'adjustable', ['avoid_if_possible']),
+  response('p-junho', 'c-thu-1500', 'adjustment_intent', ['avoid_if_possible']),
   response('p-hana', 'c-thu-1500', 'available'),
 
   response('p-seoyeon', 'c-wed-1400', 'available'),
@@ -93,12 +93,12 @@ const responseFixtures: Response[] = [
   response('p-seoyeon', 'c-fri-1000', 'available'),
 
   response('p-minsu', 'c-thu-1000', 'available'),
-  response('p-seoyeon', 'c-thu-1000', 'adjustable'),
+  response('p-seoyeon', 'c-thu-1000', 'adjustment_intent'),
   response('p-junho', 'c-thu-1000', 'available'),
   response('p-hana', 'c-thu-1000', 'available'),
 
   response('p-minsu', 'c-thu-1030', 'available'),
-  response('p-seoyeon', 'c-thu-1030', 'adjustable'),
+  response('p-seoyeon', 'c-thu-1030', 'adjustment_intent'),
   response('p-junho', 'c-thu-1030', 'available'),
   response('p-hana', 'c-thu-1030', 'available'),
 

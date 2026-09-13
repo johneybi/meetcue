@@ -239,6 +239,8 @@ export function HostCandidateDetail({
             <Button size="action" onClick={() => onConfirm(evaluation.candidate.id)}>
               {formatCandidateActionTime(evaluation.candidate.startAt)}로 확정하기
             </Button>
+          ) : evaluation.status === 'recovery' ? (
+            <p>조정 의향만으로는 확정할 수 없어요. {evaluation.adjustmentIntentParticipants.map((p) => p.name).join(' · ')}님의 변경 동의를 확인해야 해요.</p>
           ) : evaluation.status === 'pending' ? (
             <Button
               size="action"
@@ -370,7 +372,7 @@ export function HostCandidateDetail({
 
 function getStatusTone(status: CandidateEvaluation['status']) {
   if (status === 'ready') return 'success'
-  if (status === 'pending') return 'info'
+  if (status === 'pending' || status === 'recovery') return 'info'
   return 'danger'
 }
 
@@ -381,6 +383,7 @@ function formatParticipantSummary(participants: Participant[]) {
 
 function getParticipantStateLabel(state: CandidateEvaluation['responseDetails'][number]['state']) {
   if (state === 'available') return '가능'
+  if (state === 'adjustment_intent') return '조정 의향 · 동의 전'
   if (state === 'adjustment_commit') return '일정 조정'
   if (state === 'unavailable') return '참석 어려움'
   return '이 시간 미확인'

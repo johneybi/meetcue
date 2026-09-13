@@ -1,6 +1,6 @@
 export type Person = { id: string; name: string; required: boolean }
 export type Answer = {
-  kind: 'available' | 'unknown' | 'adjustable' | 'unavailable'
+  kind: 'available' | 'unknown' | 'adjustment_intent' | 'unavailable'
   conflicts: string[]
 }
 export type RecoverySlot = {
@@ -41,7 +41,7 @@ export function describePath(state: ConstraintState, slot: RecoverySlot) {
       p.required && (slot.answers[p.id]?.kind === 'unavailable' || request?.replies[p.id] === 'no'),
   )
   const changes = state.people.filter(
-    (p) => p.required && slot.answers[p.id]?.kind === 'adjustable',
+    (p) => p.required && slot.answers[p.id]?.kind === 'adjustment_intent',
   )
   const unknown = state.people.filter(
     (p) => p.required && (!slot.answers[p.id] || slot.answers[p.id].kind === 'unknown'),
@@ -59,6 +59,7 @@ export function describePath(state: ConstraintState, slot: RecoverySlot) {
     remaining,
     available,
     request,
+    unknownChangeCount: changes.filter((p) => !slot.answers[p.id].conflicts.length).length,
     changeCount: changes.reduce((n, p) => n + slot.answers[p.id].conflicts.length, 0),
     ready: !blocked.length && !remaining.length,
   }
@@ -181,10 +182,10 @@ export function createConstraintExample(monday: string): ConstraintState {
   return {
     people,
     slots: [
-      make('tuesday', 1, 14, { minsu: { kind: 'adjustable', conflicts: ['기존 팀 미팅'] } }),
+      make('tuesday', 1, 14, { minsu: { kind: 'adjustment_intent', conflicts: ['기존 팀 미팅'] } }),
       make('thursday', 3, 16, {
-        sujin: { kind: 'adjustable', conflicts: ['프로젝트 체크인'] },
-        seoyeon: { kind: 'adjustable', conflicts: ['운영 미팅'] },
+        sujin: { kind: 'adjustment_intent', conflicts: ['프로젝트 체크인'] },
+        seoyeon: { kind: 'adjustment_intent', conflicts: ['운영 미팅'] },
       }),
       make('friday', 4, 10, { sujin: { kind: 'unavailable', conflicts: ['외근 · 변경 불가'] } }),
     ],

@@ -228,7 +228,7 @@ export function ParticipantTimeGrid({
           <span className="participant-time-cell__state-symbol" aria-hidden="true">
             {state === 'available'
               ? '○'
-              : state === 'adjustable'
+              : state === 'adjustment_intent' || state === 'adjustable'
                 ? '△'
                 : state === 'unavailable'
                   ? '×'
@@ -260,7 +260,7 @@ export function ParticipantTimeGrid({
     >
       <div className="participant-state-guide" role="group" aria-label="시간에 적용할 응답">
         <strong>응답을 고른 뒤 바꿀 시간을 눌러주세요</strong>
-        {(['available', 'adjustable', 'unavailable'] as const).map((value) => (
+        {(['available', 'adjustment_intent', 'unavailable'] as const).map((value) => (
           <Button
             key={value}
             variant={paintState === value ? 'primary' : 'fieldAction'}
@@ -272,7 +272,7 @@ export function ParticipantTimeGrid({
           </Button>
         ))}
         <p className="participant-adjustment-help">
-          ‘옮겨서 참석’은 기존 일정을 옮겨 이 회의에 참석하겠다는 뜻이에요.
+          ‘조정 검토 가능’은 변경 약속이 아니에요. 요청을 받은 뒤 실제 변경에 동의할지 결정해요.
         </p>
         <small>여러 칸을 드래그하면 같은 상태로 한 번에 바뀌어요.</small>
       </div>

@@ -14,7 +14,7 @@ export type BlockTimeRange = {
   dayKey: string
   startMinutes: number
   endMinutes: number
-  tone?: 'available' | 'adjustable' | 'unavailable' | 'calendar'
+  tone?: 'available' | 'adjustment_intent' | 'adjustable' | 'unavailable' | 'calendar'
   label?: string
   description?: string
   readOnly?: boolean

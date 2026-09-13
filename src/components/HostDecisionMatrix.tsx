@@ -98,6 +98,8 @@ export function HostDecisionMatrix({
                       aria-label={
                         state === 'available'
                           ? '가능'
+                          : state === 'adjustment_intent'
+                            ? '조정 의향 · 동의 전'
                           : state === 'adjustment_commit'
                             ? '조정 시 가능'
                             : state === 'unavailable'

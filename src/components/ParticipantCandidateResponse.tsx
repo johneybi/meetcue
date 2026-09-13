@@ -16,7 +16,7 @@ type Props = {
 }
 const choices: { value: ResponseValue; label: string }[] = [
   { value: 'available', label: '가능해요' },
-  { value: 'adjustable', label: '옮겨서 참석' },
+  { value: 'adjustment_intent', label: '조정 검토 가능' },
   { value: 'unavailable', label: '어려워요' },
 ]
 const dateFormat = new Intl.DateTimeFormat('ko-KR', {
@@ -59,7 +59,7 @@ export function ParticipantCandidateResponse({
   const answered = candidates.filter((c) => answers[c.id] != null).length
   const complete = candidates.length > 0 && answered === candidates.length
   const allUnavailable = complete && candidates.every((c) => answers[c.id] === 'unavailable')
-  const hasAdjustment = candidates.some((c) => answers[c.id] === 'adjustable')
+  const hasAdjustment = candidates.some((c) => answers[c.id] === 'adjustment_intent')
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -105,6 +105,7 @@ export function ParticipantCandidateResponse({
       </div>
       <div className="candidate-response-list">
         {candidates.map((candidate, index) => {
+          const legacyCommit = answers[candidate.id] === 'adjustable'
           const selectedIndex = choices.findIndex((c) => c.value === answers[candidate.id])
           const conflict = getCalendarHint(candidate)
           return (
@@ -139,6 +140,12 @@ export function ParticipantCandidateResponse({
                     '겹치는 일정 없음'
                   )}
                 </p>
+                {legacyCommit && (
+                  <p>
+                    이전 응답: 일정을 옮겨 참석하기로 했어요. 아래에서 새 답을 고르기 전까지 이
+                    약속은 유지돼요.
+                  </p>
+                )}
                 <div
                   className={`candidate-response-choices${selectedIndex < 0 ? ' is-empty' : ''}`}
                   style={{ '--selected-index': Math.max(0, selectedIndex) } as CSSProperties}
@@ -152,7 +159,9 @@ export function ParticipantCandidateResponse({
                         value={choice.value}
                         checked={answers[candidate.id] === choice.value}
                         aria-describedby={
-                          choice.value === 'adjustable' ? 'response-adjustment-meaning' : undefined
+                          choice.value === 'adjustment_intent'
+                            ? 'response-adjustment-meaning'
+                            : undefined
                         }
                         onChange={() => onAnswer(candidate, choice.value)}
                       />
@@ -166,7 +175,7 @@ export function ParticipantCandidateResponse({
         })}
       </div>
       <p className="candidate-response-meaning" id="response-adjustment-meaning">
-        ‘옮겨서 참석’은 기존 일정을 옮겨 이 회의에 참석한다는 뜻이에요.
+        ‘조정 검토 가능’은 변경 약속이 아니에요. 요청을 받으면 실제로 옮길 수 있는지 결정해요.
       </p>
       <button className="candidate-response-expand" onClick={onExpand} type="button">
         <span>{allUnavailable ? '모두 어렵다면, 다른 시간 찾아보기' : '다른 시간도 알려주기'}</span>
@@ -219,16 +228,16 @@ export function ParticipantCandidateResponse({
           </Button>
           <span className="response-flow-eyebrow">응답 보내기 전 확인</span>
           <h2 id="response-adjustment-title">
-            기존 일정을 옮겨
-            <br />
-            참석할 수 있나요?
+            일정 조정을 검토할
+            <br />수 있나요?
           </h2>
           <p id="response-adjustment-description">
-            ‘옮겨서 참석’을 고른 시간도 참석 가능한 후보에 포함돼요.
+            아직 참석 동의로 계산하지 않아요. 주최자가 변경을 요청하면 그때 동의하거나 거절할 수
+            있어요.
           </p>
           <ul>
             {candidates
-              .filter((c) => answers[c.id] === 'adjustable')
+              .filter((c) => answers[c.id] === 'adjustment_intent')
               .map((c) => (
                 <li key={c.id}>
                   <CalendarDays size={17} aria-hidden="true" />

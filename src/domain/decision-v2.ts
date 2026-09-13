@@ -2,10 +2,12 @@ export const DECISION_TIME_ZONE = 'Asia/Seoul'
 export const TIME_QUANTUM_MINUTES = 30
 export const PROTOTYPE_DURATION_MINUTES = 60
 
-export type DecisionStatus = 'ready' | 'pending' | 'impossible'
+export type DecisionStatus = 'ready' | 'pending' | 'recovery' | 'impossible'
 export type SubmissionStatus = 'not_started' | 'draft' | 'submitted'
-export type SlotState = 'unset' | 'available' | 'adjustment_commit' | 'unavailable'
-export type CandidateAttendeeState = 'available' | 'adjustment_commit' | 'unavailable' | 'unknown'
+export type SlotState =
+  'unset' | 'available' | 'adjustment_commit' | 'adjustment_intent' | 'unavailable'
+export type CandidateAttendeeState =
+  'available' | 'adjustment_commit' | 'adjustment_intent' | 'unavailable' | 'unknown'
 
 export interface DecisionParticipant {
   id: string
@@ -53,6 +55,7 @@ export type DecisionReason =
   | 'criteria_satisfied'
   | 'required_pending'
   | 'optional_positive_needed'
+  | 'adjustment_consent_needed'
 
 export interface DecisionCandidateEvaluation {
   candidate: DecisionCandidateInput
@@ -62,6 +65,7 @@ export interface DecisionCandidateEvaluation {
   committedIds: string[]
   unknownIds: string[]
   unavailableIds: string[]
+  adjustmentIntentIds: string[]
   adjustmentCommitIds: string[]
   avoidPreferredIds: string[]
   requiredUnavailableIds: string[]
@@ -118,6 +122,7 @@ export function aggregateCandidateAttendeeState(
 
   if (slotStates.includes('unavailable')) return 'unavailable'
   if (slotStates.includes('unset')) return 'unknown'
+  if (slotStates.includes('adjustment_intent')) return 'adjustment_intent'
   if (slotStates.includes('adjustment_commit')) return 'adjustment_commit'
   return 'available'
 }
@@ -153,17 +158,20 @@ export function evaluateDecisionCandidate(
   const committedIds = idsWithState(attendeeStateById, ['available', 'adjustment_commit'])
   const unknownIds = idsWithState(attendeeStateById, ['unknown'])
   const unavailableIds = idsWithState(attendeeStateById, ['unavailable'])
+  const adjustmentIntentIds = idsWithState(attendeeStateById, ['adjustment_intent'])
   const adjustmentCommitIds = idsWithState(attendeeStateById, ['adjustment_commit'])
   const requiredIds = meeting.participants.filter((participant) => participant.required).map(idOf)
   const requiredIdSet = new Set(requiredIds)
   const requiredUnavailableIds = unavailableIds.filter((id) => requiredIdSet.has(id))
   const requiredPendingIds = unknownIds.filter((id) => requiredIdSet.has(id))
   const optionalPendingPoolIds = unknownIds.filter((id) => !requiredIdSet.has(id))
+  const requiredIntentCount = adjustmentIntentIds.filter((id) => requiredIdSet.has(id)).length
   const positiveResponsesNeededAfterRequiredYes = Math.max(
     0,
-    meeting.minimumAttendeeCount - (committedIds.length + requiredPendingIds.length),
+    meeting.minimumAttendeeCount -
+      (committedIds.length + requiredPendingIds.length + requiredIntentCount),
   )
-  const maximumPossibleCount = committedIds.length + unknownIds.length
+  const maximumPossibleCount = committedIds.length + unknownIds.length + adjustmentIntentIds.length
   const requiredSatisfied = requiredIds.every((id) => committedIds.includes(id))
 
   let status: DecisionStatus
@@ -178,6 +186,12 @@ export function evaluateDecisionCandidate(
   } else if (requiredSatisfied && committedIds.length >= meeting.minimumAttendeeCount) {
     status = 'ready'
     primaryReason = 'criteria_satisfied'
+  } else if (
+    requiredIds.every((id) => attendeeStateById[id] !== 'unknown') &&
+    committedIds.length + adjustmentIntentIds.length >= meeting.minimumAttendeeCount
+  ) {
+    status = 'recovery'
+    primaryReason = 'adjustment_consent_needed'
   } else {
     status = 'pending'
     primaryReason = requiredPendingIds.length > 0 ? 'required_pending' : 'optional_positive_needed'
@@ -191,6 +205,7 @@ export function evaluateDecisionCandidate(
     committedIds,
     unknownIds,
     unavailableIds,
+    adjustmentIntentIds,
     adjustmentCommitIds,
     avoidPreferredIds: uniqueSorted(avoidPreferredIds),
     requiredUnavailableIds,
@@ -208,7 +223,8 @@ export function compareDecisionEvaluations(
   const statusRank: Record<DecisionStatus, number> = {
     ready: 0,
     pending: 1,
-    impossible: 2,
+    recovery: 2,
+    impossible: 3,
   }
   const leftRank = evaluationRank(left, statusRank)
   const rightRank = evaluationRank(right, statusRank)

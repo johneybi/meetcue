@@ -54,7 +54,7 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
   const requestSlot = state.slots.find((s) => s.id === dialog)
   const myReply = viewed?.replies[personId]
   const canAnswer = viewed?.status === 'active' && myReply === 'pending'
-  const isChange = viewedSlot?.answers[personId]?.kind === 'adjustable'
+  const isChange = viewedSlot?.answers[personId]?.kind === 'adjustment_intent'
   const changeView = (id: string, rid: number | null) => {
     setPersonId(id)
     setRequestId(rid)
@@ -283,7 +283,7 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                         <header className="recovery-candidate-top">
                           <h2>
                             {path.changes.length
-                              ? `${path.changes.length}명 동의 · 일정 ${path.changeCount}건 변경`
+                              ? `${path.changes.length}명 동의 · ${path.unknownChangeCount ? `일정 건수 미확인${path.changeCount ? ` (확인된 ${path.changeCount}건)` : ''}` : `일정 ${path.changeCount}건 변경`}`
                               : `${path.unknown.length}명 참석 확인`}
                           </h2>
                           <Badge tone={path.ready ? 'success' : 'info'} size="compact">
@@ -306,8 +306,9 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                                   {p.name} <small>필수 참석</small>
                                 </strong>
                                 <p>
-                                  {slot.answers[p.id]?.kind === 'adjustable'
-                                    ? slot.answers[p.id].conflicts.join(' · ')
+                                  {slot.answers[p.id]?.kind === 'adjustment_intent'
+                                    ? slot.answers[p.id].conflicts.join(' · ') ||
+                                      '변경할 일정의 상세 내용 미공유'
                                     : '새 시간의 참석 여부 미확인'}
                                 </p>
                               </div>
@@ -316,7 +317,7 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                                   ? '동의함'
                                   : path.request?.status === 'active'
                                     ? '답변 대기'
-                                    : slot.answers[p.id]?.kind === 'adjustable'
+                                    : slot.answers[p.id]?.kind === 'adjustment_intent'
                                       ? '조정 의향'
                                       : '미확인'}
                               </span>
@@ -339,7 +340,7 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                                     : {
                                         available: '가능',
                                         unknown: '미확인',
-                                        adjustable: '조정 의향',
+                                        adjustment_intent: '조정 의향',
                                         unavailable: '불가',
                                       }[slot.answers[p.id]?.kind ?? 'unknown']}
                                 </span>

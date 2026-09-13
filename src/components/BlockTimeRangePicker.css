@@ -117,7 +117,8 @@
   opacity: 0.76;
 }
 
-.block-time-range-picker__block.is-adjustable {
+.block-time-range-picker__block.is-adjustable,
+.block-time-range-picker__block.is-adjustment_intent {
   border-color: rgb(240 171 0 / 46%);
   background: #fff4d6;
   color: #8a5a00;

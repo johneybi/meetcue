@@ -28,6 +28,7 @@ export interface CandidateEvaluation {
   requiredPending: Participant[]
   optionalPendingPool: Participant[]
   positiveResponsesNeededAfterRequiredYes: number
+  adjustmentIntentParticipants: Participant[]
   adjustmentCommitParticipants: Participant[]
   deadlinePassed: boolean
   responseDetails: CandidateResponseDetail[]
@@ -61,6 +62,16 @@ export function evaluateCandidates(meeting: Meeting, now = new Date()) {
         toComparableDecisionEvaluation(right),
       ),
     )
+}
+
+/** Re-evaluate consent at the transition, independently of any button's disabled state. */
+export function confirmMeetingCandidate(meeting: Meeting, candidateId: string): Meeting | null {
+  if (
+    meeting.status === 'confirmed' ||
+    !evaluateCandidates(meeting).some((e) => e.candidate.id === candidateId && e.status === 'ready')
+  )
+    return null
+  return { ...meeting, status: 'confirmed', confirmedCandidateId: candidateId }
 }
 
 export function groupCandidateEvaluations(
@@ -195,6 +206,8 @@ export function generateResponseRequestMessage(
   evaluation: CandidateEvaluation,
   recipientIds?: string[],
 ) {
+  if (evaluation.status === 'recovery')
+    return `${meeting.title}: ${formatShortTime(evaluation.candidate)}은 조정 의향만 확인된 상태예요. 필요한 당사자의 변경 동의를 받은 뒤 확정해 주세요.`
   if (evaluation.status === 'pending') {
     const selectableParticipants = [
       ...evaluation.requiredPending,
@@ -260,8 +273,12 @@ function toCandidateEvaluation(
   )
   const participants = (ids: string[]) =>
     ids.map((id) => participantById.get(id)).filter(isParticipant)
-  const requiredPending = participants(decision.requiredPendingIds)
-  const optionalPendingPool = participants(decision.optionalPendingPoolIds)
+  const requiredPending = participants(
+    decision.requiredPendingIds.filter((id) => !decision.adjustmentIntentIds.includes(id)),
+  )
+  const optionalPendingPool = participants(
+    decision.optionalPendingPoolIds.filter((id) => !decision.adjustmentIntentIds.includes(id)),
+  )
   const requiredUnavailable = participants(decision.requiredUnavailableIds)
   const adjustmentCommitParticipants = participants(decision.adjustmentCommitIds)
   const availableAsIsCount = Object.values(decision.attendeeStateById).filter(
@@ -282,6 +299,7 @@ function toCandidateEvaluation(
     requiredPending,
     optionalPendingPool,
     positiveResponsesNeededAfterRequiredYes: decision.positiveResponsesNeededAfterRequiredYes,
+    adjustmentIntentParticipants: participants(decision.adjustmentIntentIds),
     adjustmentCommitParticipants,
     deadlinePassed: decision.deadlinePassed,
     responseDetails: meeting.participants.map((participant) => ({
@@ -325,12 +343,20 @@ function buildReasons(
   }
 
   const reasons: string[] = []
-  if (decision.requiredPendingIds.length > 0) {
+  if (decision.adjustmentIntentIds.length)
     reasons.push(
-      `${participantNames(decision.requiredPendingIds)}님의 가능 응답이 반드시 필요해요.`,
+      `${participantNames(decision.adjustmentIntentIds)}님은 조정 의향만 밝혔어요. 참석 조건에 필요한 변경 동의는 아직 받지 않았어요.`,
+    )
+  if (decision.requiredPendingIds.some((id) => !decision.adjustmentIntentIds.includes(id))) {
+    reasons.push(
+      `${participantNames(decision.requiredPendingIds.filter((id) => !decision.adjustmentIntentIds.includes(id)))}님의 가능 응답이 반드시 필요해요.`,
     )
   }
-  if (decision.positiveResponsesNeededAfterRequiredYes > 0) {
+  if (decision.positiveResponsesNeededAfterRequiredYes > 0 && decision.adjustmentIntentIds.length) {
+    reasons.push(
+      `필수 참석 조건 외에 ${decision.positiveResponsesNeededAfterRequiredYes}명의 가능 응답 또는 변경 동의가 더 필요해요.`,
+    )
+  } else if (decision.positiveResponsesNeededAfterRequiredYes > 0) {
     reasons.push(
       decision.optionalPendingPoolIds.length === 1
         ? `${participantNames(decision.optionalPendingPoolIds)}님의 가능 응답이 필요해요.`
@@ -383,6 +409,7 @@ function toComparableDecisionEvaluation(
     unavailableIds: evaluation.responseDetails
       .filter((detail) => detail.state === 'unavailable')
       .map((detail) => detail.participant.id),
+    adjustmentIntentIds: evaluation.adjustmentIntentParticipants.map((p) => p.id),
     adjustmentCommitIds: evaluation.adjustmentCommitParticipants.map(
       (participant) => participant.id,
     ),

@@ -7,7 +7,11 @@ import {
   upsertEntry,
   WORKSPACE_STORAGE_KEY,
 } from '../domain/workspace'
-import { evaluateCandidates, type CandidateEvaluation } from '../domain/evaluation'
+import {
+  evaluateCandidates,
+  confirmMeetingCandidate,
+  type CandidateEvaluation,
+} from '../domain/evaluation'
 import { createChangeLog } from '../domain/meetingChanges'
 import { createPrototypeMeeting } from '../domain/mockMeeting'
 import {
@@ -225,16 +229,21 @@ export function useMeetCueController() {
   }
 
   function confirmCandidate(candidateId: string) {
+    if (!confirmMeetingCandidate(meeting, candidateId)) {
+      toast.error('필요한 참석 응답과 변경 동의를 먼저 확인해 주세요.')
+      return
+    }
     setSelectedCandidateId(candidateId)
     navigateTo('message')
   }
 
   function completeConfirmation(candidateId: string) {
-    setMeeting((current) => ({
-      ...current,
-      status: 'confirmed',
-      confirmedCandidateId: candidateId,
-    }))
+    const confirmed = confirmMeetingCandidate(meeting, candidateId)
+    if (!confirmed) {
+      toast.error('참석 조건이 충족되지 않아 확정하지 않았어요.')
+      return
+    }
+    setMeeting(confirmed)
     setSelectedCandidateId(candidateId)
     toast.success('회의 시간을 확정했어요', {
       id: 'confirmation-notification',

@@ -60,7 +60,7 @@ export function ParticipantAvailabilityPanel({
   onOpenSaveConfirmation,
   onSubmit,
 }: ParticipantAvailabilityPanelProps) {
-  const adjustmentSlotCount = slots.filter((slot) => getState(slot) === 'adjustable').length
+  const adjustmentSlotCount = slots.filter((slot) => getState(slot) === 'adjustment_intent').length
   const confirmationRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -168,8 +168,8 @@ export function ParticipantAvailabilityPanel({
           <div>
             {adjustmentSlotCount > 0 ? (
               <strong>
-                ‘옮겨서 참석’로 표시한 {adjustmentSlotCount}칸은 그 시간으로 확정되면 기존 일정을
-                옮겨 참석하는 것으로 전달해요.
+                ‘조정 검토 가능’으로 표시한 {adjustmentSlotCount}칸은 조정 의향으로 전달해요. 실제
+                변경 동의는 요청을 받은 뒤 결정해요.
               </strong>
             ) : null}
             {remainingCount > 0 ? (
@@ -182,9 +182,7 @@ export function ParticipantAvailabilityPanel({
               응답 다시 확인하기
             </Button>
             <Button size="action" onClick={onSubmit}>
-              {adjustmentSlotCount > 0
-                ? '일정을 옮겨 참석하는 것으로 저장하기'
-                : '이대로 응답 저장하기'}
+              {adjustmentSlotCount > 0 ? '조정 의향으로 저장하기' : '이대로 응답 저장하기'}
             </Button>
           </div>
         </div>

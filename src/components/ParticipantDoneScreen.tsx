@@ -22,7 +22,8 @@ export function ParticipantDoneScreen({
   const responses = meeting.responses.filter((r) => r.participantId === participant.id)
   const available = responses.filter((r) => r.value === 'available').length
   const adjustable = responses.filter((r) => r.value === 'adjustable').length
-  const hasAttendableCandidate = available + adjustable > 0
+  const intent = responses.filter((r) => r.value === 'adjustment_intent').length
+  const hasAttendableCandidate = available + adjustable + intent > 0
   return (
     <ParticipantPageShell onExit={onExit}>
       <main className="participant-receipt">
@@ -36,6 +37,16 @@ export function ParticipantDoneScreen({
           <br />
           확정 전까지 내 응답을 바꿀 수 있어요.
         </p>
+        {intent > 0 && (
+          <p className="participant-receipt__note">
+            조정 검토 가능 {intent}개 · 아직 변경 동의가 아니에요. 요청을 받으면 결정해 주세요.
+          </p>
+        )}
+        {adjustable > 0 && (
+          <p className="participant-receipt__note">
+            이전 응답: 일정을 옮겨 참석 {adjustable}개 · 기존 약속을 유지해요.
+          </p>
+        )}
         <dl className="participant-receipt__summary">
           <div>
             <dt>가능해요</dt>
@@ -45,9 +56,9 @@ export function ParticipantDoneScreen({
             </dd>
           </div>
           <div>
-            <dt>옮겨서 참석</dt>
+            <dt>조정 검토 가능</dt>
             <dd>
-              {adjustable}
+              {intent}
               <span>개</span>
             </dd>
           </div>

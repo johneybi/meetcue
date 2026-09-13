@@ -63,7 +63,7 @@ export function createPendingPrototypeState(meeting: Meeting) {
         if (participant.id === pendingTarget?.id && candidateIndex % 2 === 0) return
         candidateResponses.set(
           participant.id,
-          participant.role === 'required' || candidateIndex % 3 !== 0 ? 'available' : 'adjustable',
+          participant.role === 'required' || candidateIndex % 3 !== 0 ? 'available' : 'adjustment_intent',
         )
       })
     }

@@ -333,9 +333,11 @@ export function deriveParticipantResponses(
 
     const value: ResponseValue = states.includes('unavailable')
       ? 'unavailable'
-      : states.includes('adjustable')
-        ? 'adjustable'
-        : 'available'
+      : states.includes('adjustment_intent')
+        ? 'adjustment_intent'
+        : states.includes('adjustable')
+          ? 'adjustable'
+          : 'available'
 
     return [
       {

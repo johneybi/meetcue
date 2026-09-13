@@ -24,7 +24,7 @@ const hostStateCopy: Record<HostCoordinationState, { title: string; description:
   },
   HOST_DECISION: {
     title: '지금 정할 수 있는 시간을 확인해 보세요',
-    description: '바로 정할 수 있는 시간과 아직 응답이 필요한 시간을 나눠서 보여드려요.',
+    description: '바로 정할 수 있는 시간, 미확인 응답, 변경 동의가 필요한 시간을 구분해요.',
   },
   HOST_CONFIRMED: {
     title: '회의 시간을 확정했어요',

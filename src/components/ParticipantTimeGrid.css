@@ -59,7 +59,8 @@
   background: #dcf8ef;
 }
 
-.participant-state-guide i.is-adjustable {
+.participant-state-guide i.is-adjustable,
+.participant-state-guide i.is-adjustment_intent {
   border-color: rgb(240 171 0 / 42%);
   background: #fff4d6;
 }
@@ -197,7 +198,8 @@
   color: #087f6c;
 }
 
-.participant-time-cell.is-adjustable .participant-time-cell__paint {
+.participant-time-cell.is-adjustable .participant-time-cell__paint,
+.participant-time-cell.is-adjustment_intent .participant-time-cell__paint {
   border-color: rgb(240 171 0 / 36%);
   background: #fff4d6;
   color: #8a5a00;
@@ -519,7 +521,8 @@
   background: #dcf8ef;
 }
 
-.participant-time-cell.is-adjustable .participant-time-cell__paint {
+.participant-time-cell.is-adjustable .participant-time-cell__paint,
+.participant-time-cell.is-adjustment_intent .participant-time-cell__paint {
   background: #fff4d6;
 }
 
