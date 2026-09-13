@@ -1,0 +1,159 @@
+.constraint-paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.constraint-conditions {
+  margin-top: 24px;
+  border-top: 1px solid var(--mc-soft-border);
+  padding-top: 8px;
+}
+.constraint-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  font-size: 14px;
+}
+.constraint-person > div {
+  flex: 1;
+}
+.constraint-person strong {
+  font-weight: 600;
+}
+.constraint-person small {
+  font-size: 12px;
+  color: var(--mc-color-text-muted);
+  font-weight: 400;
+}
+.constraint-person p {
+  font-size: 13px;
+  color: var(--mc-color-text-muted);
+  margin: 5px 0 0;
+}
+.constraint-person > span {
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--mc-color-text-muted);
+}
+.constraint-closed {
+  margin-top: 32px;
+  border-top: 1px solid var(--mc-soft-border);
+  padding-top: 24px;
+}
+.constraint-closed h2,
+.constraint-history h2 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 20px;
+}
+.constraint-closed > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--mc-soft-border);
+}
+.constraint-closed .mc-calendar-date {
+  display: none;
+}
+.constraint-closed .mc-time-range {
+  font-size: 18px;
+}
+.constraint-closed p {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--mc-color-text-muted);
+  margin: 0;
+}
+.constraint-closed strong {
+  font-weight: 500;
+  color: var(--mc-color-text-secondary);
+}
+.constraint-history {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--mc-soft-border);
+}
+.constraint-history > p {
+  font-size: 12px;
+  color: var(--mc-color-text-muted);
+}
+.constraint-history-group {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mc-soft-border);
+}
+.constraint-history-group header,
+.constraint-history-group > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.constraint-history-group header {
+  margin-bottom: 8px;
+}
+.constraint-history-group strong {
+  font-weight: 500;
+  color: var(--mc-color-text-muted);
+}
+.constraint-history-group .ui-button {
+  color: var(--mc-color-accent-pressed);
+}
+.constraint-new {
+  display: grid;
+  gap: 20px;
+}
+.constraint-new p {
+  margin: 0;
+}
+.constraint-new label {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+.constraint-new input:not([type='checkbox']) {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--mc-soft-border);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--mc-color-surface);
+  color: var(--mc-color-text-primary);
+}
+.constraint-new .constraint-checkbox {
+  display: flex;
+  align-items: center;
+  line-height: 1.6;
+}
+.constraint-checkbox input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--mc-color-accent);
+}
+@media (max-width: 700px) {
+  .constraint-paths {
+    grid-template-columns: 1fr;
+  }
+  .constraint-closed > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .constraint-history-group > div {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .recovery-next > div {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .constraint-person {
+    gap: 8px;
+  }
+}

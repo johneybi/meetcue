@@ -21,7 +21,7 @@ import { MessageScreen } from './components/MessageScreen'
 import { CreateFlowFrame } from './components/CreateFlowFrame'
 import { Button } from './components/ui/button'
 import { TimeEntryComparison } from './components/TimeEntryComparison'
-import { CoordinationRecovery } from './components/CoordinationRecovery'
+import { ConstraintRecovery } from './components/ConstraintRecovery'
 import { CREATE_STEPS } from './hooks/useCreateFlowController'
 import './index.css'
 import './styles/global.css'
@@ -237,15 +237,7 @@ export function DesignReview() {
   return (
     <>
       <div hidden={view !== '조율 다시 잇기'}>
-        <CoordinationRecovery
-          onOtherScreens={() => setView('시간 선택')}
-          onNewTimes={() => {
-            setView('시간 선택')
-            setNotice(
-              '새 범위를 살펴보는 기존 입력 시안이에요. 새 후보의 재요청은 아직 연결되지 않았어요. 「조율 다시 잇기」로 돌아가면 받은 답이 유지돼요.',
-            )
-          }}
-        />
+        <ConstraintRecovery onOtherScreens={() => setView('시간 선택')} />
       </div>
       {view !== '조율 다시 잇기' && (
         <>
