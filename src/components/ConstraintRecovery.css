@@ -410,3 +410,69 @@
     padding: 20px;
   }
 }
+.constraint-outcome-label {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--mc-color-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.constraint-final-next {
+  margin: 24px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--mc-soft-border);
+}
+.constraint-final-next strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.constraint-final-next p,
+.constraint-outcome > p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--mc-color-text-secondary);
+  margin: 8px 0 0;
+}
+.constraint-outcome h2 {
+  font-size: 21px;
+  line-height: 1.4;
+  margin: 0 0 24px;
+}
+.constraint-outcome dl {
+  margin: 0;
+}
+.constraint-outcome dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--mc-soft-border);
+  font-size: 13px;
+}
+.constraint-outcome dt {
+  color: var(--mc-color-text-secondary);
+}
+.constraint-outcome dd {
+  margin: 0;
+  text-align: right;
+}
+.constraint-new-datetime {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .constraint-new-datetime {
+    grid-template-columns: 1fr;
+  }
+  .constraint-recovery-page .recovery-preview {
+    padding: 8px 16px;
+    flex-wrap: wrap;
+  }
+  .constraint-recovery-page .constraint-person {
+    flex-wrap: wrap;
+  }
+  .constraint-recovery-page .constraint-person > div {
+    min-width: 120px;
+  }
+}

@@ -157,20 +157,34 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
               <p>
                 {viewed.status === 'rejected' || viewed.status === 'canceled'
                   ? '기존 일정을 바꾸지 않아도 돼요. 이미 보낸 답은 기록에 남겨두었어요.'
-                  : isChange
-                    ? '변경에 동의하더라도 주최자의 최종 확정 전에는 기존 일정을 옮기지 마세요.'
-                    : '이 후보의 참석 여부만 확인해 주세요.'}
+                  : viewed.status === 'confirmed'
+                    ? '주최자가 회의 시간을 정했어요. 아래 내용을 확인해 주세요.'
+                    : isChange
+                      ? '변경에 동의하더라도 주최자의 최종 확정 전에는 기존 일정을 옮기지 마세요.'
+                      : '이 후보의 참석 여부만 확인해 주세요.'}
               </p>
             </header>
             <MainCard material="soft" className="recovery-answer">
               <SlotTime slot={viewedSlot} />
               {isChange && (
                 <div className="constraint-request-scope">
-                  <span>조정이 필요한 내 일정</span>
+                  <span>
+                    {viewed.status === 'confirmed'
+                      ? '이제 옮길 내 일정'
+                      : viewed.status === 'rejected' || viewed.status === 'canceled'
+                        ? '그대로 두어도 되는 내 일정'
+                        : '조정이 필요한 내 일정'}
+                  </span>
                   <strong>
                     {viewedSlot.answers[personId].conflicts.join(' · ') || '일정 상세 미공유'}
                   </strong>
-                  <p>이 후보에만 동의해요. 최종 확정 후 직접 일정을 옮겨 주세요.</p>
+                  <p>
+                    {viewed.status === 'confirmed'
+                      ? '동의한 기존 일정을 직접 옮겨 주세요. 캘린더가 자동으로 변경되지는 않아요.'
+                      : viewed.status === 'rejected' || viewed.status === 'canceled'
+                        ? '이 후보의 요청은 끝났어요. 일정을 옮길 필요가 없어요.'
+                        : '이 후보에만 동의해요. 최종 확정 후 직접 일정을 옮겨 주세요.'}
+                  </p>
                 </div>
               )}
               {canAnswer ? (
@@ -250,15 +264,43 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                   : confirmedSlot
                     ? '필수 참석 조건을 충족했어요. 동의한 사람에게 이 시간으로 진행한다는 상태를 보여줘요.'
                     : active
-                      ? '현재 후보가 성립하려면 아래 사람들의 답이 필요해요.'
+                      ? activePath?.ready
+                        ? '아래 시간을 최종 확정해 주세요. 아직 참석자에게 확정된 시간이 아니에요.'
+                        : '필요한 동의를 모두 받은 뒤 시간을 확정할 수 있어요.'
                       : !viable.length
-                        ? '필수 참석자를 제외하거나 변경 불가 일정을 옮기는 것으로 처리하지 않아요.'
+                        ? '새 시간을 제안하거나, 시간을 정하지 않고 이번 조율을 마칠 수 있어요.'
                         : '조정 의향이 있는 참석자에게 변경을 요청할 수 있어요. 어떤 시간으로 이어갈지 골라 주세요.'}
               </p>
             </header>
+            {state.ended && (
+              <MainCard material="soft" className="recovery-answer constraint-outcome">
+                <span className="constraint-outcome-label">확정한 시간 없음</span>
+                <h2>남겨둔 기록과 정리된 요청</h2>
+                <dl>
+                  <div>
+                    <dt>기존 응답</dt>
+                    <dd>후보별 기록으로 유지</dd>
+                  </div>
+                  <div>
+                    <dt>변경 요청</dt>
+                    <dd>대기 중인 요청까지 종료</dd>
+                  </div>
+                  <div>
+                    <dt>참석자 일정</dt>
+                    <dd>옮길 필요 없음</dd>
+                  </div>
+                </dl>
+                <p>아래 이력에서 이번에 확인한 답을 다시 볼 수 있어요.</p>
+              </MainCard>
+            )}
             {confirmedSlot ? (
               <MainCard material="soft" className="recovery-answer">
+                <span className="constraint-outcome-label">주최자 최종 확정</span>
                 <SlotTime slot={confirmedSlot} />
+                <div className="constraint-final-next">
+                  <strong>다음은 참석자가 일정을 정리할 차례예요</strong>
+                  <p>변경에 동의한 참석자는 기존 일정을 직접 옮겨야 해요.</p>
+                </div>
                 <p className="recovery-receipt">
                   참석 확인:{' '}
                   {describePath(state, confirmedSlot)
@@ -279,7 +321,8 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
             ) : (
               !state.ended && (
                 <>
-                  {(activePath || latestRejected) && (
+                  {((activePath && !activePath.ready) ||
+                    (!activePath && latestRejected && viable.length > 0)) && (
                     <section className="constraint-state-note" aria-label="현재 조율 상태">
                       <span>{activePath ? '동의 확인 중' : '이전 요청 종료'}</span>
                       <h2>
@@ -580,30 +623,29 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
               }
             }}
           >
-            <p>
-              기존 응답은 원래 시간에만 남겨둬요. 새 후보는 지훈님을 제외한 참석자 모두 미확인으로
-              시작해요.
-            </p>
-            <label>
-              날짜
-              <input
-                type="date"
-                required
-                min={today('Asia/Seoul').toString()}
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-              />
-            </label>
-            <label>
-              시작 시간 · 1시간 회의
-              <input
-                type="time"
-                required
-                step="1800"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
-            </label>
+            <p>후보별 기존 응답은 기록으로 남겨요. 새 시간의 참석 여부는 다시 확인해요.</p>
+            <div className="constraint-new-datetime">
+              <label>
+                날짜
+                <input
+                  type="date"
+                  required
+                  min={today('Asia/Seoul').toString()}
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                />
+              </label>
+              <label>
+                시작 시간 · 1시간 회의
+                <input
+                  type="time"
+                  required
+                  step="1800"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                />
+              </label>
+            </div>
             <label className="constraint-checkbox">
               <input
                 type="checkbox"
