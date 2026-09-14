@@ -33,15 +33,11 @@ export function ParticipantDoneScreen({
     <ParticipantPageShell onExit={onExit}>
       <main className="participant-receipt">
         <div className="participant-receipt__mark" aria-hidden="true">
-          <Check size={32} strokeWidth={2.5} />
+          <Check size={22} strokeWidth={2.5} />
         </div>
         <p className="participant-receipt__meeting">{meeting.title}</p>
         <h1>{hasAttendableCandidate ? '응답을 보냈어요' : '확인한 시간은 어렵다고 알려줬어요'}</h1>
-        <p className="participant-receipt__description">
-          회의 시간은 주최자가 응답을 보고 정해요.
-          <br />
-          확정 전까지 내 응답을 바꿀 수 있어요.
-        </p>
+        <p className="participant-receipt__description">회의 시간은 주최자가 응답을 보고 정해요.</p>
         <section className="participant-receipt__answers" aria-labelledby="sent-answers-title">
           <div className="participant-receipt__section-heading">
             <h2 id="sent-answers-title">전달한 응답</h2>
@@ -51,6 +47,13 @@ export function ParticipantDoneScreen({
             candidates={meeting.candidates}
             answers={Object.fromEntries(responses.map((r) => [r.candidateId, r.value]))}
           />
+          {participant.responseScope === 'candidates' && (
+            <p className="participant-receipt__note">
+              응답한 후보만 전달했어요. 다른 시간은 미확인으로 남아요.
+            </p>
+          )}
+        </section>
+        <aside className="participant-receipt__next" aria-label="다음 단계">
           <div className="response-review-note">
             <strong>
               {intent > 0
@@ -61,12 +64,7 @@ export function ParticipantDoneScreen({
               ? '검토 가능으로 답한 시간은 아직 참석 약속이 아니에요. 변경 요청을 받으면 결정해 주세요.'
               : '확정 전까지 내 응답을 수정할 수 있어요.'}
           </div>
-          {participant.responseScope === 'candidates' && (
-            <p className="participant-receipt__note">
-              응답한 후보만 전달했어요. 다른 시간은 미확인으로 남아요.
-            </p>
-          )}
-        </section>
+        </aside>
         <div className="participant-receipt__actions">
           {showPrototypeReturn ? (
             <Button size="action" width="full" onClick={onExit}>

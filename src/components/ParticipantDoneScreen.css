@@ -1,15 +1,15 @@
 .participant-receipt {
   width: min(100% - 48px, 560px);
-  margin: 80px auto;
+  margin: 40px auto;
   text-align: left;
   animation: response-reveal 240ms var(--response-enter);
 }
 .participant-receipt__mark {
-  width: 64px;
-  height: 64px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   border-radius: 50%;
   background: #eaf2ff;
   color: var(--response-blue);
@@ -27,31 +27,31 @@
 }
 .participant-receipt h1 {
   margin: 0 0 16px;
-  font-size: 30px;
-  line-height: 1.45;
+  font-size: 28px;
+  line-height: 1.35;
   font-weight: 700;
   word-break: keep-all;
   letter-spacing: -0.8px;
 }
 .participant-receipt__description {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--response-secondary);
-  line-height: 1.8;
+  line-height: 1.7;
   margin: 0;
 }
 .participant-receipt__answers {
-  margin-top: 32px;
+  margin-top: 24px;
   padding: 24px;
   border: 1px solid #e4eaf2;
-  border-radius: 20px;
+  border-radius: 16px;
   background: #fff;
-  box-shadow: 0 4px 18px #243f6610;
+  box-shadow: 0 2px 6px rgb(28 53 88 / 3%);
 }
 .participant-receipt__section-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   gap: 12px;
 }
 .participant-receipt__section-heading h2 {
@@ -69,12 +69,12 @@
 .participant-receipt__note {
   font-size: 13px;
   color: var(--response-muted);
-  line-height: 1.8;
+  line-height: 1.7;
 }
 .participant-receipt__actions {
   display: grid;
   gap: 8px;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 .participant-receipt__actions .ui-button {
   border-radius: 12px;
@@ -97,10 +97,10 @@
 }
 @media (max-width: 800px) {
   .participant-receipt {
-    margin-top: 48px;
+    margin-top: 28px;
   }
   .participant-receipt h1 {
-    font-size: 27px;
+    font-size: 25px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -116,6 +116,13 @@
 
 @media (max-width: 800px) {
   .participant-receipt__answers {
-    padding: 20px 16px;
+    padding: 16px;
   }
+}
+
+.participant-receipt__next {
+  margin-top: 24px;
+}
+.participant-receipt__next .response-review-note {
+  margin: 0;
 }
