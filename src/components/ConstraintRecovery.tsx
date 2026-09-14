@@ -64,12 +64,15 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
   const actionKey = `${personId}-${requestId}-${state.confirmed}-${state.ended}-${myReply}-${viewed?.status}`
   useEffect(() => {
     heading.current?.focus({ preventScroll: true })
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }, [actionKey])
   const dateStart = newDate ? `${newDate}T${newTime}:00+09:00` : ''
   const validDate =
     !!dateStart &&
     Date.parse(dateStart) > openedAt &&
     !state.slots.some((s) => Date.parse(s.start) === Date.parse(dateStart))
+  const activePath = active ? paths.find(({ slot }) => slot.id === active.slotId)?.path : undefined
+  const latestRejected = [...state.requests].reverse().find((r) => r.status === 'rejected')
   const title = state.ended
     ? '이번 회의 조율을 종료했어요'
     : confirmedSlot
@@ -144,9 +147,11 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                   : viewed.status === 'confirmed'
                     ? '이 시간으로 회의를 확정했어요'
                     : myReply === 'yes'
-                      ? '답을 전달했어요. 최종 확정을 기다려주세요.'
+                      ? isChange
+                        ? '변경 동의를 전달했어요'
+                        : '참석 가능하다고 전달했어요'
                       : isChange
-                        ? '이 시간에 맞춰 기존 일정을 옮길 수 있나요?'
+                        ? '확정되면 일정을 옮길 수 있나요?'
                         : '이 시간에 참석할 수 있나요?'}
               </h1>
               <p>
@@ -160,9 +165,13 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
             <MainCard material="soft" className="recovery-answer">
               <SlotTime slot={viewedSlot} />
               {isChange && (
-                <p className="recovery-explanation">
-                  변경이 필요한 일정: {viewedSlot.answers[personId].conflicts.join(' · ')}
-                </p>
+                <div className="constraint-request-scope">
+                  <span>조정이 필요한 내 일정</span>
+                  <strong>
+                    {viewedSlot.answers[personId].conflicts.join(' · ') || '일정 상세 미공유'}
+                  </strong>
+                  <p>이 후보에만 동의해요. 최종 확정 후 직접 일정을 옮겨 주세요.</p>
+                </div>
               )}
               {canAnswer ? (
                 <>
@@ -186,11 +195,6 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                                 ? '일정 변경이 어려워요'
                                 : '참석하기 어려워요'}
                           </strong>
-                          <small>
-                            {value === 'yes'
-                              ? '이 후보로 진행하는 데 동의해요.'
-                              : '이 후보로 진행하지 말아 주세요.'}
-                          </small>
                         </span>
                       </label>
                     ))}
@@ -205,7 +209,11 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                       }
                     }}
                   >
-                    응답 보내기
+                    {selected === 'yes'
+                      ? '동의 전달하기'
+                      : selected === 'no'
+                        ? '어렵다고 전달하기'
+                        : '답을 선택해 주세요'}
                   </Button>
                 </>
               ) : (
@@ -271,6 +279,27 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
             ) : (
               !state.ended && (
                 <>
+                  {(activePath || latestRejected) && (
+                    <section className="constraint-state-note" aria-label="현재 조율 상태">
+                      <span>{activePath ? '동의 확인 중' : '이전 요청 종료'}</span>
+                      <h2>
+                        {activePath
+                          ? activePath.ready
+                            ? '필요한 동의를 모두 받았어요'
+                            : `${activePath.remaining.map((p) => p.name).join('·')}님의 답을 기다려요`
+                          : '거절된 후보의 요청은 끝냈어요'}
+                      </h2>
+                      <p>
+                        {activePath
+                          ? activePath.ready
+                            ? '주최자가 시간을 확정하면 참석자에게 확정 상태를 보여줘요.'
+                            : `${activePath.needed.length}명 중 ${activePath.needed.length - activePath.remaining.length}명 동의 · 남은 동의가 들어오기 전에는 확정할 수 없어요.`
+                          : viable.length
+                            ? '다른 후보의 기존 응답은 그대로예요. 남아 있는 후보로 이어갈 수 있어요.'
+                            : '기존 응답은 기록에 남겼어요. 새 시간을 제안하거나 조율을 종료할 수 있어요.'}
+                      </p>
+                    </section>
+                  )}
                   {!!viable.length && (
                     <div className="constraint-comparison-heading">
                       <h2>
@@ -317,7 +346,11 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                         </div>
                         <div className="constraint-conditions">
                           {path.needed.map((p) => (
-                            <div key={p.id} className="constraint-person">
+                            <div
+                              key={p.id}
+                              className="constraint-person"
+                              data-reply={path.request?.replies[p.id]}
+                            >
                               <Avatar name={p.name} />
                               <div>
                                 <strong>
@@ -382,7 +415,9 @@ export function ConstraintRecovery({ onOtherScreens }: { onOtherScreens: () => v
                                   dispatch({ type: 'confirm', requestId: path.request!.id })
                                 }
                               >
-                                이 시간으로 확정
+                                {path.ready
+                                  ? '이 시간으로 확정'
+                                  : `${path.remaining.length}명의 답변 대기 중`}
                               </Button>
                               <Button
                                 variant="quiet"
