@@ -157,3 +157,170 @@
     gap: 8px;
   }
 }
+
+/* M2 comparison: aligned facts, no implied recommendation rank. */
+.constraint-recovery-page .recovery-main {
+  width: min(960px, calc(100% - 64px));
+  margin-top: 32px;
+}
+.constraint-recovery-page .recovery-main--focused {
+  max-width: 560px;
+}
+.constraint-recovery-page .recovery-context {
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+.constraint-recovery-page .recovery-heading {
+  margin-bottom: 32px;
+}
+.constraint-recovery-page .recovery-heading h1 {
+  font-size: 30px;
+  line-height: 1.35;
+}
+.constraint-recovery-page .recovery-heading > p:last-child {
+  max-width: 660px;
+  font-size: 14px;
+  color: var(--mc-color-text-secondary);
+}
+.constraint-comparison-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.constraint-comparison-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.constraint-comparison-heading h2 span {
+  color: var(--mc-color-accent);
+  margin-left: 6px;
+}
+.constraint-comparison-heading p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--mc-color-text-muted);
+}
+.constraint-recovery-page .constraint-paths {
+  gap: 16px;
+}
+.constraint-paths .recovery-candidate.main-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgb(28 53 88 / 4%);
+}
+.constraint-paths .recovery-candidate-top {
+  margin-bottom: 16px;
+}
+.constraint-path-type {
+  font-size: 12px;
+  color: var(--mc-color-text-secondary);
+}
+.constraint-paths .recovery-time .mc-calendar-date {
+  display: none;
+}
+.constraint-paths .recovery-time .mc-time-range {
+  font-size: 26px;
+  line-height: 1.4;
+}
+.constraint-paths .recovery-time > div {
+  gap: 4px;
+}
+.constraint-paths .recovery-time > div > time {
+  font-size: 13px;
+}
+.constraint-path-explanation {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--mc-soft-border);
+}
+.constraint-path-explanation h2 {
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.4px;
+  word-break: keep-all;
+}
+.constraint-path-explanation p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 6px 0 0;
+  color: var(--mc-color-text-secondary);
+}
+.constraint-paths .constraint-conditions {
+  margin-top: 12px;
+  padding-top: 0;
+  border: 0;
+  min-height: 140px;
+}
+.constraint-paths .constraint-person {
+  padding: 12px 0;
+}
+.constraint-paths .constraint-person p {
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.constraint-paths .recovery-evidence {
+  margin-top: auto;
+  border-top: 1px solid var(--mc-soft-border);
+  padding-top: 8px;
+}
+.constraint-paths .recovery-candidate footer {
+  margin-top: 12px;
+}
+.constraint-paths .recovery-candidate footer .ui-button {
+  min-height: 48px;
+}
+.constraint-recovery-page .constraint-closed {
+  margin-top: 28px;
+  padding-top: 20px;
+}
+.constraint-recovery-page .constraint-closed h2 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--mc-color-text-secondary);
+}
+.constraint-recovery-page .constraint-closed > div {
+  padding: 12px 0;
+}
+.constraint-recovery-page .recovery-next {
+  margin-top: 24px;
+}
+@media (max-width: 700px) {
+  .constraint-recovery-page .recovery-main {
+    width: calc(100% - 40px);
+    margin-top: 24px;
+  }
+  .constraint-recovery-page .recovery-heading h1 {
+    font-size: 25px;
+  }
+  .constraint-recovery-page .recovery-context span {
+    display: block;
+    margin: 6px 0 0;
+  }
+  .constraint-comparison-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .constraint-paths .recovery-candidate.main-card {
+    padding: 20px;
+  }
+  .constraint-paths .constraint-conditions {
+    min-height: 0;
+    margin-bottom: 16px;
+  }
+  .constraint-path-explanation {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+  .constraint-path-explanation h2 {
+    font-size: 17px;
+  }
+}
