@@ -29,10 +29,15 @@
 }
 
 .ui-button[data-variant='secondary'] {
-  border: 1px solid var(--mc-color-border-strong);
-  background: var(--mc-fill-control);
+  border: 1px solid var(--mc-color-border);
+  background: var(--mc-color-surface-subtle);
   color: var(--mc-color-text-secondary);
-  box-shadow: var(--mc-shadow-control);
+  box-shadow: none;
+}
+
+.ui-button[data-variant='secondary']:hover:not(:disabled) {
+  background: var(--mc-color-surface-pressed);
+  color: var(--mc-color-text-primary);
 }
 
 .ui-button[data-variant='quiet'] {
@@ -87,6 +92,12 @@
 .ui-button[data-variant='quiet']:disabled {
   background: transparent;
   color: var(--mc-color-disabled);
+}
+
+.ui-button[data-variant='secondary']:disabled {
+  border-color: var(--mc-color-border);
+  background: var(--mc-color-surface-pressed);
+  color: var(--mc-color-text-muted);
 }
 
 .ui-button[data-variant='fieldAction']:disabled {

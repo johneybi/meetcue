@@ -117,6 +117,11 @@
   box-shadow: var(--mc-shadow-candidate-card-selected);
 }
 
+.host-shell--decision .decision-reference-card.is-selected .mc-calendar-date {
+  border-color: var(--mc-color-accent-soft-strong);
+  background: var(--mc-fill-selected);
+}
+
 .host-shell--decision .decision-reference-card__select {
   position: relative;
   width: 100%;
@@ -130,6 +135,16 @@
   text-align: left;
 }
 
+.host-shell--decision .decision-reference-card__select:focus-visible {
+  outline: 2px solid var(--mc-color-accent);
+  outline-offset: -3px;
+  border-radius: calc(var(--mc-radius-candidate-card) - 1px);
+}
+
+.host-shell--decision .decision-reference-card .mc-calendar-date {
+  color: var(--mc-color-text-muted);
+}
+
 .host-shell--decision .decision-reference-card__copy {
   min-width: 0;
   display: grid;
@@ -139,12 +154,16 @@
 .host-shell--decision .decision-reference-card__copy > strong {
   overflow: hidden;
   color: var(--mc-color-text-primary);
-  font-size: var(--mc-type-body-size);
+  font-size: var(--mc-type-card-title-size);
   font-weight: var(--type-weight-semibold);
   line-height: var(--mc-type-body-leading);
   letter-spacing: var(--tracking-ko-title-compact);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.host-shell--decision .decision-reference-card.is-selected .decision-reference-card__copy > strong {
+  color: var(--mc-color-accent-pressed);
 }
 
 .host-shell--decision .decision-reference-card__copy > span {
