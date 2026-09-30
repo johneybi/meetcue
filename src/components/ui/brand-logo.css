@@ -1,0 +1,57 @@
+.mc-brand-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  width: fit-content;
+  color: var(--mc-color-text-primary);
+  line-height: 1;
+}
+
+.mc-brand-logo[data-variant='lockup'] {
+  gap: 10px;
+}
+
+.mc-brand-logo__emblem {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 28.5%;
+  object-fit: contain;
+}
+
+.mc-brand-logo__wordmark {
+  font-family: var(--font-brand);
+  font-style: normal;
+  font-weight: var(--type-weight-medium);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.mc-brand-logo[data-size='small'] .mc-brand-logo__emblem {
+  width: 24px;
+  height: 24px;
+}
+
+.mc-brand-logo[data-size='small'] .mc-brand-logo__wordmark {
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.mc-brand-logo[data-size='medium'] .mc-brand-logo__emblem {
+  width: 28px;
+  height: 28px;
+}
+
+.mc-brand-logo[data-size='medium'] .mc-brand-logo__wordmark {
+  font-size: 19px;
+  line-height: 24px;
+}
+
+.mc-brand-logo[data-size='large'] .mc-brand-logo__emblem {
+  width: 36px;
+  height: 36px;
+}
+
+.mc-brand-logo[data-size='large'] .mc-brand-logo__wordmark {
+  font-size: 24px;
+  line-height: 30px;
+}

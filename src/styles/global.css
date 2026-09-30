@@ -114,16 +114,6 @@ html {
   color: var(--mc-color-success) !important;
 }
 
-.brand-dot {
-  display: block;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: transparent;
-  box-shadow: none;
-  object-fit: contain;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -165,13 +155,4 @@ body {
 :where(label, label *, legend, th, small),
 :where(input, textarea, select) {
   font-weight: var(--type-weight-medium);
-}
-
-.brand-wordmark {
-  font-family: var(--font-brand);
-  font-size: 19px;
-  font-style: normal;
-  font-weight: var(--type-weight-medium);
-  line-height: 24px;
-  letter-spacing: 0.01em;
 }

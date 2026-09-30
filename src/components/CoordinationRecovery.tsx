@@ -11,6 +11,7 @@ import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { MainCard } from './ui/main-card'
 import { Avatar } from './ui/avatar'
+import { BrandLogo } from './ui/brand-logo'
 import { CalendarDate, TimeRange } from './ui/calendar-date'
 import { Dialog } from './ui/dialog'
 import './CoordinationRecovery.css'
@@ -124,12 +125,7 @@ export function CoordinationRecovery({
           href={`${import.meta.env.BASE_URL}toss/#/home`}
           aria-label="MeetCue 홈으로"
         >
-          <img
-            className="brand-dot"
-            src={`${import.meta.env.BASE_URL}brand/meetcue-emblem-64.png`}
-            alt=""
-          />
-          <strong className="brand-wordmark">MeetCue</strong>
+          <BrandLogo variant="lockup" />
         </a>
         <span>
           <Avatar name={active?.person ?? '지훈'} size="small" />
