@@ -1,0 +1,24 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="00 System/Overview" />
+
+# MeetCue UI system
+
+MeetCue의 Storybook은 컴포넌트를 독립적으로 개발하고, 일정 조율 상태가 화면에서 일관되게 표현되는지 확인하는 작업 공간입니다.
+
+## 구성
+
+1. **Foundations** — 현재 적용되는 색상, 타입, 간격과 정규화 후보
+2. **Primitives** — 버튼, 입력, 선택 등 기본 UI의 상태와 API
+3. **Product Patterns** — 일정 조율 화면에서 반복되는 작은 조합
+4. **Decision System** — `ready`, `pending`, `recovery`, `impossible` 상태의 근거와 다음 행동
+5. **Workflows** — 여러 컴포넌트와 도메인 fixture를 연결한 흐름
+
+현재 지원 범위와 새 스토리의 최소 등록 기준은 **System Status**에서 관리합니다.
+
+## 운영 원칙
+
+- 가능한 경우 제품 코드와 도메인 계산 결과를 그대로 렌더링합니다.
+- 제품 API에 없는 상태는 가짜 구현으로 채우지 않고 미지원 범위로 기록합니다.
+- 자동 접근성 검사는 보조 수단이며 키보드·스크린리더·실기기 검증을 대신하지 않습니다.
+- 서버 저장, 실제 초대 발송, 다중 사용자 동기화는 이 Storybook의 검증 범위가 아닙니다.

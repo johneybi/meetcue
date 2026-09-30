@@ -1,0 +1,62 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import '../foundations/style-guide/StyleGuide.css'
+
+<Meta title="00 System/System Status" />
+
+# System status
+
+이 표는 제품 전체의 출시 준비도가 아니라, 현재 Storybook에서 확인할 수 있는 UI 계약의 범위를 나타냅니다.
+
+<div className="sg-table-wrapper">
+  <table className="sg-guide-table">
+    <thead>
+      <tr>
+        <th>영역</th>
+        <th>상태</th>
+        <th>현재 범위</th>
+        <th>남은 경계</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Foundations</td>
+        <td>Ready</td>
+        <td>runtime token, 의미 색상, 타입, 간격</td>
+        <td>원칙 문서와 일부 token 정규화</td>
+      </tr>
+      <tr>
+        <td>Primitives</td>
+        <td>Partial</td>
+        <td>기본·선택·비활성·위험 상태</td>
+        <td>loading, neutral badge, 이미지 실패, 공통 Field API</td>
+      </tr>
+      <tr>
+        <td>Product Patterns</td>
+        <td>Ready</td>
+        <td>응답 요약, 참석 기준, 회의 맥락, 빈 응답</td>
+        <td>비동기 저장·실패 상태</td>
+      </tr>
+      <tr>
+        <td>Decision System</td>
+        <td>Exploratory</td>
+        <td>고정 fixture 기반 후보 판정과 복구 상태</td>
+        <td>실제 발송·동의 서비스 연결</td>
+      </tr>
+      <tr>
+        <td>Workflows</td>
+        <td>Partial</td>
+        <td>참가자 후보 응답 흐름</td>
+        <td>서버 동기화와 중복 제출 처리</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 새 스토리 최소 기준
+
+- 실제 제품 컴포넌트 또는 고정된 도메인 fixture를 사용합니다.
+- 기본 상태와 함께 해당 컴포넌트에 의미 있는 선택·비활성·빈 상태를 다룹니다.
+- 접근 가능한 이름과 키보드 조작 여부를 Accessibility 패널과 직접 조작으로 확인합니다.
+- 390px와 데스크톱에서 정보 손실이나 수평 넘침이 없는지 확인합니다.
+- 미지원 상태는 임시 UI로 꾸미지 않고 이 문서의 남은 경계에 기록합니다.
+- `check`, `lint`, `build-storybook`을 통과합니다.

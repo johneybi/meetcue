@@ -1,0 +1,60 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import '../foundations/style-guide/StyleGuide.css'
+
+<Meta title="00 System/State Model" />
+
+# Product state model
+
+MeetCue는 “가능한 시간” 하나만 표시하지 않습니다. 응답이 덜 모인 상태와, 알려진 충돌 때문에 조건 변경 동의가 필요한 상태를 분리합니다.
+
+<div className="sg-table-wrapper">
+  <table className="sg-guide-table">
+    <thead>
+      <tr>
+        <th>후보 상태</th>
+        <th>제품이 아는 사실</th>
+        <th>화면이 제공해야 하는 행동</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>ready</code>
+        </td>
+        <td>현재 응답과 참석 기준으로 확정 가능</td>
+        <td>후보 확정</td>
+      </tr>
+      <tr>
+        <td>
+          <code>pending</code>
+        </td>
+        <td>필요한 응답이 아직 없어 판정 보류</td>
+        <td>필요한 사람에게 응답 요청</td>
+      </tr>
+      <tr>
+        <td>
+          <code>recovery</code>
+        </td>
+        <td>현재는 성립하지 않지만 명시적 변경 동의로 복구 가능</td>
+        <td>필요한 동의와 유지되는 응답 비교</td>
+      </tr>
+      <tr>
+        <td>
+          <code>impossible</code>
+        </td>
+        <td>현재 조건에서 성립할 수 없음</td>
+        <td>다른 후보·조건·범위 검토</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 응답 의미
+
+- `available`: 해당 후보에 참석 가능
+- `adjustment_intent`: 기존 일정 조정을 검토할 의향이 있음. 동의가 아님
+- `adjustable` / `adjustment_commit`: 이전 흐름에서 실제 변경을 약속한 기록
+- `unavailable`: 해당 후보에 참석 불가
+- unanswered: 아직 모름. 불가로 추정하지 않음
+
+스토리는 가능하면 이 상태를 임의 문자열로 주입하지 않고, 고정된 가상 회의 fixture와 도메인 계산 결과에서 만듭니다. 그래야 화면 표현뿐 아니라 계산과 UI 사이의 계약을 함께 검토할 수 있습니다.

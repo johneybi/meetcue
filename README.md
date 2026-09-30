@@ -28,7 +28,7 @@ MeetCue는 응답을 수집하는 화면보다 **확정할 수 있는 상태를 
 
 ### 후보 시간마다 판단 가능한 상태를 만들었어요
 
-후보 시간을 `확정 가능`, `응답 대기`, `확정 불가` 상태로 나눴어요. 결과만 보여주지 않고 왜 그런 상태인지, 지금 무엇을 할 수 있는지도 함께 알려줘요.
+후보 시간을 `확정 가능`, `응답 대기`, `복구 가능`, `확정 불가` 상태로 나눴어요. 결과만 보여주지 않고 왜 그런 상태인지, 지금 무엇을 할 수 있는지도 함께 알려줘요.
 
 ### 응답이 덜 모여도 다음 행동을 보여줘요
 
@@ -62,6 +62,7 @@ MeetCue는 응답을 수집하는 화면보다 **확정할 수 있는 상태를 
 - `react-aria-components` + `@internationalized/date`
 - `lucide-react` + `sonner`
 - Node.js test runner 기반 도메인 테스트
+- Storybook 10 기반 컴포넌트·상태 문서와 접근성 점검 패널
 - ESLint 10 + Prettier 3
 
 ## 로컬에서 실행하기
@@ -69,6 +70,7 @@ MeetCue는 응답을 수집하는 화면보다 **확정할 수 있는 상태를 
 ```bash
 npm install
 npm run dev
+npm run storybook
 ```
 
 검증 명령은 다음과 같아요.
@@ -78,6 +80,7 @@ npm run check
 npm run test:domain
 npm run lint
 npm run build
+npm run build-storybook
 ```
 
 `tests/`에는 가용시간 파생, 판단 상태, 라우트, 계정 시나리오, 프로토타입 상태를 검증하는 도메인 테스트가 있습니다. GitHub Actions는 Pull Request와 `main` 배포 전에 타입 검사, 테스트, lint, production build를 실행합니다.
@@ -103,7 +106,7 @@ npm run build
 - 주최자: 항상 참석하며, 탐색 범위를 확인하거나 수정하고 최종 결정을 내려요.
 - 시간 모델: 회의 가능 범위 + 확보 시간 + 가능한 시간대 → 후보 시간 → 응답 마감
 - 응답 값: 30분 단위의 `available` / `adjustable` / `unavailable`
-- 후보 상태: `ready` / `pending` / `impossible`
+- 후보 상태: `ready` / `pending` / `recovery` / `impossible`
 - 제출 경계: 저장하지 않은 임시 응답은 주최자의 판단에 반영하지 않아요.
 - 응답 대기: 필수 참석자와 대체 가능한 선택 참석자 그룹을 구분해요.
 

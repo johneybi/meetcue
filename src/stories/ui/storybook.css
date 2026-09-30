@@ -1,0 +1,39 @@
+@import '../../styles/material-tokens.css';
+@import '../../styles/soft-material.css';
+@import '../../components/ui/main-card.css';
+
+.story-stack {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 680px);
+}
+
+.story-form {
+  display: grid;
+  gap: 16px;
+  width: min(420px, calc(100vw - 2rem));
+}
+
+.story-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  width: min(760px, calc(100vw - 2rem));
+}
+
+.story-surface {
+  padding: 24px;
+  border-radius: var(--mc-radius-surface);
+  background: var(--mc-color-surface);
+}
+
+.story-surface > .field:last-child {
+  margin-bottom: 0;
+}

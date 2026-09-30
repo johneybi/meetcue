@@ -22,23 +22,31 @@ export function ResponseAnswerList({
   candidates: Candidate[]
   answers: Record<string, ResponseValue | undefined>
 }) {
+  const answeredCandidates = candidates.filter((candidate) => answers[candidate.id])
+
+  if (answeredCandidates.length === 0) {
+    return (
+      <div className="response-answer-list" data-empty>
+        <p className="response-answer-list__empty">아직 선택한 응답이 없어요.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="response-answer-list">
-      {candidates
-        .filter((c) => answers[c.id])
-        .map((c) => (
-          <div className="response-answer-list__row" key={c.id}>
-            <div>
-              <span>{date.format(new Date(c.startAt))}</span>
-              <strong>
-                <TimeRange start={c.startAt} end={c.endAt} />
-              </strong>
-            </div>
-            <span className="response-answer-list__value" data-value={answers[c.id]}>
-              {labels[answers[c.id]!]}
-            </span>
+      {answeredCandidates.map((candidate) => (
+        <div className="response-answer-list__row" key={candidate.id}>
+          <div>
+            <span>{date.format(new Date(candidate.startAt))}</span>
+            <strong>
+              <TimeRange start={candidate.startAt} end={candidate.endAt} />
+            </strong>
           </div>
-        ))}
+          <span className="response-answer-list__value" data-value={answers[candidate.id]}>
+            {labels[answers[candidate.id]!]}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }

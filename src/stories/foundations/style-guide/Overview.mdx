@@ -1,0 +1,144 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import './StyleGuide.css'
+
+<Meta title="01 Foundations/Style Guide/Overview" />
+
+# MeetCue Style Guide
+
+이 문서는 장식적인 브랜드 갤러리가 아니라, 일정 조율 및 의사결정 인터페이스를 구축하고 검토하기 위한 디자인 엔지니어링 실행 기준입니다.
+
+## 설계 및 구현 원칙
+
+- **장식보다 명확함이 먼저다.** 다음 행동과 판단 근거를 가장 먼저 보여줍니다.
+- **표현보다 다음 행동이 먼저다.** 버튼은 명사가 아닌 구체적인 동사 문장을 사용합니다.
+- **색은 역할로 사용한다.** 파란색은 CTA·선택·포커스, 초록색은 확정 가능, 노란색은 대기, 빨간색은 차단·삭제에 제한합니다.
+- **표면은 중첩보다 위계로 구분한다.** 간격과 1px border를 우선하고, 떠 있는 요소에만 절제된 shadow를 사용합니다.
+- **한국어 가독성을 기준으로 한다.** Wanted Sans Variable, 본문 자간 0, 제목 자간 -0.01em을 기본으로 합니다.
+
+## 현재 구현과 목표 원칙을 읽는 법
+
+이 가이드는 스크린샷과 컴포넌트에 실제 적용되는 runtime token을 우선합니다. `docs/design/visual-system.md`는 목표 원칙이지만, 다음 값은 현재 구현과 달라 정규화 후보로 남아 있습니다.
+
+<div className="sg-table-wrapper">
+  <table className="sg-guide-table">
+    <thead>
+      <tr>
+        <th>역할</th>
+        <th>원칙 문서</th>
+        <th>현재 runtime</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Canvas</td>
+        <td>
+          <code>#f6f8fb</code>
+        </td>
+        <td>
+          <code>#f3f5f8</code>
+        </td>
+        <td>정규화 후보</td>
+      </tr>
+      <tr>
+        <td>Border</td>
+        <td>
+          <code>#e7ecf3</code>
+        </td>
+        <td>
+          <code>#e0e5ec</code>
+        </td>
+        <td>정규화 후보</td>
+      </tr>
+      <tr>
+        <td>Accent</td>
+        <td>
+          <code>#1f6feb</code>
+        </td>
+        <td>
+          <code>#2675ed</code>
+        </td>
+        <td>정규화 후보</td>
+      </tr>
+      <tr>
+        <td>Control radius</td>
+        <td>
+          <code>8px</code>
+        </td>
+        <td>
+          <code>10px</code>
+        </td>
+        <td>과도기 계약</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+장식용 gradient와 과도한 입체감은 사용하지 않습니다. 버튼과 선택 컨트롤의 조작 피드백을 위한 제한적인 gradient·inset shadow는 현재 tactile material 계약으로 사용합니다. 이 차이를 합의 없이 숨기거나 문서 값으로 덮어쓰지 않습니다.
+
+## 의사결정 상태 매핑
+
+<div className="sg-table-wrapper">
+  <table className="sg-guide-table">
+    <thead>
+      <tr>
+        <th>후보 상태</th>
+        <th>의미</th>
+        <th>배지 톤</th>
+        <th>주 행동</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>ready</code>
+        </td>
+        <td>필수 참석자와 정족수 조건 충족</td>
+        <td>success · 확정 가능</td>
+        <td>이 시간으로 확정하기</td>
+      </tr>
+      <tr>
+        <td>
+          <code>pending</code>
+        </td>
+        <td>필요한 응답을 기다리는 중</td>
+        <td>warning · 응답 대기</td>
+        <td>응답 요청하기</td>
+      </tr>
+      <tr>
+        <td>
+          <code>recovery</code>
+        </td>
+        <td>조정 의향은 있으나 실제 동의 필요</td>
+        <td>info · 조정 검토</td>
+        <td>변경 동의 구하기</td>
+      </tr>
+      <tr>
+        <td>
+          <code>impossible</code>
+        </td>
+        <td>현재 조건에서 회의 성립 불가</td>
+        <td>danger · 진행 어려움</td>
+        <td>다른 시간 찾아보기</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 핵심 시각 계약
+
+- **Typography:** Display 32/42, Page title 26/36, Decision title 24/34, Section title 20/30, Card title 17/26, Body 15/24, Caption·Label 13/20.
+- **Spacing:** 4px 기반의 `4, 8, 12, 16, 20, 24, 32, 40` 스케일.
+- **Radius:** 현재 runtime 기준 control 10px, card 12px, task surface 16px, badge 999px.
+- **Focus:** accent border와 3px soft ring을 함께 사용하며 색만으로 선택 상태를 전달하지 않습니다.
+- **Responsive:** 320, 390, 760, 1440px에서 같은 상태 의미를 유지하되 공간 구조를 바꿉니다.
+
+## 명시적 한계
+
+1. 비동기 loading skeleton과 서버 error boundary는 공통 컴포넌트 계약에 없습니다.
+2. light mode가 단일 기준이며 dark mode token은 없습니다.
+3. 외부 캘린더 충돌은 가상 fixture이며 실제 OAuth 연결 상태가 아닙니다.
+4. Button loading, Avatar 이미지 실패 fallback, Badge neutral tone, SegmentedControl disabled option은 아직 공통 API가 없습니다.
+5. `aria-invalid` danger border는 구현되어 있지만 오류 메시지와 `aria-describedby`를 연결하는 공통 Field API는 없습니다.
+
+자동 접근성 검사와 수치 대비 검토는 키보드 전체 흐름, 스크린리더, 실기기 검증을 대신하지 않습니다.
